@@ -1,0 +1,89 @@
+server:
+  port: 8080
+  servlet:
+    context-path: /api
+
+spring:
+  application:
+    name: gnimah-backend
+  datasource:
+    url: jdbc:postgresql://localhost:5432/gnimah_db
+    username: postgres
+    password: postgres
+    driver-class-name: org.postgresql.Driver
+    hikari:
+      maximum-pool-size: 10
+      minimum-idle: 2
+      connection-timeout: 30000
+  jpa:
+    hibernate:
+      ddl-auto: create
+    show-sql: false
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        format_sql: true
+    open-in-view: false
+    defer-datasource-initialization: true
+  sql:
+    init:
+      mode: always
+      data-locations: classpath:db/data.sql
+      continue-on-error: true
+  mail:
+    host: smtp.gmail.com
+    port: 587
+    username: ${MAIL_USERNAME:noreply@gnimah.com}
+    password: ${MAIL_PASSWORD:}
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+  jackson:
+    date-format: yyyy-MM-dd'T'HH:mm:ss
+    time-zone: Africa/Abidjan
+    serialization:
+      write-dates-as-timestamps: false
+    deserialization:
+      fail-on-unknown-properties: false
+
+app:
+  jwt:
+    secret: ${JWT_SECRET:gnimah-hotel-super-secret-key-2026-abidjan-cote-ivoire-production}
+    expiration: 86400000  # 24 hours
+    refresh-expiration: 604800000  # 7 days
+  cors:
+    allowed-origins: http://localhost:4200,http://localhost:3000
+  pdf:
+    output-dir: ${PDF_OUTPUT_DIR:./pdfs}
+  hotel:
+    name: "Résidence Hôtel GNIMAH"
+    address: "Abobo, Boulevard Belleville, Carrefour Mosquée, Rue Cocotier, Lot 227, Îlot 110, Abidjan"
+    phone: ""
+    email: ""
+
+springdoc:
+  api-docs:
+    path: /v3/api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+    operations-sorter: method
+  default-consumes-media-type: application/json
+  default-produces-media-type: application/json
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics
+  endpoint:
+    health:
+      show-details: when-authorized
+
+logging:
+  level:
+    com.gnimah: DEBUG
+    org.springframework.security: INFO
+    org.hibernate.SQL: INFO

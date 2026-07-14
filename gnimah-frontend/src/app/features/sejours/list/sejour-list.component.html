@@ -1,0 +1,78 @@
+<div class="page-header">
+  <h1><i class="pi pi-sign-in mr-2"></i>Séjours</h1>
+  <p>Liste de tous les séjours enregistrés</p>
+</div>
+
+<div class="panel">
+  <p-toolbar>
+    <ng-template pTemplate="start">
+      <a routerLink="/check-in">
+        <p-button label="Nouveau Check-In" icon="pi pi-plus" severity="success"></p-button>
+      </a>
+    </ng-template>
+  </p-toolbar>
+
+  <p-table
+    [value]="sejours"
+    [lazy]="true"
+    [loading]="loading"
+    [paginator]="true"
+    [rows]="rows"
+    [totalRecords]="totalRecords"
+    [rowsPerPageOptions]="[10, 20, 50]"
+    (onLazyLoad)="load($event)"
+    styleClass="p-datatable-sm p-datatable-striped"
+    responsiveLayout="scroll">
+
+    <ng-template pTemplate="header">
+      <tr>
+        <th>N° Reçu</th>
+        <th>Client</th>
+        <th>Chambre</th>
+        <th>Type</th>
+        <th>Entrée</th>
+        <th>Sortie</th>
+        <th>Montant Total</th>
+        <th>Reste</th>
+        <th>Statut</th>
+        <th>Actions</th>
+      </tr>
+    </ng-template>
+
+    <ng-template pTemplate="body" let-s>
+      <tr>
+        <td><code>{{ s.numeroRecu }}</code></td>
+        <td>
+          <div class="font-bold">{{ s.clientNom }}</div>
+          <div class="text-sm" style="color:#64748b">{{ s.clientTelephone }}</div>
+        </td>
+        <td>{{ s.chambreNumero }} <span class="text-sm" style="color:#64748b">{{ s.chambreType }}</span></td>
+        <td>{{ s.typeLocation === 'PASSAGE' ? 'Passage (h)' : 'Séjour (n)' }}</td>
+        <td>{{ s.dateEntree | date:'dd/MM/yy HH:mm' }}</td>
+        <td>{{ s.dateSortie ? (s.dateSortie | date:'dd/MM/yy HH:mm') : '-' }}</td>
+        <td class="font-bold">{{ formatMontant(s.montantTotal) }}</td>
+        <td [style.color]="s.resteAPayer > 0 ? '#dc2626' : '#16a34a'">{{ formatMontant(s.resteAPayer) }}</td>
+        <td>
+          <p-tag [value]="getStatutLabel(s.statut)" [severity]="getStatutSeverity(s.statut)"></p-tag>
+        </td>
+        <td>
+          <p-button
+            *ngIf="s.statut === 'EN_COURS'"
+            icon="pi pi-sign-out"
+            label="Check-Out"
+            [loading]="checkOutLoading && selectedSejourId === s.id"
+            severity="warn"
+            size="small"
+            (onClick)="confirmCheckOut(s)">
+          </p-button>
+        </td>
+      </tr>
+    </ng-template>
+
+    <ng-template pTemplate="emptymessage">
+      <tr><td colspan="10" class="text-center" style="padding:2rem">Aucun séjour trouvé</td></tr>
+    </ng-template>
+  </p-table>
+</div>
+
+<p-confirmDialog></p-confirmDialog>

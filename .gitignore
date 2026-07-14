@@ -1,0 +1,27 @@
+# Backend
+gnimah-backend/target/
+gnimah-backend/*.log
+gnimah-backend/.mvn/wrapper/maven-wrapper.jar
+
+# Frontend
+gnimah-frontend/node_modules/
+gnimah-frontend/dist/
+gnimah-frontend/.angular/
+
+# IDE
+.idea/
+*.iml
+.vscode/
+*.suo
+*.user
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Secrets
+gnimah-backend/src/main/resources/application-local.yml
+.env
+
+# Logs
+*.log

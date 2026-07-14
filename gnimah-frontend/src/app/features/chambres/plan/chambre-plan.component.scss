@@ -1,0 +1,190 @@
+.plan-container {
+  .page-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    margin-bottom: 1.5rem;
+
+    h1 { font-size: 1.5rem; font-weight: 700; color: #1e3a5f; margin: 0 0 0.25rem; }
+    p { color: #64748b; margin: 0; }
+  }
+}
+
+.stats-row {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+  flex-wrap: wrap;
+}
+
+.stat-card {
+  background: white;
+  border-radius: 12px;
+  padding: 1rem 1.5rem;
+  text-align: center;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+  min-width: 100px;
+  flex: 1;
+
+  .stat-value {
+    display: block;
+    font-size: 1.75rem;
+    font-weight: 800;
+    line-height: 1;
+    margin-bottom: 0.25rem;
+  }
+
+  .stat-label {
+    font-size: 0.75rem;
+    color: #64748b;
+    font-weight: 500;
+  }
+
+  &.stat-total { border-top: 4px solid #3b82f6; .stat-value { color: #3b82f6; } }
+  &.stat-libre { border-top: 4px solid #22c55e; .stat-value { color: #22c55e; } }
+  &.stat-occupee { border-top: 4px solid #ef4444; .stat-value { color: #ef4444; } }
+  &.stat-nettoyer { border-top: 4px solid #f59e0b; .stat-value { color: #f59e0b; } }
+  &.stat-maintenance { border-top: 4px solid #8b5cf6; .stat-value { color: #8b5cf6; } }
+  &.stat-hors { border-top: 4px solid #6b7280; .stat-value { color: #6b7280; } }
+}
+
+.chambres-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.chambre-card {
+  border-radius: 12px;
+  padding: 1rem;
+  cursor: pointer;
+  transition: transform 0.15s, box-shadow 0.15s;
+  border: 2px solid transparent;
+  text-align: center;
+
+  &:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+  }
+
+  .chambre-numero {
+    font-size: 1.5rem;
+    font-weight: 800;
+    line-height: 1;
+    margin-bottom: 0.25rem;
+  }
+
+  .chambre-type {
+    font-size: 0.7rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 0.5rem;
+    opacity: 0.8;
+  }
+
+  .chambre-tarif {
+    font-size: 0.75rem;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+  }
+
+  .chambre-etat-badge {
+    font-size: 0.65rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    padding: 2px 8px;
+    border-radius: 20px;
+    background: rgba(255,255,255,0.4);
+    display: inline-block;
+  }
+
+  &.chambre-libre {
+    background: linear-gradient(135deg, #dcfce7, #bbf7d0);
+    color: #15803d;
+    border-color: #22c55e;
+  }
+  &.chambre-occupee {
+    background: linear-gradient(135deg, #fee2e2, #fecaca);
+    color: #dc2626;
+    border-color: #ef4444;
+  }
+  &.chambre-a-nettoyer, &.chambre-a_nettoyer {
+    background: linear-gradient(135deg, #fef9c3, #fef08a);
+    color: #ca8a04;
+    border-color: #eab308;
+  }
+  &.chambre-en-maintenance, &.chambre-en_maintenance {
+    background: linear-gradient(135deg, #ede9fe, #ddd6fe);
+    color: #7c3aed;
+    border-color: #8b5cf6;
+  }
+  &.chambre-hors-service, &.chambre-hors_service {
+    background: linear-gradient(135deg, #f1f5f9, #e2e8f0);
+    color: #64748b;
+    border-color: #94a3b8;
+  }
+}
+
+.legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1.5rem;
+  font-size: 0.8rem;
+  color: #64748b;
+  background: white;
+  border-radius: 8px;
+  padding: 0.75rem 1rem;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+
+  .legend-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .dot {
+    width: 12px; height: 12px; border-radius: 50%;
+    &.libre { background: #22c55e; }
+    &.occupee { background: #ef4444; }
+    &.nettoyer { background: #eab308; }
+    &.maintenance { background: #8b5cf6; }
+    &.hors { background: #94a3b8; }
+  }
+}
+
+.chambre-detail {
+  .detail-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+    margin-bottom: 1rem;
+  }
+
+  .detail-item {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+
+    &.detail-full { grid-column: 1 / -1; }
+
+    label {
+      font-size: 0.75rem;
+      color: #64748b;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    span {
+      font-size: 0.9rem;
+      color: #1e293b;
+    }
+  }
+}
+
+.etat-change {
+  margin-top: 1rem;
+}

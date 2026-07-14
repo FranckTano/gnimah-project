@@ -1,0 +1,45 @@
+// Paiements component styles
+.page-header {
+  margin-bottom: 1.5rem;
+  h1 { font-size: 1.5rem; font-weight: 700; color: #1e3a5f; margin: 0 0 0.25rem; }
+  p { color: #64748b; margin: 0; }
+}
+
+.panel {
+  background: white;
+  border-radius: 12px;
+  padding: 1.25rem;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
+
+.summary-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.summary-card {
+  background: white;
+  border-radius: 12px;
+  padding: 1.25rem;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+
+  .card-icon {
+    width: 48px; height: 48px;
+    border-radius: 12px;
+    display: flex; align-items: center; justify-content: center;
+    i { font-size: 1.25rem; color: white; }
+  }
+
+  .card-content {
+    .card-value { display: block; font-size: 1.25rem; font-weight: 700; color: #1e293b; }
+    .card-label { font-size: 0.75rem; color: #64748b; }
+  }
+
+  &.card-total .card-icon { background: linear-gradient(135deg, #22c55e, #15803d); }
+  &.card-count .card-icon { background: linear-gradient(135deg, #3b82f6, #1d4ed8); }
+}

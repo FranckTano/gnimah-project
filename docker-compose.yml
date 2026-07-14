@@ -1,0 +1,59 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:17-alpine
+    container_name: gnimah-postgres
+    environment:
+      POSTGRES_DB: gnimah_db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - gnimah-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  backend:
+    build:
+      context: ./gnimah-backend
+      dockerfile: Dockerfile
+    container_name: gnimah-backend
+    ports:
+      - "8080:8080"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/gnimah_db
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_DATASOURCE_PASSWORD: postgres
+      JWT_SECRET: gnimah-hotel-super-secret-key-2026-abidjan-production-secure
+      SPRING_JPA_HIBERNATE_DDL_AUTO: create
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - gnimah-network
+
+  frontend:
+    build:
+      context: ./gnimah-frontend
+      dockerfile: Dockerfile
+    container_name: gnimah-frontend
+    ports:
+      - "4200:80"
+    depends_on:
+      - backend
+    networks:
+      - gnimah-network
+
+volumes:
+  postgres_data:
+
+networks:
+  gnimah-network:
+    driver: bridge

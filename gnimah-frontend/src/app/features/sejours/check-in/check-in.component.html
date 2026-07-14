@@ -1,0 +1,267 @@
+<div class="checkin-container">
+  <div class="page-header">
+    <h1><i class="pi pi-sign-in mr-2"></i>Check-in</h1>
+    <p>Enregistrement d'un nouveau séjour</p>
+  </div>
+
+  <!-- Success screen -->
+  <div *ngIf="success && createdSejour" class="success-card">
+    <div class="success-icon"><i class="pi pi-check-circle"></i></div>
+    <h2>Check-in réussi !</h2>
+    <p class="success-receipt">N° Reçu : <strong>{{ createdSejour.numeroRecu }}</strong></p>
+    <div class="receipt-details">
+      <div class="receipt-row"><span>Client</span><strong>{{ createdSejour.clientNom }}</strong></div>
+      <div class="receipt-row"><span>Chambre</span><strong>{{ createdSejour.chambreNumero }}</strong></div>
+      <div class="receipt-row"><span>Type</span><strong>{{ createdSejour.typeLocation }}</strong></div>
+      <div class="receipt-row"><span>Entrée</span><strong>{{ createdSejour.dateEntree | date:'dd/MM/yyyy' }} à {{ createdSejour.heureEntree }}</strong></div>
+      <div class="receipt-row"><span>Montant total</span><strong>{{ formatCurrency(createdSejour.montantTotal) }}</strong></div>
+      <div class="receipt-row"><span>Payé</span><strong>{{ formatCurrency(createdSejour.montantPaye) }}</strong></div>
+      <div class="receipt-row" [class.reste-warning]="createdSejour.resteAPayer > 0">
+        <span>Reste à payer</span>
+        <strong>{{ formatCurrency(createdSejour.resteAPayer) }}</strong>
+      </div>
+    </div>
+    <div class="success-actions">
+      <p-button label="Imprimer le reçu" icon="pi pi-print" styleClass="p-button-outlined mr-2" (onClick)="printReceipt()"></p-button>
+      <p-button label="Nouveau check-in" icon="pi pi-plus" styleClass="p-button-success" (onClick)="newCheckIn()"></p-button>
+    </div>
+  </div>
+
+  <!-- Wizard -->
+  <div *ngIf="!success" class="wizard">
+    <!-- Step indicators -->
+    <div class="step-indicators">
+      <div class="step-ind" [class.active]="currentStep === 1" [class.done]="currentStep > 1">
+        <div class="step-num">1</div>
+        <div class="step-lbl">Client</div>
+      </div>
+      <div class="step-line" [class.done]="currentStep > 1"></div>
+      <div class="step-ind" [class.active]="currentStep === 2" [class.done]="currentStep > 2">
+        <div class="step-num">2</div>
+        <div class="step-lbl">Chambre & Dates</div>
+      </div>
+      <div class="step-line" [class.done]="currentStep > 2"></div>
+      <div class="step-ind" [class.active]="currentStep === 3">
+        <div class="step-num">3</div>
+        <div class="step-lbl">Paiement</div>
+      </div>
+    </div>
+
+    <!-- STEP 1: Client -->
+    <div *ngIf="currentStep === 1" class="step-card">
+      <h3 class="step-title"><i class="pi pi-user mr-2"></i>Identification du client</h3>
+
+      <div class="search-section">
+        <div class="search-row">
+          <input
+            pInputText
+            [(ngModel)]="searchQuery"
+            placeholder="Numéro de téléphone ou N° de pièce d'identité..."
+            class="search-input"
+            (keyup.enter)="searchClient()"
+          />
+          <p-button
+            label="Rechercher"
+            icon="pi pi-search"
+            [loading]="searchingClient"
+            (onClick)="searchClient()"
+          ></p-button>
+        </div>
+
+        <!-- Client found -->
+        <div *ngIf="foundClient" class="client-found">
+          <div class="found-header">
+            <i class="pi pi-check-circle text-green-500 mr-2"></i>
+            <span class="font-semibold text-green-700">Client trouvé</span>
+          </div>
+          <div class="client-info-grid">
+            <div><label>Nom complet</label><strong>{{ foundClient.nomComplet }}</strong></div>
+            <div><label>Téléphone</label><span>{{ foundClient.telephone }}</span></div>
+            <div><label>Pièce</label><span>{{ foundClient.typePiece }} — {{ foundClient.numeroPiece }}</span></div>
+            <div><label>Séjours précédents</label><span>{{ foundClient.nbSejours }}</span></div>
+          </div>
+          <div *ngIf="foundClient.clientFidele" class="fidele-badge">
+            <i class="pi pi-star-fill mr-1"></i>Client fidèle
+          </div>
+        </div>
+
+        <!-- Not found -->
+        <div *ngIf="clientNotFound" class="not-found-alert">
+          <i class="pi pi-exclamation-triangle mr-2"></i>
+          <span>Aucun client trouvé.</span>
+          <p-button
+            label="Créer un nouveau client"
+            styleClass="p-button-link p-button-sm ml-2"
+            (onClick)="showCreateClient = true; clientNotFound = false"
+          ></p-button>
+        </div>
+      </div>
+
+      <!-- Create client form -->
+      <div *ngIf="showCreateClient" class="create-client-section">
+        <h4 class="mb-3"><i class="pi pi-user-plus mr-2"></i>Nouveau client</h4>
+        <form [formGroup]="clientForm" class="client-quick-form">
+          <div class="form-row">
+            <div class="form-field">
+              <label>Civilité *</label>
+              <p-select formControlName="civilite" [options]="civiliteOptions" optionLabel="label" optionValue="value"></p-select>
+            </div>
+            <div class="form-field flex-2">
+              <label>Nom *</label>
+              <input pInputText formControlName="nom" placeholder="Nom" [class.ng-invalid]="isClientFieldInvalid('nom')" />
+            </div>
+            <div class="form-field flex-2">
+              <label>Prénom</label>
+              <input pInputText formControlName="prenom" placeholder="Prénom" />
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-field">
+              <label>Téléphone *</label>
+              <input pInputText formControlName="telephone" placeholder="+225..." [class.ng-invalid]="isClientFieldInvalid('telephone')" />
+            </div>
+            <div class="form-field">
+              <label>Type pièce *</label>
+              <p-select formControlName="typePiece" [options]="typePieceOptions" optionLabel="label" optionValue="value"></p-select>
+            </div>
+            <div class="form-field flex-2">
+              <label>N° pièce *</label>
+              <input pInputText formControlName="numeroPiece" placeholder="Numéro" [class.ng-invalid]="isClientFieldInvalid('numeroPiece')" />
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-field">
+              <label>Nationalité</label>
+              <input pInputText formControlName="nationalite" placeholder="Ivoirien..." />
+            </div>
+            <div class="form-field flex-2">
+              <label>Email</label>
+              <input pInputText formControlName="email" type="email" placeholder="email@exemple.com" />
+            </div>
+          </div>
+        </form>
+        <div class="mt-3 flex gap-2">
+          <p-button label="Annuler" styleClass="p-button-text" (onClick)="showCreateClient = false"></p-button>
+          <p-button label="Créer ce client" icon="pi pi-check" styleClass="p-button-success" (onClick)="createNewClient()"></p-button>
+        </div>
+      </div>
+
+      <div class="step-actions">
+        <p-button label="Suivant" icon="pi pi-arrow-right" iconPos="right" styleClass="p-button-success" (onClick)="goToStep(2)"></p-button>
+      </div>
+    </div>
+
+    <!-- STEP 2: Chambre & Dates -->
+    <div *ngIf="currentStep === 2" class="step-card">
+      <h3 class="step-title"><i class="pi pi-building mr-2"></i>Chambre & Dates de séjour</h3>
+
+      <div *ngIf="loadingChambres" class="text-center py-4">
+        <i class="pi pi-spin pi-spinner mr-2"></i>Chargement des chambres...
+      </div>
+
+      <div *ngIf="!loadingChambres" class="chambres-section">
+        <h4 class="mb-2">Chambres disponibles ({{ chambresLibres.length }})</h4>
+        <div class="chambres-grid">
+          <div
+            *ngFor="let chambre of chambresLibres"
+            class="chambre-card-select"
+            [class.selected]="selectedChambre?.id === chambre.id"
+            (click)="selectChambre(chambre)"
+          >
+            <div class="chambre-num">{{ chambre.numero }}</div>
+            <div class="chambre-type">{{ chambre.type }}</div>
+            <div class="chambre-cap">{{ chambre.capacite }} pers.</div>
+            <div class="chambre-prix">
+              Passage: {{ formatCurrency(chambre.tarifPassage) }}<br/>
+              Nuitée: {{ formatCurrency(chambre.tarifNuitee) }}
+            </div>
+            <i *ngIf="selectedChambre?.id === chambre.id" class="pi pi-check-circle check-icon"></i>
+          </div>
+        </div>
+        <div *ngIf="chambresLibres.length === 0" class="no-rooms">
+          <i class="pi pi-ban mr-2 text-red-500"></i>Aucune chambre disponible
+        </div>
+      </div>
+
+      <form [formGroup]="sejourForm" class="dates-form">
+        <div class="form-row">
+          <div class="form-field">
+            <label>Type de location *</label>
+            <p-selectButton formControlName="typeLocation" [options]="typeLocationOptions" optionLabel="label" optionValue="value"></p-selectButton>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-field">
+            <label>Date d'entrée *</label>
+            <p-datepicker formControlName="dateEntree" dateFormat="dd/mm/yy" [showIcon]="true"></p-datepicker>
+          </div>
+          <div class="form-field">
+            <label>Heure d'entrée *</label>
+            <input pInputText formControlName="heureEntree" type="time" />
+          </div>
+          <div class="form-field" *ngIf="sejourForm.get('typeLocation')?.value === 'SEJOUR'">
+            <label>Date de sortie prévue</label>
+            <p-datepicker formControlName="dateSortie" dateFormat="dd/mm/yy" [showIcon]="true"></p-datepicker>
+          </div>
+          <div class="form-field" *ngIf="sejourForm.get('typeLocation')?.value === 'PASSAGE'">
+            <label>Heure de sortie prévue</label>
+            <input pInputText formControlName="heureSortie" type="time" />
+          </div>
+        </div>
+        <div class="form-field">
+          <label>Notes</label>
+          <input pInputText formControlName="notes" placeholder="Notes supplémentaires..." />
+        </div>
+      </form>
+
+      <div class="step-actions">
+        <p-button label="Retour" icon="pi pi-arrow-left" styleClass="p-button-outlined mr-2" (onClick)="currentStep = 1"></p-button>
+        <p-button label="Suivant" icon="pi pi-arrow-right" iconPos="right" styleClass="p-button-success" (onClick)="goToStep(3)"></p-button>
+      </div>
+    </div>
+
+    <!-- STEP 3: Paiement -->
+    <div *ngIf="currentStep === 3" class="step-card">
+      <h3 class="step-title"><i class="pi pi-credit-card mr-2"></i>Récapitulatif & Paiement</h3>
+
+      <div class="summary-table">
+        <div class="summary-row"><span>Client</span><strong>{{ foundClient?.nomComplet }}</strong></div>
+        <div class="summary-row"><span>Téléphone</span><strong>{{ foundClient?.telephone }}</strong></div>
+        <div class="summary-row"><span>Chambre</span><strong>N° {{ selectedChambre?.numero }} — {{ selectedChambre?.type }}</strong></div>
+        <div class="summary-row"><span>Type</span><strong>{{ sejourForm.get('typeLocation')?.value }}</strong></div>
+        <div class="summary-row"><span>Date entrée</span><strong>{{ sejourForm.get('dateEntree')?.value | date:'dd/MM/yyyy' }} à {{ sejourForm.get('heureEntree')?.value }}</strong></div>
+        <div class="summary-row summary-total"><span>Montant total estimé</span><strong>{{ formatCurrency(montantTotal) }}</strong></div>
+      </div>
+
+      <form [formGroup]="paiementForm" class="paiement-form">
+        <div class="form-row">
+          <div class="form-field">
+            <label>Montant payé (XOF) *</label>
+            <p-inputNumber formControlName="montantPaye" [min]="0" [useGrouping]="true" [max]="999999999" suffix=" XOF"></p-inputNumber>
+          </div>
+          <div class="form-field">
+            <label>Mode de paiement *</label>
+            <p-select formControlName="modePaiement" [options]="modePaiementOptions" optionLabel="label" optionValue="value"></p-select>
+          </div>
+        </div>
+        <div class="reste-info" [class.reste-warning]="resteAPayer > 0">
+          <i class="pi pi-info-circle mr-2"></i>
+          Reste à payer : <strong>{{ formatCurrency(resteAPayer) }}</strong>
+        </div>
+      </form>
+
+      <div class="step-actions">
+        <p-button label="Retour" icon="pi pi-arrow-left" styleClass="p-button-outlined mr-2" (onClick)="currentStep = 2"></p-button>
+        <p-button
+          label="Confirmer le check-in"
+          icon="pi pi-sign-in"
+          styleClass="p-button-success"
+          [loading]="checkingIn"
+          (onClick)="confirmCheckIn()"
+        ></p-button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<p-toast></p-toast>

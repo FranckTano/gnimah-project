@@ -1,0 +1,139 @@
+<div class="plan-container">
+  <div class="page-header">
+    <div>
+      <h1><i class="pi pi-th-large mr-2"></i>Plan des chambres</h1>
+      <p>Vue en temps réel de l'occupation des chambres</p>
+    </div>
+    <p-button icon="pi pi-refresh" label="Actualiser" styleClass="p-button-outlined" (onClick)="loadChambres()" [loading]="loading"></p-button>
+  </div>
+
+  <!-- Stats row -->
+  <div class="stats-row">
+    <div class="stat-card stat-total">
+      <span class="stat-value">{{ totalChambres }}</span>
+      <span class="stat-label">Total</span>
+    </div>
+    <div class="stat-card stat-libre">
+      <span class="stat-value">{{ nbLibres }}</span>
+      <span class="stat-label">Libres</span>
+    </div>
+    <div class="stat-card stat-occupee">
+      <span class="stat-value">{{ nbOccupees }}</span>
+      <span class="stat-label">Occupées</span>
+    </div>
+    <div class="stat-card stat-nettoyer">
+      <span class="stat-value">{{ nbANettoyer }}</span>
+      <span class="stat-label">À nettoyer</span>
+    </div>
+    <div class="stat-card stat-maintenance">
+      <span class="stat-value">{{ nbEnMaintenance }}</span>
+      <span class="stat-label">Maintenance</span>
+    </div>
+    <div class="stat-card stat-hors">
+      <span class="stat-value">{{ nbHorsService }}</span>
+      <span class="stat-label">Hors service</span>
+    </div>
+  </div>
+
+  <!-- Loading skeleton -->
+  <div *ngIf="loading" class="chambres-grid">
+    <p-skeleton *ngFor="let i of [1,2,3,4,5,6,7,8]" height="120px" borderRadius="12px"></p-skeleton>
+  </div>
+
+  <!-- Room grid -->
+  <div *ngIf="!loading" class="chambres-grid">
+    <div
+      *ngFor="let chambre of chambres"
+      [class]="getChambreClass(chambre.etat)"
+      (click)="openDetail(chambre)"
+      [pTooltip]="'Cliquer pour gérer'"
+      tooltipPosition="top"
+    >
+      <div class="chambre-numero">{{ chambre.numero }}</div>
+      <div class="chambre-type">{{ chambre.type }}</div>
+      <div class="chambre-tarif">{{ formatCurrency(chambre.etat === 'OCCUPEE' ? chambre.tarifNuitee : chambre.tarifPassage) }}</div>
+      <div class="chambre-etat-badge">{{ etatLabels[chambre.etat] }}</div>
+    </div>
+  </div>
+
+  <!-- Legend -->
+  <div class="legend">
+    <span class="legend-item"><span class="dot libre"></span>Libre</span>
+    <span class="legend-item"><span class="dot occupee"></span>Occupée</span>
+    <span class="legend-item"><span class="dot nettoyer"></span>À nettoyer</span>
+    <span class="legend-item"><span class="dot maintenance"></span>Maintenance</span>
+    <span class="legend-item"><span class="dot hors"></span>Hors service</span>
+  </div>
+</div>
+
+<!-- Detail dialog -->
+<p-dialog
+  [(visible)]="detailVisible"
+  [header]="'Chambre ' + (selectedChambre?.numero || '')"
+  [modal]="true"
+  [style]="{width: '480px'}"
+  [draggable]="false"
+>
+  <div *ngIf="selectedChambre" class="chambre-detail">
+    <div class="detail-grid">
+      <div class="detail-item">
+        <label>Numéro</label>
+        <span class="font-bold">{{ selectedChambre.numero }}</span>
+      </div>
+      <div class="detail-item">
+        <label>Type</label>
+        <span>{{ selectedChambre.type }}</span>
+      </div>
+      <div class="detail-item">
+        <label>Étage</label>
+        <span>{{ selectedChambre.etage }}</span>
+      </div>
+      <div class="detail-item">
+        <label>Capacité</label>
+        <span>{{ selectedChambre.capacite }} pers.</span>
+      </div>
+      <div class="detail-item">
+        <label>Tarif passage</label>
+        <span>{{ formatCurrency(selectedChambre.tarifPassage) }}</span>
+      </div>
+      <div class="detail-item">
+        <label>Tarif nuitée</label>
+        <span>{{ formatCurrency(selectedChambre.tarifNuitee) }}</span>
+      </div>
+      <div class="detail-item detail-full">
+        <label>Équipements</label>
+        <span>{{ selectedChambre.equipements || '—' }}</span>
+      </div>
+      <div class="detail-item detail-full">
+        <label>Description</label>
+        <span>{{ selectedChambre.description || '—' }}</span>
+      </div>
+    </div>
+
+    <p-divider></p-divider>
+
+    <div class="etat-change">
+      <label class="font-semibold mb-2 block">Changer l'état :</label>
+      <p-select
+        [(ngModel)]="newEtat"
+        [options]="etatOptions"
+        optionLabel="label"
+        optionValue="value"
+        styleClass="w-full"
+      ></p-select>
+    </div>
+  </div>
+
+  <ng-template pTemplate="footer">
+    <p-button label="Annuler" icon="pi pi-times" styleClass="p-button-text" (onClick)="detailVisible = false"></p-button>
+    <p-button
+      label="Enregistrer"
+      icon="pi pi-check"
+      styleClass="p-button-success"
+      [loading]="updatingEtat"
+      (onClick)="saveEtat()"
+    ></p-button>
+  </ng-template>
+</p-dialog>
+
+<p-toast></p-toast>

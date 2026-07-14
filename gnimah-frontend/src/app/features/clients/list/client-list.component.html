@@ -1,0 +1,200 @@
+<div class="page-container">
+  <div class="page-header">
+    <h1><i class="pi pi-users mr-2"></i>Clients</h1>
+    <p>Gestion des clients de l'hôtel</p>
+  </div>
+
+  <!-- Toolbar -->
+  <p-toolbar styleClass="mb-4">
+    <ng-template pTemplate="left">
+      <span class="p-input-icon-left">
+        <i class="pi pi-search"></i>
+        <input
+          pInputText
+          type="text"
+          placeholder="Rechercher par nom, téléphone, pièce..."
+          [(ngModel)]="searchTerm"
+          (keyup.enter)="onSearch()"
+          style="width: 320px"
+        />
+      </span>
+      <p-button icon="pi pi-search" label="Rechercher" styleClass="ml-2" (onClick)="onSearch()"></p-button>
+    </ng-template>
+    <ng-template pTemplate="right">
+      <p-button
+        icon="pi pi-plus"
+        label="Nouveau client"
+        styleClass="p-button-success"
+        (onClick)="openNew()"
+      ></p-button>
+    </ng-template>
+  </p-toolbar>
+
+  <!-- Table -->
+  <p-table
+    [value]="clients"
+    [lazy]="true"
+    [paginator]="true"
+    [rows]="pageSize"
+    [totalRecords]="totalRecords"
+    [loading]="loading"
+    (onPage)="onPageChange($event)"
+    styleClass="p-datatable-striped p-datatable-sm"
+    responsiveLayout="scroll"
+  >
+    <ng-template pTemplate="header">
+      <tr>
+        <th>Identité</th>
+        <th>Téléphone</th>
+        <th>Pièce d'identité</th>
+        <th>Séjours</th>
+        <th>Fidélité</th>
+        <th style="width: 120px">Actions</th>
+      </tr>
+    </ng-template>
+    <ng-template pTemplate="body" let-client>
+      <tr>
+        <td>
+          <div class="client-identity">
+            <span class="client-civilite">{{ client.civilite }}</span>
+            <span class="client-name">{{ client.nomComplet }}</span>
+          </div>
+          <small class="text-500" *ngIf="client.email">{{ client.email }}</small>
+        </td>
+        <td>{{ client.telephone }}</td>
+        <td>
+          <p-tag [value]="client.typePiece" severity="secondary"></p-tag>
+          <div class="mt-1"><small class="text-600">{{ client.numeroPiece }}</small></div>
+        </td>
+        <td>
+          <span class="font-bold">{{ client.nbSejours }}</span>
+        </td>
+        <td>
+          <p-tag
+            *ngIf="client.clientFidele"
+            value="Fidèle"
+            severity="success"
+            icon="pi pi-star-fill"
+          ></p-tag>
+          <span *ngIf="!client.clientFidele" class="text-400 text-sm">—</span>
+        </td>
+        <td>
+          <div class="action-buttons">
+            <p-button
+              icon="pi pi-pencil"
+              styleClass="p-button-rounded p-button-text p-button-sm"
+              [pTooltip]="'Modifier'"
+              (onClick)="openEdit(client)"
+            ></p-button>
+            <p-button
+              icon="pi pi-trash"
+              styleClass="p-button-rounded p-button-text p-button-danger p-button-sm"
+              [pTooltip]="'Supprimer'"
+              (onClick)="confirmDelete(client)"
+            ></p-button>
+          </div>
+        </td>
+      </tr>
+    </ng-template>
+    <ng-template pTemplate="emptymessage">
+      <tr>
+        <td colspan="6" class="text-center py-4 text-500">
+          <i class="pi pi-users mr-2"></i>Aucun client trouvé
+        </td>
+      </tr>
+    </ng-template>
+  </p-table>
+</div>
+
+<!-- Dialog create/edit -->
+<p-dialog
+  [(visible)]="dialogVisible"
+  [header]="dialogTitle"
+  [modal]="true"
+  [style]="{width: '640px'}"
+  [closable]="true"
+  [draggable]="false"
+>
+  <form [formGroup]="form" class="client-form">
+    <div class="form-row">
+      <div class="form-field">
+        <label>Civilité *</label>
+        <p-select
+          formControlName="civilite"
+          [options]="civiliteOptions"
+          optionLabel="label"
+          optionValue="value"
+          placeholder="Civilité"
+          [class.ng-invalid]="isFieldInvalid('civilite')"
+        ></p-select>
+        <small class="p-error" *ngIf="isFieldInvalid('civilite')">Requis</small>
+      </div>
+      <div class="form-field flex-2">
+        <label>Nom *</label>
+        <input pInputText formControlName="nom" placeholder="Nom de famille" [class.ng-invalid]="isFieldInvalid('nom')" />
+        <small class="p-error" *ngIf="isFieldInvalid('nom')">Requis</small>
+      </div>
+      <div class="form-field flex-2">
+        <label>Prénom</label>
+        <input pInputText formControlName="prenom" placeholder="Prénom" />
+      </div>
+    </div>
+
+    <div class="form-row">
+      <div class="form-field">
+        <label>Téléphone *</label>
+        <input pInputText formControlName="telephone" placeholder="+225 00 00 00 00" [class.ng-invalid]="isFieldInvalid('telephone')" />
+        <small class="p-error" *ngIf="isFieldInvalid('telephone')">Requis</small>
+      </div>
+      <div class="form-field">
+        <label>Email</label>
+        <input pInputText formControlName="email" type="email" placeholder="email@exemple.com" />
+      </div>
+    </div>
+
+    <div class="form-row">
+      <div class="form-field">
+        <label>Type de pièce *</label>
+        <p-select
+          formControlName="typePiece"
+          [options]="typePieceOptions"
+          optionLabel="label"
+          optionValue="value"
+          placeholder="Type"
+          [class.ng-invalid]="isFieldInvalid('typePiece')"
+        ></p-select>
+        <small class="p-error" *ngIf="isFieldInvalid('typePiece')">Requis</small>
+      </div>
+      <div class="form-field flex-2">
+        <label>Numéro de pièce *</label>
+        <input pInputText formControlName="numeroPiece" placeholder="Numéro" [class.ng-invalid]="isFieldInvalid('numeroPiece')" />
+        <small class="p-error" *ngIf="isFieldInvalid('numeroPiece')">Requis</small>
+      </div>
+    </div>
+
+    <div class="form-row">
+      <div class="form-field">
+        <label>Nationalité</label>
+        <input pInputText formControlName="nationalite" placeholder="Ivoirien, Français..." />
+      </div>
+      <div class="form-field flex-2">
+        <label>Adresse</label>
+        <input pInputText formControlName="adresse" placeholder="Adresse complète" />
+      </div>
+    </div>
+  </form>
+
+  <ng-template pTemplate="footer">
+    <p-button label="Annuler" icon="pi pi-times" styleClass="p-button-text" (onClick)="dialogVisible = false"></p-button>
+    <p-button
+      [label]="editingId ? 'Modifier' : 'Créer'"
+      icon="pi pi-check"
+      styleClass="p-button-success"
+      [loading]="saving"
+      (onClick)="save()"
+    ></p-button>
+  </ng-template>
+</p-dialog>
+
+<p-confirmDialog></p-confirmDialog>
+<p-toast></p-toast>

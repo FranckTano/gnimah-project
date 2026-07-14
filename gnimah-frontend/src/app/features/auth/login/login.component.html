@@ -1,0 +1,54 @@
+<div class="login-container">
+  <div class="login-card">
+    <div class="login-header">
+      <div class="hotel-logo">
+        <i class="pi pi-building text-4xl" style="color:#1e3a5f"></i>
+      </div>
+      <h1>Résidence Hôtel<br><span>GNIMAH</span></h1>
+      <p>Système de Gestion Administrative</p>
+    </div>
+
+    <form [formGroup]="form" (ngSubmit)="onSubmit()">
+      <div class="field">
+        <label for="username">Identifiant</label>
+        <span class="p-input-icon-left w-full">
+          <i class="pi pi-user"></i>
+          <input
+            id="username"
+            type="text"
+            pInputText
+            formControlName="username"
+            placeholder="Nom d'utilisateur"
+            class="w-full"
+          />
+        </span>
+      </div>
+
+      <div class="field">
+        <label for="password">Mot de passe</label>
+        <p-password
+          id="password"
+          formControlName="password"
+          placeholder="Mot de passe"
+          [feedback]="false"
+          [toggleMask]="true"
+          styleClass="w-full"
+          inputStyleClass="w-full"
+        ></p-password>
+      </div>
+
+      <p-button
+        type="submit"
+        label="Se connecter"
+        icon="pi pi-sign-in"
+        [loading]="loading"
+        styleClass="w-full p-button-lg mt-3"
+        [disabled]="form.invalid"
+      ></p-button>
+    </form>
+
+    <div class="login-footer">
+      <small>Abidjan, Abobo — Boulevard Belleville</small>
+    </div>
+  </div>
+</div>

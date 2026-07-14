@@ -1,0 +1,132 @@
+<div class="dashboard">
+  <div class="page-header">
+    <h1><i class="pi pi-home mr-2"></i>Tableau de bord</h1>
+    <p>{{ today | date:'EEEE d MMMM yyyy':'':'fr' }}</p>
+  </div>
+
+  <!-- KPI Cards -->
+  <div class="kpi-grid">
+    <div class="kpi-card kpi-sejours">
+      <div class="kpi-icon"><i class="pi pi-users"></i></div>
+      <div class="kpi-content">
+        <span class="kpi-value">{{ sejoursEnCours.length }}</span>
+        <span class="kpi-label">Séjours en cours</span>
+      </div>
+    </div>
+    <div class="kpi-card kpi-libres">
+      <div class="kpi-icon"><i class="pi pi-check-circle"></i></div>
+      <div class="kpi-content">
+        <span class="kpi-value">{{ chambresLibres }}</span>
+        <span class="kpi-label">Chambres libres</span>
+      </div>
+    </div>
+    <div class="kpi-card kpi-arrivees">
+      <div class="kpi-icon"><i class="pi pi-sign-in"></i></div>
+      <div class="kpi-content">
+        <span class="kpi-value">{{ arriveesDuJour.length }}</span>
+        <span class="kpi-label">Arrivées du jour</span>
+      </div>
+    </div>
+    <div class="kpi-card kpi-departs">
+      <div class="kpi-icon"><i class="pi pi-sign-out"></i></div>
+      <div class="kpi-content">
+        <span class="kpi-value">{{ departsJour.length }}</span>
+        <span class="kpi-label">Départs du jour</span>
+      </div>
+    </div>
+    <ng-container *ngIf="authService.hasDirecteurAccess() && kpi">
+      <div class="kpi-card kpi-ca">
+        <div class="kpi-icon"><i class="pi pi-dollar"></i></div>
+        <div class="kpi-content">
+          <span class="kpi-value">{{ formatCurrency(kpi.chiffreAffaires) }}</span>
+          <span class="kpi-label">CA du jour</span>
+        </div>
+      </div>
+      <div class="kpi-card kpi-taux">
+        <div class="kpi-icon"><i class="pi pi-percentage"></i></div>
+        <div class="kpi-content">
+          <span class="kpi-value">{{ tauxOccupation }}%</span>
+          <span class="kpi-label">Taux d'occupation</span>
+        </div>
+      </div>
+    </ng-container>
+  </div>
+
+  <div class="dashboard-grid">
+    <!-- Séjours en cours -->
+    <div class="dashboard-panel">
+      <div class="panel-header">
+        <h3><i class="pi pi-list mr-2"></i>Séjours en cours</h3>
+        <a routerLink="/sejours" class="p-button p-button-text p-button-sm">Voir tout</a>
+      </div>
+      <p-table [value]="sejoursEnCours" [rows]="5" styleClass="p-datatable-sm" responsiveLayout="scroll">
+        <ng-template pTemplate="header">
+          <tr>
+            <th>N° Reçu</th>
+            <th>Client</th>
+            <th>Chambre</th>
+            <th>Entrée</th>
+            <th>RAP</th>
+          </tr>
+        </ng-template>
+        <ng-template pTemplate="body" let-s>
+          <tr>
+            <td><code>{{ s.numeroRecu }}</code></td>
+            <td>{{ s.clientNom }}</td>
+            <td><p-tag [value]="s.chambreNumero" severity="info"></p-tag></td>
+            <td>{{ s.dateEntree | date:'dd/MM HH:mm' }}</td>
+            <td [class.text-red-500]="s.resteAPayer > 0">
+              {{ formatCurrency(s.resteAPayer) }}
+            </td>
+          </tr>
+        </ng-template>
+        <ng-template pTemplate="emptymessage">
+          <tr><td colspan="5" class="text-center text-500 py-3">Aucun séjour en cours</td></tr>
+        </ng-template>
+      </p-table>
+    </div>
+
+    <!-- Plan des chambres -->
+    <div class="dashboard-panel">
+      <div class="panel-header">
+        <h3><i class="pi pi-th-large mr-2"></i>État des chambres</h3>
+        <a routerLink="/chambres" class="p-button p-button-text p-button-sm">Plan complet</a>
+      </div>
+      <div class="chambre-grid-mini">
+        <div
+          *ngFor="let c of chambres"
+          class="chambre-mini"
+          [class]="'chambre-' + c.etat.toLowerCase()"
+          [pTooltip]="'Chambre ' + c.numero + ' — ' + c.etat"
+        >
+          <span class="chambre-num">{{ c.numero }}</span>
+        </div>
+      </div>
+      <div class="chambre-legend">
+        <span><span class="dot libre"></span>Libre</span>
+        <span><span class="dot occupee"></span>Occupée</span>
+        <span><span class="dot a_nettoyer"></span>À nettoyer</span>
+        <span><span class="dot en_maintenance"></span>Maintenance</span>
+      </div>
+    </div>
+
+    <!-- Arrivées du jour -->
+    <div class="dashboard-panel" *ngIf="arriveesDuJour.length > 0">
+      <div class="panel-header">
+        <h3><i class="pi pi-calendar-plus mr-2"></i>Arrivées attendues</h3>
+      </div>
+      <div class="arrivals-list">
+        <div *ngFor="let r of arriveesDuJour" class="arrival-item">
+          <p-avatar [label]="(r.clientNom || '?').charAt(0)" shape="circle" styleClass="mr-2"></p-avatar>
+          <div class="arrival-info">
+            <span class="arrival-name">{{ r.clientNom }}</span>
+            <span class="arrival-detail">
+              Chambre {{ r.chambreNumero || r.typeChambre }} — {{ r.nbNuits }} nuit(s)
+            </span>
+          </div>
+          <p-tag value="Confirmée" severity="success"></p-tag>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,63 @@
+<div class="app-layout" [class.sidebar-collapsed]="!sidebarVisible">
+  <!-- Sidebar -->
+  <aside class="app-sidebar" [class.visible]="sidebarVisible">
+    <div class="sidebar-brand">
+      <div class="brand-logo">
+        <i class="pi pi-building"></i>
+      </div>
+      <div class="brand-text" *ngIf="sidebarVisible">
+        <span class="brand-name">GNIMAH</span>
+        <span class="brand-sub">Hôtel Management</span>
+      </div>
+    </div>
+
+    <nav class="sidebar-nav">
+      <p-menu [model]="menuItems" styleClass="sidebar-menu"></p-menu>
+    </nav>
+  </aside>
+
+  <!-- Main content -->
+  <div class="app-main">
+    <!-- Header -->
+    <header class="app-header">
+      <div class="header-left">
+        <button
+          pButton
+          type="button"
+          icon="pi pi-bars"
+          class="p-button-text p-button-plain"
+          (click)="toggleSidebar()"
+          pTooltip="Menu"
+        ></button>
+        <div class="breadcrumb-title">
+          <h2>Résidence Hôtel GNIMAH</h2>
+        </div>
+      </div>
+      <div class="header-right">
+        <div class="header-date">
+          <i class="pi pi-calendar mr-2"></i>
+          {{ today | date:'EEEE d MMMM yyyy':'':'fr' }}
+        </div>
+        <div class="user-info" (click)="userMenu.toggle($event)" style="cursor:pointer">
+          <p-avatar
+            [label]="currentUser?.nom?.charAt(0) || 'U'"
+            styleClass="mr-2"
+            shape="circle"
+            [style]="{'background-color':'#1e3a5f','color':'#fff'}"
+          ></p-avatar>
+          <div class="user-details">
+            <span class="user-name">{{ currentUser?.nomComplet }}</span>
+            <span class="user-role p-tag" [class]="getRoleClass()">{{ currentUser?.role }}</span>
+          </div>
+          <i class="pi pi-chevron-down ml-2"></i>
+        </div>
+        <p-menu #userMenu [model]="userMenuItems" [popup]="true"></p-menu>
+      </div>
+    </header>
+
+    <!-- Page content -->
+    <main class="app-content">
+      <router-outlet></router-outlet>
+    </main>
+  </div>
+</div>

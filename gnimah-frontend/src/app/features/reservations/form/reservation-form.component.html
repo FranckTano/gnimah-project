@@ -1,0 +1,96 @@
+<div class="page-header">
+  <h1><i class="pi pi-calendar-plus mr-2"></i>Nouvelle Réservation</h1>
+  <p>Enregistrement d'une réservation client</p>
+</div>
+
+<div class="panel" style="max-width:650px; margin:0 auto">
+  <form [formGroup]="form" (ngSubmit)="save()">
+    <div class="p-fluid">
+
+      <div class="field mb-3">
+        <label class="font-bold">Client <span class="text-red-500">*</span></label>
+        <p-select
+          formControlName="clientId"
+          [options]="clients"
+          optionLabel="nomComplet"
+          optionValue="id"
+          placeholder="Sélectionner un client"
+          [filter]="true"
+          filterBy="nomComplet,telephone"
+          [class.ng-invalid]="isInvalid('clientId')">
+        </p-select>
+        <small *ngIf="isInvalid('clientId')" class="p-error">Client requis</small>
+      </div>
+
+      <div class="grid">
+        <div class="col-6">
+          <div class="field">
+            <label class="font-bold">Chambre spécifique</label>
+            <p-select
+              formControlName="chambreId"
+              [options]="chambres"
+              optionLabel="numero"
+              optionValue="id"
+              placeholder="Choisir une chambre"
+              [showClear]="true">
+            </p-select>
+          </div>
+        </div>
+        <div class="col-6">
+          <div class="field">
+            <label class="font-bold">Ou type de chambre</label>
+            <p-select
+              formControlName="typeChambre"
+              [options]="typesChambres"
+              optionLabel="label"
+              optionValue="value"
+              placeholder="Type souhaité"
+              [showClear]="true">
+            </p-select>
+          </div>
+        </div>
+      </div>
+
+      <div class="grid">
+        <div class="col-6">
+          <div class="field">
+            <label class="font-bold">Date d'arrivée <span class="text-red-500">*</span></label>
+            <p-datepicker
+              formControlName="dateArrivee"
+              dateFormat="dd/mm/yy"
+              [minDate]="today"
+              [class.ng-invalid]="isInvalid('dateArrivee')">
+            </p-datepicker>
+            <small *ngIf="isInvalid('dateArrivee')" class="p-error">Date d'arrivée requise</small>
+          </div>
+        </div>
+        <div class="col-6">
+          <div class="field">
+            <label class="font-bold">Date de départ <span class="text-red-500">*</span></label>
+            <p-datepicker
+              formControlName="dateDepart"
+              dateFormat="dd/mm/yy"
+              [class.ng-invalid]="isInvalid('dateDepart')">
+            </p-datepicker>
+            <small *ngIf="isInvalid('dateDepart')" class="p-error">Date de départ requise</small>
+          </div>
+        </div>
+      </div>
+
+      <div class="field mb-3">
+        <label class="font-bold">Acompte (XOF)</label>
+        <p-inputNumber formControlName="acompte" [min]="0" mode="decimal" locale="fr-CI" suffix=" XOF"></p-inputNumber>
+      </div>
+
+      <div class="field mb-3">
+        <label class="font-bold">Notes</label>
+        <textarea pTextarea formControlName="notes" rows="3" placeholder="Demandes spéciales..."></textarea>
+      </div>
+
+      <div class="flex gap-2">
+        <p-button type="submit" label="Créer la Réservation" icon="pi pi-check" severity="success" [loading]="saving" class="flex-1"></p-button>
+        <p-button type="button" label="Annuler" icon="pi pi-times" severity="secondary" routerLink="/reservations"></p-button>
+      </div>
+    </div>
+  </form>
+</div>

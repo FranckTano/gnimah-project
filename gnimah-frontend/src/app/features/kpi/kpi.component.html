@@ -1,0 +1,112 @@
+<div class="page-header">
+  <h1><i class="pi pi-chart-bar mr-2"></i>Tableau de Bord KPI</h1>
+  <p>Indicateurs de performance de l'établissement</p>
+</div>
+
+<!-- Filtres Date -->
+<div class="panel flex align-items-center gap-2 mb-3">
+  <label class="font-bold">Période :</label>
+  <p-datepicker [(ngModel)]="dateDebut" dateFormat="dd/mm/yy" placeholder="Du" [style]="{'width':'160px'}"></p-datepicker>
+  <p-datepicker [(ngModel)]="dateFin" dateFormat="dd/mm/yy" placeholder="Au" [style]="{'width':'160px'}"></p-datepicker>
+  <p-button label="Filtrer" icon="pi pi-search" severity="info" (onClick)="load()" [loading]="loading"></p-button>
+  <p-button label="Réinitialiser" icon="pi pi-refresh" severity="secondary" (onClick)="resetFiltres()"></p-button>
+</div>
+
+<div *ngIf="kpi" class="grid">
+
+  <!-- CA & Encaissements -->
+  <div class="col-12 md:col-3">
+    <div class="panel text-center">
+      <div class="text-sm font-bold" style="color:#64748b">CHIFFRE D'AFFAIRES</div>
+      <div class="text-3xl font-bold mt-2" style="color:#1e3a5f">{{ formatMontant(kpi.chiffreAffaires) }}</div>
+    </div>
+  </div>
+  <div class="col-12 md:col-3">
+    <div class="panel text-center">
+      <div class="text-sm font-bold" style="color:#64748b">ENCAISSEMENTS</div>
+      <div class="text-3xl font-bold mt-2" style="color:#16a34a">{{ formatMontant(kpi.encaissements) }}</div>
+    </div>
+  </div>
+  <div class="col-12 md:col-3">
+    <div class="panel text-center">
+      <div class="text-sm font-bold" style="color:#64748b">RESTE À PAYER</div>
+      <div class="text-3xl font-bold mt-2" style="color:#dc2626">{{ formatMontant(kpi.resteAPayer) }}</div>
+    </div>
+  </div>
+  <div class="col-12 md:col-3">
+    <div class="panel text-center">
+      <div class="text-sm font-bold" style="color:#64748b">PANIER MOYEN</div>
+      <div class="text-3xl font-bold mt-2" style="color:#7c3aed">{{ formatMontant(kpi.panierMoyen) }}</div>
+    </div>
+  </div>
+
+  <!-- KPI Hôtels -->
+  <div class="col-12 md:col-4">
+    <div class="panel text-center">
+      <div class="text-sm font-bold" style="color:#64748b">TAUX D'OCCUPATION</div>
+      <div class="text-4xl font-bold mt-2" style="color:#0891b2">{{ formatPct(kpi.tauxOccupation) }}</div>
+      <p-progressBar [value]="kpi.tauxOccupation" [style]="{height:'8px', marginTop:'8px'}"></p-progressBar>
+    </div>
+  </div>
+  <div class="col-12 md:col-4">
+    <div class="panel text-center">
+      <div class="text-sm font-bold" style="color:#64748b">ADR (Prix moyen/nuit)</div>
+      <div class="text-4xl font-bold mt-2" style="color:#d97706">{{ formatMontant(kpi.adr) }}</div>
+    </div>
+  </div>
+  <div class="col-12 md:col-4">
+    <div class="panel text-center">
+      <div class="text-sm font-bold" style="color:#64748b">RevPAR</div>
+      <div class="text-4xl font-bold mt-2" style="color:#9333ea">{{ formatMontant(kpi.revPar) }}</div>
+    </div>
+  </div>
+
+  <!-- Chambres -->
+  <div class="col-12 md:col-4">
+    <div class="panel">
+      <h3 class="mb-3">État des chambres</h3>
+      <p-chart type="doughnut" [data]="chartOccupation" [style]="{height:'220px'}"></p-chart>
+      <div class="mt-3 text-sm">
+        <div class="flex justify-content-between mb-1"><span>Total chambres</span><strong>{{ kpi.totalChambres }}</strong></div>
+        <div class="flex justify-content-between mb-1" style="color:#22c55e"><span>Libres</span><strong>{{ kpi.chambresLibres }}</strong></div>
+        <div class="flex justify-content-between mb-1" style="color:#ef4444"><span>Occupées</span><strong>{{ kpi.chambresOccupees }}</strong></div>
+        <div class="flex justify-content-between mb-1" style="color:#f59e0b"><span>À nettoyer</span><strong>{{ kpi.chambresANettoyer }}</strong></div>
+        <div class="flex justify-content-between" style="color:#8b5cf6"><span>Maintenance</span><strong>{{ kpi.chambresEnMaintenance }}</strong></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- CA par jour -->
+  <div class="col-12 md:col-8">
+    <div class="panel">
+      <h3 class="mb-3">Chiffre d'affaires par jour</h3>
+      <p-chart *ngIf="chartCA" type="line" [data]="chartCA" [options]="chartOptions" [style]="{height:'250px'}"></p-chart>
+      <div *ngIf="!chartCA" class="text-center" style="padding:2rem; color:#94a3b8">Aucune donnée de CA disponible</div>
+    </div>
+  </div>
+
+  <!-- Stats séjours & réservations -->
+  <div class="col-12 md:col-6">
+    <div class="panel">
+      <h3 class="mb-3">Séjours</h3>
+      <div class="flex justify-content-between mb-2"><span>Total séjours</span><strong>{{ kpi.totalSejours }}</strong></div>
+      <div class="flex justify-content-between mb-2"><span>Durée moy. séjour (ALOS)</span><strong>{{ kpi.alos.toFixed(1) }} nuits</strong></div>
+      <div class="flex justify-content-between mb-2"><span>Nouveaux clients</span><strong>{{ kpi.nouveauxClients }}</strong></div>
+      <div class="flex justify-content-between"><span>Clients fidèles</span><strong>{{ kpi.clientsFideles }}</strong></div>
+    </div>
+  </div>
+  <div class="col-12 md:col-6">
+    <div class="panel">
+      <h3 class="mb-3">Réservations</h3>
+      <div class="flex justify-content-between mb-2"><span>Total réservations</span><strong>{{ kpi.reservationsTotal }}</strong></div>
+      <div class="flex justify-content-between mb-2"><span>Annulées</span><strong style="color:#dc2626">{{ kpi.reservationsAnnulees }}</strong></div>
+      <div class="flex justify-content-between mb-2"><span>No-show</span><strong style="color:#f59e0b">{{ kpi.reservationsNoShow }}</strong></div>
+      <div class="flex justify-content-between"><span>Taux de conversion</span><strong>{{ formatPct(kpi.tauxConversion) }}</strong></div>
+    </div>
+  </div>
+
+</div>
+
+<div *ngIf="loading && !kpi" class="text-center" style="padding:3rem">
+  <i class="pi pi-spin pi-spinner" style="font-size:2rem; color:#1e3a5f"></i>
+</div>

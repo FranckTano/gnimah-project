@@ -1,0 +1,58 @@
+<div class="page-header">
+  <h1><i class="pi pi-credit-card mr-2"></i>Paiements & Encaissements</h1>
+  <p>Historique de tous les paiements</p>
+</div>
+
+<div class="panel">
+  <p-table
+    [value]="paiements"
+    [lazy]="true"
+    [loading]="loading"
+    [paginator]="true"
+    [rows]="rows"
+    [totalRecords]="totalRecords"
+    [rowsPerPageOptions]="[10, 20, 50]"
+    (onLazyLoad)="load($event)"
+    styleClass="p-datatable-sm p-datatable-striped"
+    responsiveLayout="scroll">
+
+    <ng-template pTemplate="header">
+      <tr>
+        <th>N° Reçu</th>
+        <th>Client</th>
+        <th>Chambre</th>
+        <th>Mode de paiement</th>
+        <th>Date & Heure</th>
+        <th>Montant</th>
+        <th>Reçu PDF</th>
+      </tr>
+    </ng-template>
+
+    <ng-template pTemplate="body" let-p>
+      <tr>
+        <td><code>{{ p.numeroRecu }}</code></td>
+        <td class="font-bold">{{ p.clientNom }}</td>
+        <td>{{ p.numeroChambre }}</td>
+        <td>
+          <p-tag [value]="modeLabels[p.modePaiement] || p.modePaiement" severity="info"></p-tag>
+        </td>
+        <td>{{ p.dateHeure | date:'dd/MM/yyyy HH:mm' }}</td>
+        <td class="font-bold" style="color:#16a34a">{{ formatMontant(p.montant) }}</td>
+        <td>
+          <p-button
+            icon="pi pi-download"
+            label="PDF"
+            size="small"
+            severity="secondary"
+            [loading]="downloadingId === p.id"
+            (onClick)="telechargerRecu(p)">
+          </p-button>
+        </td>
+      </tr>
+    </ng-template>
+
+    <ng-template pTemplate="emptymessage">
+      <tr><td colspan="7" class="text-center" style="padding:2rem">Aucun paiement enregistré</td></tr>
+    </ng-template>
+  </p-table>
+</div>
