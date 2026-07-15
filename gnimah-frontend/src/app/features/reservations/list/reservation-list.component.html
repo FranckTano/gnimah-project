@@ -1,87 +1,62 @@
-<div class="page-header">
-  <h1><i class="pi pi-calendar mr-2"></i>Réservations</h1>
-  <p>Gestion des réservations clients</p>
-</div>
+<div class="gn-route">
+  <div class="gn-resv">
+    <div class="gn-card" style="padding:18px;"><div style="display:flex;align-items:center;gap:8px;font-size:13px;color:#8a7a7e;"><span class="gn-dot c-green"></span>Confirmées</div><div class="gn-serif" style="font-size:32px;color:#2e2024;margin-top:8px;">{{ statCount.confirmees }}</div></div>
+    <div class="gn-card" style="padding:18px;"><div style="display:flex;align-items:center;gap:8px;font-size:13px;color:#8a7a7e;"><span class="gn-dot c-gold"></span>En attente</div><div class="gn-serif" style="font-size:32px;color:#2e2024;margin-top:8px;">{{ statCount.enAttente }}</div></div>
+    <div class="gn-card" style="padding:18px;"><div style="display:flex;align-items:center;gap:8px;font-size:13px;color:#8a7a7e;"><span class="gn-dot c-wine"></span>Arrivées</div><div class="gn-serif" style="font-size:32px;color:#2e2024;margin-top:8px;">{{ statCount.arrivees }}</div></div>
+    <div class="gn-card" style="padding:18px;"><div style="display:flex;align-items:center;gap:8px;font-size:13px;color:#8a7a7e;"><span class="gn-dot c-gray"></span>Annulées</div><div class="gn-serif" style="font-size:32px;color:#2e2024;margin-top:8px;">{{ statCount.annulees }}</div></div>
+    <div class="gn-card" style="padding:18px;"><div style="display:flex;align-items:center;gap:8px;font-size:13px;color:#8a7a7e;"><span class="gn-dot c-red"></span>No-show</div><div class="gn-serif" style="font-size:32px;color:#2e2024;margin-top:8px;">{{ statCount.noShow }}</div></div>
+  </div>
 
-<div class="panel">
-  <p-toolbar>
-    <ng-template pTemplate="start">
-      <a routerLink="/reservations/new">
-        <p-button label="Nouvelle Réservation" icon="pi pi-plus" severity="success"></p-button>
+  <div class="gn-card" style="padding:22px;margin-top:18px;">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
+      <div class="gn-serif" style="font-size:18px;color:#2e2024;">Réservations</div>
+      <a routerLink="/reservations/new" class="gn-btn-p" style="padding:9px 16px;font-size:13px;text-decoration:none;">
+        <i class="ti ti-plus"></i>Nouvelle réservation
       </a>
-    </ng-template>
-  </p-toolbar>
+    </div>
 
-  <p-table
-    [value]="reservations"
-    [lazy]="true"
-    [loading]="loading"
-    [paginator]="true"
-    [rows]="rows"
-    [totalRecords]="totalRecords"
-    [rowsPerPageOptions]="[10, 20, 50]"
-    (onLazyLoad)="load($event)"
-    styleClass="p-datatable-sm p-datatable-striped"
-    responsiveLayout="scroll">
-
-    <ng-template pTemplate="header">
-      <tr>
-        <th>N° Réservation</th>
-        <th>Client</th>
-        <th>Chambre</th>
-        <th>Arrivée</th>
-        <th>Départ</th>
-        <th>Nuits</th>
-        <th>Montant Prévu</th>
-        <th>Acompte</th>
-        <th>Statut</th>
-        <th>Actions</th>
-      </tr>
-    </ng-template>
-
-    <ng-template pTemplate="body" let-r>
-      <tr>
-        <td><code>{{ r.numeroReservation }}</code></td>
-        <td>
-          <div class="font-bold">{{ r.clientNom }}</div>
-          <small style="color:#64748b">{{ r.clientTelephone }}</small>
-        </td>
-        <td>{{ r.chambreNumero || r.typeChambre }}</td>
-        <td>{{ r.dateArrivee | date:'dd/MM/yyyy' }}</td>
-        <td>{{ r.dateDepart | date:'dd/MM/yyyy' }}</td>
-        <td>{{ r.nbNuits }}</td>
-        <td>{{ formatMontant(r.montantPrevu) }}</td>
-        <td>{{ formatMontant(r.acompte) }}</td>
-        <td>
-          <p-tag [value]="statutLabels[r.statut]" [severity]="getStatutSeverity(r.statut)"></p-tag>
-        </td>
-        <td>
-          <div class="flex gap-1">
-            <p-button
-              *ngIf="r.statut === 'EN_ATTENTE'"
-              icon="pi pi-check"
-              tooltip="Confirmer"
-              size="small"
-              severity="success"
-              (onClick)="confirmer(r)">
-            </p-button>
-            <p-button
-              *ngIf="r.statut !== 'ANNULEE' && r.statut !== 'ARRIVEE'"
-              icon="pi pi-times"
-              tooltip="Annuler"
-              size="small"
-              severity="danger"
-              (onClick)="annuler(r)">
-            </p-button>
-          </div>
-        </td>
-      </tr>
-    </ng-template>
-
-    <ng-template pTemplate="emptymessage">
-      <tr><td colspan="10" class="text-center" style="padding:2rem">Aucune réservation trouvée</td></tr>
-    </ng-template>
-  </p-table>
+    <div class="gn-tw">
+      <p-table [value]="reservations" [lazy]="true" [loading]="loading" [paginator]="true" [rows]="rows"
+        [totalRecords]="totalRecords" [rowsPerPageOptions]="[10,20,50]" (onLazyLoad)="load($event)"
+        styleClass="gn-ptable" responsiveLayout="scroll">
+        <ng-template pTemplate="header">
+          <tr>
+            <th class="gn-th">Client</th>
+            <th class="gn-th">Chambre</th>
+            <th class="gn-th">Arrivée</th>
+            <th class="gn-th">Départ</th>
+            <th class="gn-th">Montant / Acompte</th>
+            <th class="gn-th">Statut</th>
+            <th class="gn-th">Actions</th>
+          </tr>
+        </ng-template>
+        <ng-template pTemplate="body" let-r>
+          <tr class="gn-rowh">
+            <td>
+              <div style="display:flex;align-items:center;gap:11px;">
+                <div class="gn-av deep" style="width:38px;height:38px;font-size:12.5px;">{{ initials(r.clientNom) }}</div>
+                <div><div style="font-weight:600;font-size:14px;color:#3a2c30;">{{ r.clientNom }}</div><div style="font-size:12px;color:#a99a9d;">{{ r.clientTelephone }}</div></div>
+              </div>
+            </td>
+            <td style="font-size:14px;color:#4d3f43;font-weight:500;">{{ r.chambreNumero || r.typeChambre }}</td>
+            <td style="font-size:13.5px;color:#6d585d;">{{ r.dateArrivee | date:'dd/MM/yyyy' }}</td>
+            <td style="font-size:13.5px;color:#6d585d;">{{ r.dateDepart | date:'dd/MM/yyyy' }}</td>
+            <td style="font-size:13px;color:#6d585d;">{{ formatMontant(r.montantPrevu) }} <span style="color:#c9b0b6;">/ {{ formatMontant(r.acompte) }}</span></td>
+            <td><span class="gn-bdg" [ngClass]="statutTone(r.statut)">{{ statutLabels[r.statut] }}</span></td>
+            <td>
+              <div style="display:flex;gap:6px;">
+                <button *ngIf="r.statut === 'EN_ATTENTE'" class="gn-icobtn" style="width:32px;height:32px;font-size:14px;color:#2f9e6f;" title="Confirmer" (click)="confirmer(r)"><i class="ti ti-check"></i></button>
+                <button *ngIf="r.statut !== 'ANNULEE' && r.statut !== 'ARRIVEE'" class="gn-icobtn" style="width:32px;height:32px;font-size:14px;color:#d0455a;" title="Annuler" (click)="annuler(r)"><i class="ti ti-x"></i></button>
+              </div>
+            </td>
+          </tr>
+        </ng-template>
+        <ng-template pTemplate="emptymessage">
+          <tr><td colspan="7" class="gn-empty" style="text-align:center;">Aucune réservation trouvée</td></tr>
+        </ng-template>
+      </p-table>
+    </div>
+  </div>
 </div>
 
 <p-confirmDialog></p-confirmDialog>

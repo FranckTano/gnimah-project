@@ -18,6 +18,9 @@ public class ChambreResponse {
     private int etage;
     private String description;
     private String equipements;
+    private String vue;
+    private String observations;
+    private String photos;
     private boolean actif;
     private boolean disponible;
 }

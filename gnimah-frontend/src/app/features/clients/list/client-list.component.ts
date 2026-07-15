@@ -4,6 +4,7 @@ import { Router } from '@angular/router';
 import { ConfirmationService, MessageService } from 'primeng/api';
 import { ClientService } from '../../../core/services/client.service';
 import { ClientRequest, ClientResponse } from '../../../core/models/client.model';
+import { PageHeaderService } from '../../../core/services/page-header.service';
 
 @Component({
   selector: 'app-client-list',
@@ -45,12 +46,25 @@ export class ClientListComponent implements OnInit {
     private confirmationService: ConfirmationService,
     private messageService: MessageService,
     private router: Router,
-    private fb: FormBuilder
+    private fb: FormBuilder,
+    private pageHeaderService: PageHeaderService
   ) {}
 
   ngOnInit(): void {
+    this.pageHeaderService.set('Fiches clients', 'Base clients et historique des séjours');
     this.initForm();
     this.loadClients();
+  }
+
+  initials(client: ClientResponse): string {
+    return (client.nomComplet || '?').split(' ').filter(Boolean).map(p => p.charAt(0)).join('').slice(0, 2).toUpperCase();
+  }
+
+  sinceLabel(client: ClientResponse): string {
+    if (!client.createdAt) return '';
+    const year = new Date(client.createdAt).getFullYear();
+    const thisYear = new Date().getFullYear();
+    return year === thisYear ? 'Nouveau' : `Client depuis ${year}`;
   }
 
   initForm(): void {

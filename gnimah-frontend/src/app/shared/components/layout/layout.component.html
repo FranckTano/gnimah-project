@@ -1,62 +1,62 @@
-<div class="app-layout" [class.sidebar-collapsed]="!sidebarVisible">
-  <!-- Sidebar -->
-  <aside class="app-sidebar" [class.visible]="sidebarVisible">
-    <div class="sidebar-brand">
-      <div class="brand-logo">
-        <i class="pi pi-building"></i>
-      </div>
-      <div class="brand-text" *ngIf="sidebarVisible">
-        <span class="brand-name">GNIMAH</span>
-        <span class="brand-sub">Hôtel Management</span>
+<div class="gn-shell">
+  <div class="gn-backdrop" [class.open]="drawerOpen" (click)="closeDrawer()"></div>
+
+  <aside class="gn-side" [class.open]="drawerOpen">
+    <div class="gn-brand">
+      <div class="gn-logo gn-serif">G</div>
+      <div>
+        <div class="gn-brandname gn-serif">GNIMAH</div>
+        <div class="gn-slabel gn-brandsub">Résidence Hôtelière</div>
       </div>
     </div>
 
-    <nav class="sidebar-nav">
-      <p-menu [model]="menuItems" styleClass="sidebar-menu"></p-menu>
+    <nav class="gn-nav">
+      <div class="gn-navsection" *ngFor="let sec of navSections">
+        <div class="gn-slabel gn-secname">{{ sec.label }}</div>
+        <a
+          *ngFor="let it of sec.items"
+          class="gn-navitem"
+          [routerLink]="it.link"
+          routerLinkActive="on"
+          [routerLinkActiveOptions]="{ exact: false }"
+          (click)="closeDrawer()"
+        >
+          <i class="ti" [ngClass]="it.icon"></i><span>{{ it.label }}</span>
+        </a>
+      </div>
     </nav>
+
+    <div class="gn-userbox-wrap">
+      <div class="gn-userbox">
+        <div class="gn-av gold" style="width:38px;height:38px;font-size:13px;">{{ userInitials }}</div>
+        <div class="gn-userinfo">
+          <div class="gn-username">{{ currentUser?.nomComplet }}</div>
+          <div class="gn-userrole">{{ roleLabel }}</div>
+        </div>
+        <button class="gn-logoutbtn" (click)="logout()" title="Déconnexion"><i class="ti ti-logout-2"></i></button>
+      </div>
+    </div>
   </aside>
 
-  <!-- Main content -->
-  <div class="app-main">
-    <!-- Header -->
-    <header class="app-header">
-      <div class="header-left">
-        <button
-          pButton
-          type="button"
-          icon="pi pi-bars"
-          class="p-button-text p-button-plain"
-          (click)="toggleSidebar()"
-          pTooltip="Menu"
-        ></button>
-        <div class="breadcrumb-title">
-          <h2>Résidence Hôtel GNIMAH</h2>
-        </div>
+  <div class="gn-main">
+    <header class="gn-topbar">
+      <button class="gn-icobtn gn-ham" (click)="toggleDrawer()"><i class="ti ti-menu-2"></i></button>
+      <div class="gn-titlewrap">
+        <div class="gn-serif gn-pagetitle">{{ pageTitle }}</div>
+        <div class="gn-pagesub gn-hideSm">{{ pageSub }}</div>
       </div>
-      <div class="header-right">
-        <div class="header-date">
-          <i class="pi pi-calendar mr-2"></i>
-          {{ today | date:'EEEE d MMMM yyyy':'':'fr' }}
-        </div>
-        <div class="user-info" (click)="userMenu.toggle($event)" style="cursor:pointer">
-          <p-avatar
-            [label]="currentUser?.nom?.charAt(0) || 'U'"
-            styleClass="mr-2"
-            shape="circle"
-            [style]="{'background-color':'#1e3a5f','color':'#fff'}"
-          ></p-avatar>
-          <div class="user-details">
-            <span class="user-name">{{ currentUser?.nomComplet }}</span>
-            <span class="user-role p-tag" [class]="getRoleClass()">{{ currentUser?.role }}</span>
-          </div>
-          <i class="pi pi-chevron-down ml-2"></i>
-        </div>
-        <p-menu #userMenu [model]="userMenuItems" [popup]="true"></p-menu>
+      <div class="gn-search gn-hideSm">
+        <i class="ti ti-search"></i>
+        <input class="gn-input" placeholder="Rechercher client, reçu, chambre…" />
+      </div>
+      <button class="gn-icobtn gn-bell"><i class="ti ti-bell"></i><span class="gn-bell-dot"></span></button>
+      <div class="gn-hideSm gn-dateinfo">
+        <div class="gn-date">{{ today | date:'EEEE d MMMM yyyy':'':'fr' }}</div>
+        <div class="gn-city">Abidjan</div>
       </div>
     </header>
 
-    <!-- Page content -->
-    <main class="app-content">
+    <main class="gn-body">
       <router-outlet></router-outlet>
     </main>
   </div>

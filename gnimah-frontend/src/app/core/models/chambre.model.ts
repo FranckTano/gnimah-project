@@ -1,6 +1,8 @@
 export type EtatChambre = 'LIBRE' | 'OCCUPEE' | 'A_NETTOYER' | 'EN_MAINTENANCE' | 'HORS_SERVICE';
 export type TypeChambre = 'STANDARD' | 'SUPERIEURE' | 'DELUXE' | 'SUITE' | 'FAMILIALE';
 
+export type VueChambre = 'MER' | 'JARDIN' | 'PISCINE' | 'RUE' | 'COUR';
+
 export interface ChambreRequest {
   numero: string;
   type: TypeChambre;
@@ -11,6 +13,9 @@ export interface ChambreRequest {
   etage?: number;
   description?: string;
   equipements?: string;
+  vue?: string;
+  observations?: string;
+  photos?: string;
 }
 
 export interface ChambreResponse {
@@ -24,6 +29,9 @@ export interface ChambreResponse {
   etage: number;
   description: string;
   equipements: string;
+  vue: string;
+  observations: string;
+  photos: string;
   actif: boolean;
   disponible: boolean;
 }

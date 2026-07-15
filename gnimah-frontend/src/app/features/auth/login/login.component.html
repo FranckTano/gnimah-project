@@ -1,54 +1,56 @@
-<div class="login-container">
-  <div class="login-card">
-    <div class="login-header">
-      <div class="hotel-logo">
-        <i class="pi pi-building text-4xl" style="color:#1e3a5f"></i>
+<div class="gn-login">
+  <div class="gn-login-hero">
+    <div class="gn-hero-glow"></div>
+    <div class="gn-hero-brand">
+      <div class="gn-hero-logo gn-serif">G</div>
+      <div>
+        <div class="gn-serif gn-hero-name">GNIMAH</div>
+        <div class="gn-slabel gn-hero-sub">Résidence Hôtelière</div>
       </div>
-      <h1>Résidence Hôtel<br><span>GNIMAH</span></h1>
-      <p>Système de Gestion Administrative</p>
     </div>
+    <div class="gn-hero-pitch">
+      <div class="gn-slabel" style="color:#c78a98;">Gestion administrative</div>
+      <h1 class="gn-serif gn-hero-title">Chaque séjour,<br>chaque reçu, chaque<br>chambre — au<br>même endroit.</h1>
+      <p class="gn-hero-text">Fini les registres papier. Enregistrez, facturez et pilotez la Résidence Hôtel GNIMAH en temps réel, du comptoir de réception à la direction.</p>
+    </div>
+    <div class="gn-hero-stats">
+      <div><div class="gn-serif gn-stat-val">24</div><div class="gn-slabel gn-stat-lbl">Chambres</div></div>
+      <div class="gn-hero-sep"></div>
+      <div><div class="gn-serif gn-stat-val">100%</div><div class="gn-slabel gn-stat-lbl">Dématérialisé</div></div>
+      <div class="gn-hero-sep"></div>
+      <div><div class="gn-serif gn-stat-val">FCFA</div><div class="gn-slabel gn-stat-lbl">Multi-paiement</div></div>
+    </div>
+    <div class="gn-hero-addr">Abobo · Boulevard Belleville · Abidjan, Côte d'Ivoire</div>
+  </div>
 
-    <form [formGroup]="form" (ngSubmit)="onSubmit()">
-      <div class="field">
-        <label for="username">Identifiant</label>
-        <span class="p-input-icon-left w-full">
-          <i class="pi pi-user"></i>
-          <input
-            id="username"
-            type="text"
-            pInputText
-            formControlName="username"
-            placeholder="Nom d'utilisateur"
-            class="w-full"
-          />
-        </span>
-      </div>
+  <div class="gn-login-formwrap">
+    <div class="gn-login-form">
+      <h2 class="gn-serif gn-welcome">Bienvenue</h2>
+      <p class="gn-welcome-sub">Connectez-vous à votre espace de gestion.</p>
 
-      <div class="field">
-        <label for="password">Mot de passe</label>
-        <p-password
-          id="password"
-          formControlName="password"
-          placeholder="Mot de passe"
-          [feedback]="false"
-          [toggleMask]="true"
-          styleClass="w-full"
-          inputStyleClass="w-full"
-        ></p-password>
-      </div>
+      <form [formGroup]="form" (ngSubmit)="onSubmit()">
+        <label class="gn-flabel">Identifiant</label>
+        <div class="gn-field-icon">
+          <i class="ti ti-user"></i>
+          <input class="gn-input" formControlName="username" placeholder="Nom d'utilisateur" autocomplete="username" />
+        </div>
 
-      <p-button
-        type="submit"
-        label="Se connecter"
-        icon="pi pi-sign-in"
-        [loading]="loading"
-        styleClass="w-full p-button-lg mt-3"
-        [disabled]="form.invalid"
-      ></p-button>
-    </form>
+        <label class="gn-flabel">Mot de passe</label>
+        <div class="gn-field-icon">
+          <i class="ti ti-lock"></i>
+          <input class="gn-input" type="password" formControlName="password" placeholder="Mot de passe" autocomplete="current-password" />
+        </div>
 
-    <div class="login-footer">
-      <small>Abidjan, Abobo — Boulevard Belleville</small>
+        <div class="gn-remember-row">
+          <label class="gn-remember"><input type="checkbox" /> Se souvenir</label>
+          <a href="javascript:void(0)" class="gn-forgot">Mot de passe oublié ?</a>
+        </div>
+
+        <button type="submit" class="gn-btn-p gn-submit" [disabled]="form.invalid || loading">
+          <i class="ti ti-loader-2 gn-spin" *ngIf="loading"></i>
+          <span>Se connecter</span>
+        </button>
+      </form>
     </div>
   </div>
 </div>

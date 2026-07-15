@@ -1,0 +1,49 @@
+/* ============================================================
+   Vendeur.ci — Espacement, rayons, hauteurs de contrôle
+   Coins TRÈS arrondis (mobile friendly).
+   (Ombres, anneaux de focus et motion vivent dans effects.css.)
+   ============================================================ */
+:root {
+  /* ---------- Espacement (base 4px) ---------- */
+  --space-0: 0; /* @kind spacing */
+  --space-1: 4px; /* @kind spacing */
+  --space-2: 8px; /* @kind spacing */
+  --space-3: 12px; /* @kind spacing */
+  --space-4: 16px; /* @kind spacing */
+  --space-5: 20px; /* @kind spacing */
+  --space-6: 24px; /* @kind spacing */
+  --space-7: 28px; /* @kind spacing */
+  --space-8: 32px; /* @kind spacing */
+  --space-10: 40px; /* @kind spacing */
+  --space-12: 48px; /* @kind spacing */
+  --space-16: 64px; /* @kind spacing */
+
+  /* Marges d'écran mobile */
+  --gutter: 16px; /* @kind spacing */
+  --section-gap: 18px; /* @kind spacing */
+
+  /* ---------- Rayons (très arrondis) ---------- */
+  --radius-xs: 8px; /* @kind radius */
+  --radius-sm: 12px; /* @kind radius */
+  --radius-photo: 14px; /* @kind radius */
+  --radius-md: 16px; /* @kind radius */
+  --radius-lg: 22px; /* @kind radius */
+  --radius-xl: 26px; /* @kind radius */
+  --radius-2xl: 32px; /* @kind radius */
+  --radius-pill: 100px; /* @kind radius */
+  --radius-full: 9999px; /* @kind radius */
+
+  /* ---------- Hauteurs de contrôle (hit targets >= 44px) ---------- */
+  --control-h-sm: 40px; /* @kind spacing */
+  --control-h-md: 48px; /* @kind spacing */
+  --control-h-lg: 52px; /* @kind spacing */
+  --bottomnav-h: 70px; /* @kind spacing */
+  --tap-min: 44px; /* @kind spacing */
+
+  /* ---------- Z-index ---------- */
+  --z-nav: 100; /* @kind other */
+  --z-fab: 200; /* @kind other */
+  --z-sheet: 300; /* @kind other */
+  --z-toast: 400; /* @kind other */
+  --z-overlay: 290; /* @kind other */
+}

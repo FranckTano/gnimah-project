@@ -26,11 +26,13 @@ public class UtilisateurController {
     private final PasswordEncoder passwordEncoder;
 
     @GetMapping
+    @PreAuthorize("hasAnyRole('DIRECTEUR','ADMIN')")
     public ResponseEntity<List<Utilisateur>> findAll() {
         return ResponseEntity.ok(utilisateurRepository.findAll());
     }
 
     @GetMapping("/{id}")
+    @PreAuthorize("hasAnyRole('DIRECTEUR','ADMIN')")
     public ResponseEntity<Utilisateur> getById(@PathVariable Long id) {
         return ResponseEntity.ok(utilisateurRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Utilisateur", id)));

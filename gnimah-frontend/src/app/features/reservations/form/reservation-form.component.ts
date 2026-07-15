@@ -7,6 +7,7 @@ import { ChambreService } from '../../../core/services/chambre.service';
 import { ClientResponse } from '../../../core/models/client.model';
 import { ChambreResponse } from '../../../core/models/chambre.model';
 import { MessageService } from 'primeng/api';
+import { PageHeaderService } from '../../../core/services/page-header.service';
 
 @Component({
   selector: 'app-reservation-form',
@@ -20,7 +21,7 @@ export class ReservationFormComponent implements OnInit {
   chambres: ChambreResponse[] = [];
   saving = false;
   loading = false;
-  today = new Date();
+  today = new Date().toISOString().split('T')[0];
 
   typesChambres = [
     { label: 'Standard', value: 'STANDARD' },
@@ -36,16 +37,18 @@ export class ReservationFormComponent implements OnInit {
     private clientService: ClientService,
     private chambreService: ChambreService,
     private messageService: MessageService,
-    private router: Router
+    private router: Router,
+    private pageHeaderService: PageHeaderService
   ) {}
 
   ngOnInit(): void {
+    this.pageHeaderService.set('Nouvelle réservation', 'Enregistrement d\'une réservation client');
     this.form = this.fb.group({
       clientId: [null, Validators.required],
       chambreId: [null],
       typeChambre: [null],
-      dateArrivee: [null, Validators.required],
-      dateDepart: [null, Validators.required],
+      dateArrivee: ['', Validators.required],
+      dateDepart: ['', Validators.required],
       acompte: [0],
       notes: ['']
     });
@@ -61,12 +64,7 @@ export class ReservationFormComponent implements OnInit {
   save(): void {
     if (this.form.invalid) { this.form.markAllAsTouched(); return; }
     this.saving = true;
-    const v = this.form.value;
-    const request = {
-      ...v,
-      dateArrivee: v.dateArrivee instanceof Date ? v.dateArrivee.toISOString().split('T')[0] : v.dateArrivee,
-      dateDepart: v.dateDepart instanceof Date ? v.dateDepart.toISOString().split('T')[0] : v.dateDepart
-    };
+    const request = this.form.value;
     this.reservationService.create(request).subscribe({
       next: (res) => {
         this.messageService.add({ severity: 'success', summary: 'Réservation créée', detail: `N° ${res.numeroReservation}` });

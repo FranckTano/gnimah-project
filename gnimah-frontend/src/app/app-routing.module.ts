@@ -36,8 +36,8 @@ const routes: Routes = [
       { path: 'paiements', component: PaiementsComponent },
       { path: 'entretien', component: EntretienComponent },
       { path: 'evenements', component: EvenementsComponent },
-      { path: 'kpi', component: KpiComponent },
-      { path: 'administration/utilisateurs', component: UtilisateursComponent }
+      { path: 'kpi', component: KpiComponent, canActivate: [AuthGuard], data: { role: 'DIRECTEUR' } },
+      { path: 'administration/utilisateurs', component: UtilisateursComponent, canActivate: [AuthGuard], data: { role: 'ADMIN' } }
     ]
   },
   { path: '**', redirectTo: 'dashboard' }

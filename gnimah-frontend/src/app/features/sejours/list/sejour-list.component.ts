@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { SejourService } from '../../../core/services/sejour.service';
 import { SejourResponse } from '../../../core/models/sejour.model';
 import { MessageService, ConfirmationService } from 'primeng/api';
+import { PageHeaderService } from '../../../core/services/page-header.service';
 
 @Component({
   selector: 'app-sejour-list',
@@ -21,10 +22,14 @@ export class SejourListComponent implements OnInit {
   constructor(
     private sejourService: SejourService,
     private messageService: MessageService,
-    private confirmationService: ConfirmationService
+    private confirmationService: ConfirmationService,
+    private pageHeaderService: PageHeaderService
   ) {}
 
-  ngOnInit(): void { this.load(); }
+  ngOnInit(): void {
+    this.pageHeaderService.set('Séjours en cours', 'Liste de tous les séjours enregistrés');
+    this.load();
+  }
 
   load(event?: any): void {
     if (event) {
@@ -73,11 +78,15 @@ export class SejourListComponent implements OnInit {
     return new Intl.NumberFormat('fr-CI', { style: 'currency', currency: 'XOF', maximumFractionDigits: 0 }).format(v || 0);
   }
 
-  getStatutSeverity(statut: string): string {
-    return { EN_COURS: 'info', TERMINE: 'success', ANNULE: 'danger' }[statut] || 'secondary';
+  statutTone(statut: string): string {
+    return { EN_COURS: 'wine', TERMINE: 'green', ANNULE: 'red' }[statut] || 'gray';
   }
 
   getStatutLabel(statut: string): string {
     return { EN_COURS: 'En cours', TERMINE: 'Terminé', ANNULE: 'Annulé' }[statut] || statut;
+  }
+
+  initials(name: string): string {
+    return (name || '?').split(' ').filter(Boolean).map(p => p.charAt(0)).join('').slice(0, 2).toUpperCase();
   }
 }

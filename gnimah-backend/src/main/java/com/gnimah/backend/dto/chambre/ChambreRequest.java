@@ -23,4 +23,7 @@ public class ChambreRequest {
     private int etage;
     private String description;
     private String equipements;
+    private String vue;
+    private String observations;
+    private String photos;
 }

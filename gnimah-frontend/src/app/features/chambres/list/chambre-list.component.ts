@@ -1,7 +1,8 @@
 import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
-import { MessageService } from 'primeng/api';
+import { MessageService, ConfirmationService } from 'primeng/api';
 import { ChambreService } from '../../../core/services/chambre.service';
+import { PageHeaderService } from '../../../core/services/page-header.service';
 import {
   ChambreRequest,
   ChambreResponse,
@@ -24,6 +25,12 @@ export class ChambreListComponent implements OnInit {
   editingId: number | null = null;
   saving = false;
 
+  // Filters
+  search = '';
+  filtreType: TypeChambre | '' = '';
+  filtreEtage: number | '' = '';
+  filtreEtat: EtatChambre | '' = '';
+
   form!: FormGroup;
 
   typeOptions: { label: string; value: TypeChambre }[] = [
@@ -32,6 +39,15 @@ export class ChambreListComponent implements OnInit {
     { label: 'Deluxe', value: 'DELUXE' },
     { label: 'Suite', value: 'SUITE' },
     { label: 'Familiale', value: 'FAMILIALE' }
+  ];
+
+  vueOptions = [
+    { label: '—', value: '' },
+    { label: 'Mer', value: 'MER' },
+    { label: 'Jardin', value: 'JARDIN' },
+    { label: 'Piscine', value: 'PISCINE' },
+    { label: 'Rue', value: 'RUE' },
+    { label: 'Cour intérieure', value: 'COUR' }
   ];
 
   etatOptions: { label: string; value: EtatChambre }[] = [
@@ -47,10 +63,13 @@ export class ChambreListComponent implements OnInit {
   constructor(
     private chambreService: ChambreService,
     private messageService: MessageService,
-    private fb: FormBuilder
+    private confirmationService: ConfirmationService,
+    private fb: FormBuilder,
+    private pageHeaderService: PageHeaderService
   ) {}
 
   ngOnInit(): void {
+    this.pageHeaderService.set('Gestion des chambres', 'Créer, modifier, filtrer et activer les chambres de l\'hôtel');
     this.initForm();
     this.loadChambres();
   }
@@ -59,23 +78,22 @@ export class ChambreListComponent implements OnInit {
     this.form = this.fb.group({
       numero: ['', Validators.required],
       type: ['STANDARD', Validators.required],
-      capacite: [1, [Validators.required, Validators.min(1)]],
+      capacite: [2, [Validators.required, Validators.min(1)]],
       tarifPassage: [0, [Validators.required, Validators.min(0)]],
       tarifNuitee: [0, [Validators.required, Validators.min(0)]],
       etat: ['LIBRE'],
-      etage: [1],
+      etage: [0],
+      vue: [''],
       description: [''],
-      equipements: ['']
+      equipements: [''],
+      observations: ['']
     });
   }
 
   loadChambres(): void {
     this.loading = true;
-    this.chambreService.findAll().subscribe({
-      next: (data) => {
-        this.chambres = data;
-        this.loading = false;
-      },
+    this.chambreService.findAllAdmin().subscribe({
+      next: (data) => { this.chambres = data; this.loading = false; },
       error: () => {
         this.loading = false;
         this.messageService.add({ severity: 'error', summary: 'Erreur', detail: 'Chargement impossible' });
@@ -83,16 +101,38 @@ export class ChambreListComponent implements OnInit {
     });
   }
 
+  get etages(): number[] {
+    return [...new Set(this.chambres.map(c => c.etage))].sort((a, b) => a - b);
+  }
+
+  get filtered(): ChambreResponse[] {
+    const q = this.search.trim().toLowerCase();
+    return this.chambres.filter(c => {
+      if (q && !c.numero.toLowerCase().includes(q) && !(c.equipements || '').toLowerCase().includes(q)) return false;
+      if (this.filtreType && c.type !== this.filtreType) return false;
+      if (this.filtreEtage !== '' && c.etage !== this.filtreEtage) return false;
+      if (this.filtreEtat && c.etat !== this.filtreEtat) return false;
+      return true;
+    });
+  }
+
+  resetFiltres(): void {
+    this.search = '';
+    this.filtreType = '';
+    this.filtreEtage = '';
+    this.filtreEtat = '';
+  }
+
   openNew(): void {
     this.editingId = null;
     this.dialogTitle = 'Nouvelle chambre';
-    this.form.reset({ type: 'STANDARD', etat: 'LIBRE', capacite: 1, tarifPassage: 0, tarifNuitee: 0, etage: 1 });
+    this.form.reset({ type: 'STANDARD', etat: 'LIBRE', capacite: 2, tarifPassage: 0, tarifNuitee: 0, etage: 0, vue: '' });
     this.dialogVisible = true;
   }
 
   openEdit(chambre: ChambreResponse): void {
     this.editingId = chambre.id;
-    this.dialogTitle = 'Modifier la chambre';
+    this.dialogTitle = `Modifier la chambre ${chambre.numero}`;
     this.form.patchValue({
       numero: chambre.numero,
       type: chambre.type,
@@ -101,8 +141,10 @@ export class ChambreListComponent implements OnInit {
       tarifNuitee: chambre.tarifNuitee,
       etat: chambre.etat,
       etage: chambre.etage,
+      vue: chambre.vue || '',
       description: chambre.description,
-      equipements: chambre.equipements
+      equipements: chambre.equipements,
+      observations: chambre.observations
     });
     this.dialogVisible = true;
   }
@@ -130,9 +172,28 @@ export class ChambreListComponent implements OnInit {
         this.saving = false;
         this.loadChambres();
       },
-      error: () => {
+      error: (err) => {
         this.saving = false;
-        this.messageService.add({ severity: 'error', summary: 'Erreur', detail: 'Opération échouée' });
+        this.messageService.add({ severity: 'error', summary: 'Erreur', detail: err?.error?.message || 'Opération échouée' });
+      }
+    });
+  }
+
+  toggleActif(chambre: ChambreResponse): void {
+    this.confirmationService.confirm({
+      message: chambre.actif
+        ? `Désactiver la chambre ${chambre.numero} ? Elle disparaîtra du plan des chambres et des sélections de check-in.`
+        : `Réactiver la chambre ${chambre.numero} ?`,
+      header: chambre.actif ? 'Désactiver la chambre' : 'Réactiver la chambre',
+      icon: 'pi pi-exclamation-triangle',
+      accept: () => {
+        this.chambreService.toggleActif(chambre.id).subscribe({
+          next: () => {
+            this.messageService.add({ severity: 'success', summary: 'Succès', detail: chambre.actif ? 'Chambre désactivée' : 'Chambre réactivée' });
+            this.loadChambres();
+          },
+          error: () => this.messageService.add({ severity: 'error', summary: 'Erreur', detail: 'Opération impossible' })
+        });
       }
     });
   }
@@ -148,14 +209,13 @@ export class ChambreListComponent implements OnInit {
     }).format(amount || 0);
   }
 
-  getEtatSeverity(etat: EtatChambre): string {
-    const map: Record<EtatChambre, string> = {
-      LIBRE: 'success',
-      OCCUPEE: 'danger',
-      A_NETTOYER: 'warn',
-      EN_MAINTENANCE: 'info',
-      HORS_SERVICE: 'secondary'
-    };
-    return map[etat] || 'secondary';
+  stateTone(etat: EtatChambre): string {
+    return { LIBRE: 'green', OCCUPEE: 'wine', A_NETTOYER: 'amber', EN_MAINTENANCE: 'slate', HORS_SERVICE: 'gray' }[etat] || 'gray';
+  }
+
+  floorLabel(etage: number): string {
+    if (etage === 0) return 'Rez-de-chaussée';
+    if (etage === 1) return '1er étage';
+    return `${etage}e étage`;
   }
 }

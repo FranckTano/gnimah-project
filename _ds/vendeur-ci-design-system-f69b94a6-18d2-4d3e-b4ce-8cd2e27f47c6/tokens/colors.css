@@ -1,0 +1,110 @@
+/* ============================================================
+   Vendeur.ci — Couleurs
+   Direction « Confiance nette » : bleu confiance saturé,
+   blanc franc, accents sémantiques vifs (contrasté & punchy).
+   Convention : --<scale>-<step> pour les primitives,
+   --color-* / --surface-* / --text-* pour les alias sémantiques.
+   ============================================================ */
+:root {
+  /* ---------- Palette de base (primitives) ---------- */
+  /* Bleu confiance — primaire */
+  --blue-050: #F2F7FE;
+  --blue-100: #E9F1FE;
+  --blue-200: #C9DEFC;
+  --blue-400: #74A7FF;
+  --blue-500: #2F86FF;
+  --blue-600: #1B6FE8;   /* PRIMAIRE */
+  --blue-700: #155CC4;
+
+  /* Vert WhatsApp */
+  --wa-100: #E5FBEE;
+  --wa-500: #25D366;
+  --wa-600: #1EBE5A;
+  --wa-800: #0F8A43;     /* texte vert lisible sur fond clair */
+
+  /* Neutres */
+  --ink-900: #14182B;    /* texte principal — presque noir bleuté */
+  --gray-700: #3A4154;
+  --gray-600: #4B5563;
+  --gray-500: #6B7280;   /* texte secondaire */
+  --gray-400: #9CA3AF;   /* texte désactivé */
+  --gray-300: #C8CDD6;
+  --gray-200: #E8EAED;   /* bordure */
+  --gray-150: #EEF0F4;   /* séparateur fin */
+  --gray-100: #F4F6FA;   /* fond app */
+  --gray-050: #F9FAFC;
+  --white:    #FFFFFF;
+
+  /* Sémantiques vifs */
+  --amber-100: #FEF3C7;
+  --amber-500: #F59E0B;  /* note / étoile */
+  --orange-100: #FFEDD5;
+  --orange-500: #F97316;
+  --orange-700: #B45309;
+  --green-100: #DCFCE7;
+  --green-500: #22C55E;  /* succès */
+  --green-600: #16A34A;
+  --red-100:  #FEE2E2;
+  --red-500:  #EF4444;   /* erreur / favori actif */
+  --red-600:  #DC2626;
+  --violet-100: #EDE9FE;
+  --violet-500: #7C3AED; /* badge Pro */
+  --violet-600: #6D28D9;
+
+  /* ---------- Alias sémantiques — primaire ---------- */
+  --color-primary:        var(--blue-600);
+  --color-primary-hover:  var(--blue-500);
+  --color-primary-press:  var(--blue-700);
+  --color-primary-soft:   var(--blue-100);
+  --color-primary-tint:   var(--blue-050);
+  --color-primary-accent: var(--blue-400);
+  --color-on-primary:     var(--white);
+
+  /* Canaux de contact */
+  --color-whatsapp:       var(--wa-500);
+  --color-whatsapp-press: var(--wa-600);
+  --color-whatsapp-dark:  var(--wa-800);
+  --color-call:           var(--blue-600);
+
+  /* États / feedback */
+  --color-star:     var(--amber-500);
+  --color-success:  var(--green-500);
+  --color-error:    var(--red-500);
+  --color-warning:  var(--orange-500);
+  --color-favorite: var(--red-500);
+  --color-price:    var(--blue-600);
+
+  /* ---------- Surfaces & fonds ---------- */
+  --surface-card:   var(--white);     /* cartes, feuilles */
+  --surface-page:   var(--gray-100);  /* fond général de l'app */
+  --surface-sunken: var(--gray-100);  /* zones en creux dans une carte */
+  --surface-tint:   var(--blue-050);
+
+  /* ---------- Texte ---------- */
+  --text-body:      var(--ink-900);   /* texte principal */
+  --text-muted:     var(--gray-500);  /* secondaire */
+  --text-disabled:  var(--gray-400);  /* tertiaire / désactivé */
+  --text-on-primary: var(--white);
+  --text-link:      var(--color-primary);
+
+  /* ---------- Bordures ---------- */
+  --border-subtle:  var(--gray-200);
+  --border-hairline: var(--gray-150);
+  --border-strong:  var(--gray-300);
+
+  /* ---------- Badges statut produit ---------- */
+  --status-active-bg:  var(--green-100);
+  --status-active-fg:  var(--green-600);
+  --status-paused-bg:  var(--orange-100);
+  --status-paused-fg:  var(--orange-700);
+  --status-expired-bg: var(--red-100);
+  --status-expired-fg: var(--red-600);
+
+  /* ---------- Badges plans ---------- */
+  --plan-free-bg:       var(--gray-150);
+  --plan-free-fg:       var(--gray-600);
+  --plan-essentiel-bg:  var(--blue-100);
+  --plan-essentiel-fg:  var(--blue-600);
+  --plan-pro-bg:        var(--violet-100);
+  --plan-pro-fg:        var(--violet-600);
+}

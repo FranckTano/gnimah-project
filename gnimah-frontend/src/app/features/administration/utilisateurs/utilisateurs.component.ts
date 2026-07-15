@@ -3,6 +3,7 @@ import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { UtilisateurService } from '../../../core/services/utilisateur.service';
 import { UtilisateurResponse, roleLabel } from '../../../core/models/utilisateur.model';
 import { MessageService, ConfirmationService } from 'primeng/api';
+import { PageHeaderService } from '../../../core/services/page-header.service';
 
 @Component({
   selector: 'app-utilisateurs',
@@ -18,6 +19,8 @@ export class UtilisateursComponent implements OnInit {
   saving = false;
   form!: FormGroup;
   roleLabels = roleLabel;
+  search = '';
+  filtreRole = '';
 
   roles = [
     { label: 'Administrateur', value: 'ADMIN' },
@@ -29,10 +32,12 @@ export class UtilisateursComponent implements OnInit {
     private fb: FormBuilder,
     private utilisateurService: UtilisateurService,
     private messageService: MessageService,
-    private confirmationService: ConfirmationService
+    private confirmationService: ConfirmationService,
+    private pageHeaderService: PageHeaderService
   ) {}
 
   ngOnInit(): void {
+    this.pageHeaderService.set('Personnel', 'Comptes et rôles du personnel de l\'hôtel');
     this.form = this.fb.group({
       username: ['', [Validators.required, Validators.minLength(3)]],
       password: [''],
@@ -108,7 +113,20 @@ export class UtilisateursComponent implements OnInit {
     const c = this.form.get(f); return !!(c && c.invalid && c.touched);
   }
 
-  getRoleSeverity(role: string): string {
-    return { ADMIN: 'danger', DIRECTEUR: 'warn', AGENT: 'info' }[role] || 'secondary';
+  roleTone(role: string): string {
+    return { ADMIN: 'wine', DIRECTEUR: 'gold', AGENT: 'slate' }[role] || 'gray';
+  }
+
+  initials(u: UtilisateurResponse): string {
+    return `${u.prenom.charAt(0)}${u.nom.charAt(0)}`.toUpperCase();
+  }
+
+  get filtered(): UtilisateurResponse[] {
+    const q = this.search.trim().toLowerCase();
+    return this.utilisateurs.filter(u => {
+      if (this.filtreRole && u.role !== this.filtreRole) return false;
+      if (q && !`${u.prenom} ${u.nom} ${u.username} ${u.email}`.toLowerCase().includes(q)) return false;
+      return true;
+    });
   }
 }

@@ -1,12 +1,25 @@
 import { Component, OnInit } from '@angular/core';
 import { MessageService } from 'primeng/api';
 import { ChambreService } from '../../../core/services/chambre.service';
+import { PageHeaderService } from '../../../core/services/page-header.service';
 import {
   ChambreResponse,
   EtatChambre,
   ETAT_CHAMBRE_LABELS,
   ETAT_CHAMBRE_COLORS
 } from '../../../core/models/chambre.model';
+
+interface Floor {
+  name: string;
+  rooms: ChambreResponse[];
+}
+
+const STATE_KEY: Record<EtatChambre, string> = {
+  LIBRE: 'libre', OCCUPEE: 'occupee', A_NETTOYER: 'nettoyer', EN_MAINTENANCE: 'entretien', HORS_SERVICE: 'hs'
+};
+const STATE_TONE: Record<EtatChambre, string> = {
+  LIBRE: 'c-green', OCCUPEE: 'c-wine', A_NETTOYER: 'c-amber', EN_MAINTENANCE: 'c-slate', HORS_SERVICE: 'c-gray'
+};
 
 @Component({
   selector: 'app-chambre-plan',
@@ -37,11 +50,40 @@ export class ChambrePlanComponent implements OnInit {
 
   constructor(
     private chambreService: ChambreService,
-    private messageService: MessageService
+    private messageService: MessageService,
+    private pageHeaderService: PageHeaderService
   ) {}
 
   ngOnInit(): void {
+    this.pageHeaderService.set('Plan des chambres', 'Disponibilité et état en temps réel');
     this.loadChambres();
+  }
+
+  get floors(): Floor[] {
+    const byFloor = new Map<number, ChambreResponse[]>();
+    for (const c of this.chambres) {
+      const list = byFloor.get(c.etage) || [];
+      list.push(c);
+      byFloor.set(c.etage, list);
+    }
+    return [...byFloor.keys()].sort((a, b) => a - b).map(etage => ({
+      name: this.floorName(etage),
+      rooms: (byFloor.get(etage) || []).sort((a, b) => a.numero.localeCompare(b.numero))
+    }));
+  }
+
+  floorName(etage: number): string {
+    if (etage === 0) return 'Rez-de-chaussée';
+    if (etage === 1) return '1er étage';
+    return `${etage}e étage`;
+  }
+
+  stateKey(etat: EtatChambre): string {
+    return STATE_KEY[etat] || '';
+  }
+
+  stateTone(etat: EtatChambre): string {
+    return STATE_TONE[etat] || '';
   }
 
   loadChambres(): void {

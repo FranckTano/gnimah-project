@@ -1,109 +1,57 @@
-<div class="page-container">
-  <div class="page-header">
-    <h1><i class="pi pi-users mr-2"></i>Clients</h1>
-    <p>Gestion des clients de l'hôtel</p>
+<div class="gn-route">
+  <div class="gn-card" style="padding:22px;">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;gap:14px;flex-wrap:wrap;">
+      <div class="gn-serif" style="font-size:18px;color:#2e2024;">Fichier clients</div>
+      <div style="display:flex;gap:10px;flex:1;max-width:420px;">
+        <input class="gn-input" placeholder="Nom, téléphone, pièce…" [(ngModel)]="searchTerm" (keyup.enter)="onSearch()" />
+        <button class="gn-btn-o" style="padding:0 16px;white-space:nowrap;" (click)="onSearch()"><i class="ti ti-search"></i></button>
+      </div>
+      <button class="gn-btn-p" style="padding:9px 16px;font-size:13px;" (click)="openNew()"><i class="ti ti-plus"></i>Nouveau client</button>
+    </div>
+
+    <div class="gn-tw">
+      <p-table [value]="clients" [lazy]="true" [paginator]="true" [rows]="pageSize" [totalRecords]="totalRecords"
+        [loading]="loading" (onPage)="onPageChange($event)" styleClass="gn-ptable" responsiveLayout="scroll">
+        <ng-template pTemplate="header">
+          <tr>
+            <th class="gn-th">Client</th>
+            <th class="gn-th">Téléphone</th>
+            <th class="gn-th">Pièce</th>
+            <th class="gn-th">Séjours</th>
+            <th class="gn-th">Statut</th>
+            <th class="gn-th">Actions</th>
+          </tr>
+        </ng-template>
+        <ng-template pTemplate="body" let-client>
+          <tr class="gn-rowh">
+            <td>
+              <div style="display:flex;align-items:center;gap:11px;">
+                <div class="gn-av deep" style="width:40px;height:40px;font-size:13px;">{{ initials(client) }}</div>
+                <div><div style="font-weight:600;font-size:14px;color:#3a2c30;">{{ client.civilite }} {{ client.nomComplet }}</div><div style="font-size:12px;color:#a99a9d;">{{ sinceLabel(client) }}</div></div>
+              </div>
+            </td>
+            <td style="font-size:13.5px;color:#6d585d;">{{ client.telephone }}</td>
+            <td style="font-size:13.5px;color:#6d585d;">{{ client.typePiece }} · {{ client.numeroPiece }}</td>
+            <td style="font-weight:700;font-size:14px;color:#3a2c30;">{{ client.nbSejours }}</td>
+            <td>
+              <span class="gn-bdg" [ngClass]="client.clientFidele ? 'gold' : 'gray'">
+                <i class="ti ti-star-filled" style="font-size:11px;" *ngIf="client.clientFidele"></i>{{ client.clientFidele ? 'Fidèle' : 'Standard' }}
+              </span>
+            </td>
+            <td>
+              <div style="display:flex;gap:6px;">
+                <button class="gn-icobtn" style="width:32px;height:32px;font-size:14px;" title="Modifier" (click)="openEdit(client)"><i class="ti ti-pencil"></i></button>
+                <button class="gn-icobtn" style="width:32px;height:32px;font-size:14px;color:#d0455a;" title="Supprimer" (click)="confirmDelete(client)"><i class="ti ti-trash"></i></button>
+              </div>
+            </td>
+          </tr>
+        </ng-template>
+        <ng-template pTemplate="emptymessage">
+          <tr><td colspan="6" class="gn-empty" style="text-align:center;">Aucun client trouvé</td></tr>
+        </ng-template>
+      </p-table>
+    </div>
   </div>
-
-  <!-- Toolbar -->
-  <p-toolbar styleClass="mb-4">
-    <ng-template pTemplate="left">
-      <span class="p-input-icon-left">
-        <i class="pi pi-search"></i>
-        <input
-          pInputText
-          type="text"
-          placeholder="Rechercher par nom, téléphone, pièce..."
-          [(ngModel)]="searchTerm"
-          (keyup.enter)="onSearch()"
-          style="width: 320px"
-        />
-      </span>
-      <p-button icon="pi pi-search" label="Rechercher" styleClass="ml-2" (onClick)="onSearch()"></p-button>
-    </ng-template>
-    <ng-template pTemplate="right">
-      <p-button
-        icon="pi pi-plus"
-        label="Nouveau client"
-        styleClass="p-button-success"
-        (onClick)="openNew()"
-      ></p-button>
-    </ng-template>
-  </p-toolbar>
-
-  <!-- Table -->
-  <p-table
-    [value]="clients"
-    [lazy]="true"
-    [paginator]="true"
-    [rows]="pageSize"
-    [totalRecords]="totalRecords"
-    [loading]="loading"
-    (onPage)="onPageChange($event)"
-    styleClass="p-datatable-striped p-datatable-sm"
-    responsiveLayout="scroll"
-  >
-    <ng-template pTemplate="header">
-      <tr>
-        <th>Identité</th>
-        <th>Téléphone</th>
-        <th>Pièce d'identité</th>
-        <th>Séjours</th>
-        <th>Fidélité</th>
-        <th style="width: 120px">Actions</th>
-      </tr>
-    </ng-template>
-    <ng-template pTemplate="body" let-client>
-      <tr>
-        <td>
-          <div class="client-identity">
-            <span class="client-civilite">{{ client.civilite }}</span>
-            <span class="client-name">{{ client.nomComplet }}</span>
-          </div>
-          <small class="text-500" *ngIf="client.email">{{ client.email }}</small>
-        </td>
-        <td>{{ client.telephone }}</td>
-        <td>
-          <p-tag [value]="client.typePiece" severity="secondary"></p-tag>
-          <div class="mt-1"><small class="text-600">{{ client.numeroPiece }}</small></div>
-        </td>
-        <td>
-          <span class="font-bold">{{ client.nbSejours }}</span>
-        </td>
-        <td>
-          <p-tag
-            *ngIf="client.clientFidele"
-            value="Fidèle"
-            severity="success"
-            icon="pi pi-star-fill"
-          ></p-tag>
-          <span *ngIf="!client.clientFidele" class="text-400 text-sm">—</span>
-        </td>
-        <td>
-          <div class="action-buttons">
-            <p-button
-              icon="pi pi-pencil"
-              styleClass="p-button-rounded p-button-text p-button-sm"
-              [pTooltip]="'Modifier'"
-              (onClick)="openEdit(client)"
-            ></p-button>
-            <p-button
-              icon="pi pi-trash"
-              styleClass="p-button-rounded p-button-text p-button-danger p-button-sm"
-              [pTooltip]="'Supprimer'"
-              (onClick)="confirmDelete(client)"
-            ></p-button>
-          </div>
-        </td>
-      </tr>
-    </ng-template>
-    <ng-template pTemplate="emptymessage">
-      <tr>
-        <td colspan="6" class="text-center py-4 text-500">
-          <i class="pi pi-users mr-2"></i>Aucun client trouvé
-        </td>
-      </tr>
-    </ng-template>
-  </p-table>
 </div>
 
 <!-- Dialog create/edit -->
@@ -185,14 +133,10 @@
   </form>
 
   <ng-template pTemplate="footer">
-    <p-button label="Annuler" icon="pi pi-times" styleClass="p-button-text" (onClick)="dialogVisible = false"></p-button>
-    <p-button
-      [label]="editingId ? 'Modifier' : 'Créer'"
-      icon="pi pi-check"
-      styleClass="p-button-success"
-      [loading]="saving"
-      (onClick)="save()"
-    ></p-button>
+    <button class="gn-btn-o" style="padding:9px 16px;font-size:13.5px;" (click)="dialogVisible = false">Annuler</button>
+    <button class="gn-btn-p" style="padding:9px 16px;font-size:13.5px;" [disabled]="saving" (click)="save()">
+      <i class="ti ti-loader-2 gn-spin" *ngIf="saving"></i><span>{{ editingId ? 'Modifier' : 'Créer' }}</span>
+    </button>
   </ng-template>
 </p-dialog>
 

@@ -1,0 +1,9 @@
+/* ============================================================
+   Vendeur.ci — Polices
+   Sora (titres + corps) et JetBrains Mono (chiffres/code rares).
+   Servies via Google Fonts. Sora EST la police voulue de la
+   direction « Confiance nette » — ce n'est pas une substitution.
+   Pour un usage 100% hors-ligne, remplacer par des @font-face
+   pointant des binaires .woff2 locaux.
+   ============================================================ */
+@import url('https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap');

@@ -1,104 +1,96 @@
-<div class="page-header">
-  <h1><i class="pi pi-users mr-2"></i>Gestion des Utilisateurs</h1>
-  <p>Administration des comptes utilisateurs</p>
-</div>
+<div class="gn-route">
+  <div class="gn-card" style="padding:22px;">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:12px;">
+      <div class="gn-serif" style="font-size:18px;color:#2e2024;">Personnel <span style="color:#a99a9d;font-size:14px;font-family:'DM Sans',sans-serif;">({{ filtered.length }})</span></div>
+      <button class="gn-btn-p" style="padding:9px 16px;font-size:13px;" (click)="openNew()"><i class="ti ti-user-plus"></i>Nouvel utilisateur</button>
+    </div>
 
-<div class="panel">
-  <p-toolbar>
-    <ng-template pTemplate="start">
-      <p-button label="Nouvel utilisateur" icon="pi pi-user-plus" severity="success" (onClick)="openNew()"></p-button>
-    </ng-template>
-  </p-toolbar>
+    <div style="display:flex;gap:10px;margin-bottom:18px;">
+      <input class="gn-input" placeholder="Rechercher un nom, un login, un email…" [(ngModel)]="search" style="max-width:360px;" />
+      <select class="gn-input" [(ngModel)]="filtreRole" style="max-width:220px;">
+        <option value="">Tous les rôles</option>
+        <option *ngFor="let r of roles" [value]="r.value">{{ r.label }}</option>
+      </select>
+    </div>
 
-  <p-table [value]="utilisateurs" [loading]="loading" styleClass="p-datatable-sm p-datatable-striped">
-    <ng-template pTemplate="header">
-      <tr>
-        <th>Login</th>
-        <th>Nom complet</th>
-        <th>Email</th>
-        <th>Rôle</th>
-        <th>Statut</th>
-        <th>Créé le</th>
-        <th>Actions</th>
-      </tr>
-    </ng-template>
-    <ng-template pTemplate="body" let-u>
-      <tr>
-        <td><strong>{{ u.username }}</strong></td>
-        <td>{{ u.prenom }} {{ u.nom }}</td>
-        <td>{{ u.email }}</td>
-        <td>
-          <p-tag [value]="roleLabels[u.role] || u.role" [severity]="getRoleSeverity(u.role)"></p-tag>
-        </td>
-        <td>
-          <p-tag [value]="u.actif ? 'Actif' : 'Inactif'" [severity]="u.actif ? 'success' : 'secondary'"></p-tag>
-        </td>
-        <td>{{ u.dateCreation | date:'dd/MM/yyyy' }}</td>
-        <td>
-          <div class="flex gap-1">
-            <p-button icon="pi pi-pencil" size="small" severity="info" tooltip="Modifier" (onClick)="openEdit(u)"></p-button>
-            <p-button
-              [icon]="u.actif ? 'pi pi-ban' : 'pi pi-check'"
-              size="small"
-              [severity]="u.actif ? 'warn' : 'success'"
-              [pTooltip]="u.actif ? 'Désactiver' : 'Activer'"
-              (onClick)="toggleActif(u)">
-            </p-button>
-          </div>
-        </td>
-      </tr>
-    </ng-template>
-    <ng-template pTemplate="emptymessage">
-      <tr><td colspan="7" class="text-center" style="padding:2rem">Aucun utilisateur trouvé</td></tr>
-    </ng-template>
-  </p-table>
+    <div class="gn-tw">
+      <table class="gn-table">
+        <thead>
+          <tr>
+            <th class="gn-th">Utilisateur</th>
+            <th class="gn-th">Login</th>
+            <th class="gn-th">Rôle</th>
+            <th class="gn-th">Statut</th>
+            <th class="gn-th">Créé le</th>
+            <th class="gn-th">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr class="gn-rowh" *ngFor="let u of filtered" [style.opacity]="u.actif ? 1 : .5">
+            <td>
+              <div style="display:flex;align-items:center;gap:11px;">
+                <div class="gn-av" [ngClass]="roleTone(u.role)" style="width:38px;height:38px;font-size:13px;">{{ initials(u) }}</div>
+                <div><div style="font-weight:600;font-size:14px;color:#3a2c30;">{{ u.prenom }} {{ u.nom }}</div><div style="font-size:12px;color:#a99a9d;">{{ u.email }}</div></div>
+              </div>
+            </td>
+            <td style="font-size:13.5px;color:#6d585d;">{{ u.username }}</td>
+            <td><span class="gn-bdg" [ngClass]="roleTone(u.role)">{{ roleLabels[u.role] || u.role }}</span></td>
+            <td><span class="gn-bdg" [ngClass]="u.actif ? 'green' : 'gray'">{{ u.actif ? 'Actif' : 'Inactif' }}</span></td>
+            <td style="font-size:13px;color:#a99a9d;">{{ u.dateCreation | date:'dd/MM/yyyy' }}</td>
+            <td>
+              <div style="display:flex;gap:6px;">
+                <button class="gn-icobtn" style="width:32px;height:32px;font-size:14px;" title="Modifier" (click)="openEdit(u)"><i class="ti ti-pencil"></i></button>
+                <button class="gn-icobtn" style="width:32px;height:32px;font-size:14px;" [style.color]="u.actif ? '#d0455a' : '#2f9e6f'" [title]="u.actif ? 'Désactiver' : 'Activer'" (click)="toggleActif(u)">
+                  <i class="ti" [class.ti-ban]="u.actif" [class.ti-check]="!u.actif"></i>
+                </button>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+      <div *ngIf="!loading && !filtered.length" class="gn-empty" style="text-align:center;">Aucun utilisateur ne correspond à ces critères.</div>
+    </div>
+  </div>
 </div>
 
 <!-- Dialog -->
-<p-dialog [(visible)]="showDialog" [header]="editingId ? 'Modifier l\'utilisateur' : 'Nouvel utilisateur'" [modal]="true" [style]="{width:'500px'}">
+<p-dialog [(visible)]="showDialog" [header]="editingId ? 'Modifier l\'utilisateur' : 'Nouvel utilisateur'" [modal]="true" [style]="{width:'520px'}">
   <form [formGroup]="form">
-    <div class="p-fluid">
-      <div class="grid">
-        <div class="col-6">
-          <div class="field">
-            <label class="font-bold">Prénom <span class="text-red-500">*</span></label>
-            <input pInputText formControlName="prenom" [class.ng-invalid]="isInvalid('prenom')"/>
-            <small *ngIf="isInvalid('prenom')" class="p-error">Requis</small>
-          </div>
-        </div>
-        <div class="col-6">
-          <div class="field">
-            <label class="font-bold">Nom <span class="text-red-500">*</span></label>
-            <input pInputText formControlName="nom" [class.ng-invalid]="isInvalid('nom')"/>
-            <small *ngIf="isInvalid('nom')" class="p-error">Requis</small>
-          </div>
-        </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+      <div>
+        <label class="gn-flabel">Prénom *</label>
+        <input class="gn-input" formControlName="prenom" style="margin-top:6px;" [class.gn-invalid]="isInvalid('prenom')" />
       </div>
-      <div class="field mb-3">
-        <label class="font-bold">Email <span class="text-red-500">*</span></label>
-        <input pInputText formControlName="email" type="email" [class.ng-invalid]="isInvalid('email')"/>
-        <small *ngIf="isInvalid('email')" class="p-error">Email valide requis</small>
+      <div>
+        <label class="gn-flabel">Nom *</label>
+        <input class="gn-input" formControlName="nom" style="margin-top:6px;" [class.gn-invalid]="isInvalid('nom')" />
       </div>
-      <div class="field mb-3">
-        <label class="font-bold">Login <span class="text-red-500">*</span></label>
-        <input pInputText formControlName="username" [class.ng-invalid]="isInvalid('username')" [readonly]="!!editingId"/>
-        <small *ngIf="isInvalid('username')" class="p-error">Login requis (min 3 caractères)</small>
-      </div>
-      <div class="field mb-3">
-        <label class="font-bold">Mot de passe <span *ngIf="!editingId" class="text-red-500">*</span></label>
-        <p-password formControlName="password" [feedback]="true" [toggleMask]="true" [class.ng-invalid]="isInvalid('password')"></p-password>
-        <small *ngIf="editingId" style="color:#64748b">Laisser vide pour conserver l'actuel</small>
-        <small *ngIf="isInvalid('password')" class="p-error">Mot de passe requis (min 6 caractères)</small>
-      </div>
-      <div class="field mb-3">
-        <label class="font-bold">Rôle <span class="text-red-500">*</span></label>
-        <p-select formControlName="role" [options]="roles" optionLabel="label" optionValue="value"></p-select>
-      </div>
+    </div>
+    <div style="margin-top:12px;">
+      <label class="gn-flabel">Email *</label>
+      <input class="gn-input" type="email" formControlName="email" style="margin-top:6px;" [class.gn-invalid]="isInvalid('email')" />
+    </div>
+    <div style="margin-top:12px;">
+      <label class="gn-flabel">Login *</label>
+      <input class="gn-input" formControlName="username" style="margin-top:6px;" [class.gn-invalid]="isInvalid('username')" [readonly]="!!editingId" />
+    </div>
+    <div style="margin-top:12px;">
+      <label class="gn-flabel">Mot de passe <span *ngIf="!editingId">*</span></label>
+      <input class="gn-input" type="password" formControlName="password" style="margin-top:6px;" [class.gn-invalid]="isInvalid('password')" />
+      <div *ngIf="editingId" style="font-size:11.5px;color:#a99a9d;margin-top:4px;">Laisser vide pour conserver le mot de passe actuel.</div>
+    </div>
+    <div style="margin-top:12px;">
+      <label class="gn-flabel">Rôle *</label>
+      <select class="gn-input" formControlName="role" style="margin-top:6px;">
+        <option *ngFor="let r of roles" [value]="r.value">{{ r.label }}</option>
+      </select>
     </div>
   </form>
   <ng-template pTemplate="footer">
-    <p-button label="Annuler" icon="pi pi-times" severity="secondary" (onClick)="showDialog=false"></p-button>
-    <p-button [label]="editingId ? 'Modifier' : 'Créer'" icon="pi pi-check" severity="success" [loading]="saving" (onClick)="save()"></p-button>
+    <button class="gn-btn-o" style="padding:9px 16px;font-size:13.5px;" (click)="showDialog=false">Annuler</button>
+    <button class="gn-btn-p" style="padding:9px 16px;font-size:13.5px;" [disabled]="saving" (click)="save()">
+      <i class="ti ti-loader-2 gn-spin" *ngIf="saving"></i><span>{{ editingId ? 'Modifier' : 'Créer' }}</span>
+    </button>
   </ng-template>
 </p-dialog>
 

@@ -2,9 +2,17 @@ import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { EntretienService } from '../../core/services/entretien.service';
 import { ChambreService } from '../../core/services/chambre.service';
-import { TacheEntretienResponse, statutTacheLabel, statutTacheColor } from '../../core/models/entretien.model';
+import { TacheEntretienResponse } from '../../core/models/entretien.model';
 import { ChambreResponse } from '../../core/models/chambre.model';
 import { MessageService, ConfirmationService } from 'primeng/api';
+import { PageHeaderService } from '../../core/services/page-header.service';
+
+interface KanbanColumn {
+  statut: string;
+  title: string;
+  tone: string;
+  tasks: TacheEntretienResponse[];
+}
 
 @Component({
   selector: 'app-entretien',
@@ -19,16 +27,6 @@ export class EntretienComponent implements OnInit {
   showDialog = false;
   saving = false;
   form!: FormGroup;
-  statutLabels = statutTacheLabel;
-  statutColors = statutTacheColor;
-
-  filtreStatut: string | null = null;
-  statutOptions = [
-    { label: 'Tous', value: null },
-    { label: 'En attente', value: 'A_FAIRE' },
-    { label: 'En cours', value: 'EN_COURS' },
-    { label: 'Terminées', value: 'TERMINE' }
-  ];
 
   typeOptions = [
     { label: 'Nettoyage', value: 'NETTOYAGE' },
@@ -47,10 +45,12 @@ export class EntretienComponent implements OnInit {
     private entretienService: EntretienService,
     private chambreService: ChambreService,
     private messageService: MessageService,
-    private confirmationService: ConfirmationService
+    private confirmationService: ConfirmationService,
+    private pageHeaderService: PageHeaderService
   ) {}
 
   ngOnInit(): void {
+    this.pageHeaderService.set('Housekeeping', "Suivi de l'entretien des chambres");
     this.form = this.fb.group({
       chambreId: [null, Validators.required],
       type: ['NETTOYAGE', Validators.required],
@@ -64,10 +64,22 @@ export class EntretienComponent implements OnInit {
 
   load(): void {
     this.loading = true;
-    this.entretienService.findAll(this.filtreStatut || undefined).subscribe({
+    this.entretienService.findAll().subscribe({
       next: (data) => { this.taches = data; this.loading = false; },
       error: () => { this.loading = false; }
     });
+  }
+
+  get columns(): KanbanColumn[] {
+    return [
+      { statut: 'A_FAIRE', title: 'À faire', tone: 'c-gold', tasks: this.taches.filter(t => t.statut === 'A_FAIRE') },
+      { statut: 'EN_COURS', title: 'En cours', tone: 'c-slate', tasks: this.taches.filter(t => t.statut === 'EN_COURS') },
+      { statut: 'TERMINE', title: 'Terminé', tone: 'c-green', tasks: this.taches.filter(t => t.statut === 'TERMINE') }
+    ];
+  }
+
+  initials(name: string | null): string {
+    return (name || 'NA').split(' ').filter(Boolean).map(p => p.charAt(0)).join('').slice(0, 2).toUpperCase();
   }
 
   openNew(): void {
@@ -97,10 +109,6 @@ export class EntretienComponent implements OnInit {
       next: () => { this.load(); },
       error: () => this.messageService.add({ severity: 'error', summary: 'Erreur', detail: 'Changement de statut impossible' })
     });
-  }
-
-  getStatutSeverity(s: string): string {
-    return ({ A_FAIRE: 'warn', EN_COURS: 'info', TERMINE: 'success', ANNULE: 'danger' } as Record<string, string>)[s] || 'secondary';
   }
 
   isInvalid(f: string): boolean {

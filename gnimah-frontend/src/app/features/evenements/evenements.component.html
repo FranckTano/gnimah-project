@@ -1,51 +1,42 @@
-<div class="page-header">
-  <h1><i class="pi pi-star mr-2"></i>Événements</h1>
-  <p>Gestion des événements et activités de l'hôtel</p>
-</div>
+<div class="gn-route gn-cal">
+  <div class="gn-card" style="padding:22px;">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
+      <div class="gn-serif" style="font-size:20px;color:#2e2024;">{{ monthLabel }}</div>
+      <div style="display:flex;gap:8px;">
+        <button class="gn-icobtn" style="width:34px;height:34px;font-size:16px;" (click)="prevMonth()"><i class="ti ti-chevron-left"></i></button>
+        <button class="gn-icobtn" style="width:34px;height:34px;font-size:16px;" (click)="nextMonth()"><i class="ti ti-chevron-right"></i></button>
+      </div>
+    </div>
+    <div class="gn-caldays" style="margin-bottom:6px;">
+      <div class="gn-th" style="text-align:left;padding:4px 6px;" *ngFor="let d of weekdays">{{ d }}</div>
+    </div>
+    <div class="gn-caldays">
+      <div *ngFor="let c of calCells" class="gn-calcell" [class.today]="c.isToday">
+        <div class="gn-calday">{{ c.day }}</div>
+        <div class="gn-calev" *ngIf="c.hasEv">{{ c.evLabel }}</div>
+      </div>
+    </div>
+  </div>
 
-<div class="panel">
-  <p-toolbar>
-    <ng-template pTemplate="start">
-      <p-button label="Nouvel événement" icon="pi pi-plus" severity="success" (onClick)="openNew()"></p-button>
-    </ng-template>
-  </p-toolbar>
-
-  <p-table [value]="evenements" [loading]="loading" styleClass="p-datatable-sm p-datatable-striped">
-    <ng-template pTemplate="header">
-      <tr>
-        <th>Titre</th>
-        <th>Lieu</th>
-        <th>Début</th>
-        <th>Fin</th>
-        <th>Participants</th>
-        <th>Montant</th>
-        <th>Statut</th>
-        <th>Actions</th>
-      </tr>
-    </ng-template>
-    <ng-template pTemplate="body" let-ev>
-      <tr>
-        <td class="font-bold">{{ ev.titre }}</td>
-        <td>{{ ev.lieu }}</td>
-        <td>{{ ev.dateDebut | date:'dd/MM/yyyy HH:mm' }}</td>
-        <td>{{ ev.dateFin | date:'dd/MM/yyyy HH:mm' }}</td>
-        <td>{{ ev.nombreParticipants }}</td>
-        <td>{{ formatMontant(ev.montant) }}</td>
-        <td>
-          <p-tag [value]="ev.statut" [severity]="ev.statut === 'TERMINE' ? 'success' : ev.statut === 'ANNULE' ? 'danger' : 'info'"></p-tag>
-        </td>
-        <td>
-          <div class="flex gap-1">
-            <p-button icon="pi pi-pencil" size="small" severity="info" tooltip="Modifier" (onClick)="openEdit(ev)"></p-button>
-            <p-button icon="pi pi-trash" size="small" severity="danger" tooltip="Supprimer" (onClick)="delete(ev)"></p-button>
-          </div>
-        </td>
-      </tr>
-    </ng-template>
-    <ng-template pTemplate="emptymessage">
-      <tr><td colspan="8" class="text-center" style="padding:2rem">Aucun événement enregistré</td></tr>
-    </ng-template>
-  </p-table>
+  <div class="gn-card" style="padding:22px;">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
+      <div class="gn-serif" style="font-size:18px;color:#2e2024;">Événements à venir</div>
+      <button class="gn-icobtn" style="width:32px;height:32px;font-size:16px;background:#8c2f4d;color:#fff;border:none;" (click)="openNew()"><i class="ti ti-plus"></i></button>
+    </div>
+    <div *ngFor="let e of upcoming; let i = index" class="gn-eventrow" (click)="openEdit(evenements[i])">
+      <div style="text-align:center;flex:none;">
+        <div class="gn-serif" [style.color]="eventTone(i)" style="font-size:22px;line-height:1;">{{ e.day }}</div>
+        <div class="gn-slabel" style="color:#b3a2a6;font-size:9px;margin-top:2px;">{{ e.mon }}</div>
+      </div>
+      <div style="flex:1;min-width:0;">
+        <div style="font-weight:600;font-size:14px;color:#3a2c30;">{{ e.title }}</div>
+        <div style="font-size:12.5px;color:#8a7a7e;margin-top:2px;">{{ e.sub }}</div>
+        <div style="font-size:12px;color:#a99a9d;margin-top:2px;">{{ e.time }}</div>
+      </div>
+      <button class="gn-icobtn" style="width:30px;height:30px;font-size:14px;" (click)="$event.stopPropagation(); delete(evenements[i])"><i class="ti ti-trash"></i></button>
+    </div>
+    <div *ngIf="!upcoming.length" class="gn-empty">Aucun événement ce mois-ci.</div>
+  </div>
 </div>
 
 <!-- Dialog -->
@@ -97,8 +88,10 @@
     </div>
   </form>
   <ng-template pTemplate="footer">
-    <p-button label="Annuler" icon="pi pi-times" severity="secondary" (onClick)="showDialog=false"></p-button>
-    <p-button [label]="editingId ? 'Modifier' : 'Créer'" icon="pi pi-check" severity="success" [loading]="saving" (onClick)="save()"></p-button>
+    <button class="gn-btn-o" style="padding:9px 16px;font-size:13.5px;" (click)="showDialog=false">Annuler</button>
+    <button class="gn-btn-p" style="padding:9px 16px;font-size:13.5px;" [disabled]="saving" (click)="save()">
+      <i class="ti ti-loader-2 gn-spin" *ngIf="saving"></i><span>{{ editingId ? 'Modifier' : 'Créer' }}</span>
+    </button>
   </ng-template>
 </p-dialog>
 

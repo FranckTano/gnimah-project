@@ -1,0 +1,45 @@
+/* ============================================================
+   Vendeur.ci — Reset léger + primitives partagées
+   Le style vit surtout dans les composants ; ici, le strict minimum.
+   ============================================================ */
+
+*, *::before, *::after { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  font-family: var(--font-sans);
+  font-size: var(--fs-body);
+  line-height: var(--lh-normal);
+  color: var(--text-body);
+  background: var(--surface-page);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+/* Dégradé de marque réutilisable (en-têtes, bannières) */
+.vc-gradient-primary {
+  background: linear-gradient(150deg, var(--blue-600), var(--blue-500));
+}
+
+/* Voile texturé léger optionnel (rappel discret du wax) */
+.vc-pattern {
+  background-image: radial-gradient(circle at 1px 1px, rgba(27,111,232,0.06) 1px, transparent 0);
+  background-size: 18px 18px;
+}
+
+/* Placeholders produit/photo de marque (sans vraie image).
+   Six teintes pour varier les grilles. */
+.vc-ph { display: flex; align-items: center; justify-content: center; color: rgba(255,255,255,0.6); }
+.vc-ph-1 { background: linear-gradient(140deg, #4f86d6, #2a5fb0); }
+.vc-ph-2 { background: linear-gradient(140deg, #ec6b9d, #c0457a); }
+.vc-ph-3 { background: linear-gradient(140deg, #f0a458, #d97b32); }
+.vc-ph-4 { background: linear-gradient(140deg, #56b88a, #2f8f64); }
+.vc-ph-5 { background: linear-gradient(140deg, #8a7fe0, #5f50c4); }
+.vc-ph-6 { background: linear-gradient(140deg, #5fb6c4, #2f8a9c); }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.001ms !important;
+    transition-duration: 0.001ms !important;
+  }
+}

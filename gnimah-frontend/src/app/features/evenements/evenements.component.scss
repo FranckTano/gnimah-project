@@ -1,13 +1,13 @@
-// Evenements component styles
-.page-header {
-  margin-bottom: 1.5rem;
-  h1 { font-size: 1.5rem; font-weight: 700; color: #1e3a5f; margin: 0 0 0.25rem; }
-  p { color: #64748b; margin: 0; }
+.gn-calcell {
+  min-height: 74px; border: 1px solid #f2e8e4; border-radius: 11px; padding: 7px; background: #fdfbfa;
+  &.today { border-color: #e79bb0; background: #fdeef2; }
 }
-
-.panel {
-  background: white;
-  border-radius: 12px;
-  padding: 1.25rem;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+.gn-calday { font-size: 12.5px; font-weight: 600; color: #8a7a7e; }
+.gn-calev {
+  margin-top: 5px; font-size: 9.5px; font-weight: 700; line-height: 1.2; padding: 4px 6px; border-radius: 7px;
+  background: #8c2f4d; color: #fff; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.gn-eventrow {
+  display: flex; gap: 14px; padding: 14px 0; border-top: 1px solid #f2e8e4; cursor: pointer; align-items: flex-start;
+  &:hover { background: #faf4f1; }
 }

@@ -22,8 +22,16 @@ export class ChambreService {
     return this.http.patch<ChambreResponse>(`${this.API}/${id}/etat`, { etat });
   }
 
+  toggleActif(id: number): Observable<ChambreResponse> {
+    return this.http.patch<ChambreResponse>(`${this.API}/${id}/actif`, {});
+  }
+
   findAll(): Observable<ChambreResponse[]> {
     return this.http.get<ChambreResponse[]>(this.API);
+  }
+
+  findAllAdmin(): Observable<ChambreResponse[]> {
+    return this.http.get<ChambreResponse[]>(`${this.API}/toutes`);
   }
 
   findDisponibles(): Observable<ChambreResponse[]> {

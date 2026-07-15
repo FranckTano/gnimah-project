@@ -5,6 +5,7 @@ import { MessageService } from 'primeng/api';
 import { ClientService } from '../../../core/services/client.service';
 import { ChambreService } from '../../../core/services/chambre.service';
 import { SejourService } from '../../../core/services/sejour.service';
+import { PageHeaderService } from '../../../core/services/page-header.service';
 import { ClientResponse, ClientRequest } from '../../../core/models/client.model';
 import { ChambreResponse } from '../../../core/models/chambre.model';
 import { SejourRequest, SejourResponse } from '../../../core/models/sejour.model';
@@ -16,14 +17,11 @@ import { SejourRequest, SejourResponse } from '../../../core/models/sejour.model
   styleUrl: './check-in.component.scss'
 })
 export class CheckInComponent implements OnInit {
-  currentStep = 1;
-
-  // Step 1 – Client
+  // Client
   searchQuery = '';
   searchingClient = false;
   foundClient: ClientResponse | null = null;
   clientNotFound = false;
-  showCreateClient = false;
   clientForm!: FormGroup;
 
   civiliteOptions = [
@@ -38,25 +36,14 @@ export class CheckInComponent implements OnInit {
     { label: 'Permis de conduire', value: 'PERMIS' }
   ];
 
-  // Step 2 – Chambre
+  // Chambre & dates
   chambresLibres: ChambreResponse[] = [];
   loadingChambres = false;
   selectedChambre: ChambreResponse | null = null;
   sejourForm!: FormGroup;
 
-  typeLocationOptions = [
-    { label: 'Passage (heures)', value: 'PASSAGE' },
-    { label: 'Séjour (nuitées)', value: 'SEJOUR' }
-  ];
-
-  // Step 3 – Paiement
+  // Paiement
   paiementForm!: FormGroup;
-  modePaiementOptions = [
-    { label: 'Espèces', value: 'ESPECES' },
-    { label: 'Carte bancaire', value: 'CARTE' },
-    { label: 'Virement', value: 'VIREMENT' },
-    { label: 'Mobile Money', value: 'MOBILE_MONEY' }
-  ];
 
   // Result
   checkingIn = false;
@@ -69,10 +56,12 @@ export class CheckInComponent implements OnInit {
     private sejourService: SejourService,
     private messageService: MessageService,
     private router: Router,
-    private fb: FormBuilder
+    private fb: FormBuilder,
+    private pageHeaderService: PageHeaderService
   ) {}
 
   ngOnInit(): void {
+    this.pageHeaderService.set("Enregistrement d'un séjour", "Check-in client · émission du reçu");
     this.initForms();
     this.loadChambresLibres();
   }
@@ -91,7 +80,7 @@ export class CheckInComponent implements OnInit {
     });
 
     this.sejourForm = this.fb.group({
-      typeLocation: ['PASSAGE', Validators.required],
+      typeLocation: ['SEJOUR', Validators.required],
       dateEntree: [new Date(), Validators.required],
       dateSortie: [null],
       heureEntree: ['', Validators.required],
@@ -100,11 +89,9 @@ export class CheckInComponent implements OnInit {
     });
 
     this.paiementForm = this.fb.group({
-      montantPaye: [0, [Validators.required, Validators.min(0)]],
-      modePaiement: ['ESPECES', Validators.required]
+      montantPaye: [0, [Validators.required, Validators.min(0)]]
     });
 
-    // Set default time
     const now = new Date();
     const hh = String(now.getHours()).padStart(2, '0');
     const mm = String(now.getMinutes()).padStart(2, '0');
@@ -114,14 +101,17 @@ export class CheckInComponent implements OnInit {
   loadChambresLibres(): void {
     this.loadingChambres = true;
     this.chambreService.findDisponibles().subscribe({
-      next: (data) => {
-        this.chambresLibres = data;
-        this.loadingChambres = false;
-      },
-      error: () => {
-        this.loadingChambres = false;
-      }
+      next: (data) => { this.chambresLibres = data; this.loadingChambres = false; },
+      error: () => { this.loadingChambres = false; }
     });
+  }
+
+  get isSejour(): boolean {
+    return this.sejourForm.get('typeLocation')?.value === 'SEJOUR';
+  }
+
+  setMode(mode: 'SEJOUR' | 'PASSAGE'): void {
+    this.sejourForm.patchValue({ typeLocation: mode });
   }
 
   searchClient(): void {
@@ -136,29 +126,28 @@ export class CheckInComponent implements OnInit {
       : this.clientService.findByPiece(query);
 
     obs.subscribe({
-      next: (client) => {
-        this.foundClient = client;
-        this.clientNotFound = false;
-        this.searchingClient = false;
-      },
-      error: () => {
-        this.foundClient = null;
-        this.clientNotFound = true;
-        this.searchingClient = false;
-      }
+      next: (client) => { this.foundClient = client; this.clientNotFound = false; this.searchingClient = false; },
+      error: () => { this.foundClient = null; this.clientNotFound = true; this.searchingClient = false; }
     });
+  }
+
+  changerClient(): void {
+    this.foundClient = null;
+    this.searchQuery = '';
+    this.clientNotFound = false;
   }
 
   createNewClient(): void {
     if (this.clientForm.invalid) {
       this.clientForm.markAllAsTouched();
+      this.messageService.add({ severity: 'warn', summary: 'Champs requis', detail: 'Merci de compléter les champs client obligatoires' });
       return;
     }
     const request: ClientRequest = this.clientForm.value;
     this.clientService.create(request).subscribe({
       next: (client) => {
         this.foundClient = client;
-        this.showCreateClient = false;
+        this.clientNotFound = false;
         this.messageService.add({ severity: 'success', summary: 'Client créé', detail: client.nomComplet });
       },
       error: () => {
@@ -171,22 +160,9 @@ export class CheckInComponent implements OnInit {
     this.selectedChambre = chambre;
   }
 
-  goToStep(step: number): void {
-    if (step === 2 && !this.foundClient) {
-      this.messageService.add({ severity: 'warn', summary: 'Client requis', detail: 'Veuillez sélectionner un client' });
-      return;
-    }
-    if (step === 3 && !this.selectedChambre) {
-      this.messageService.add({ severity: 'warn', summary: 'Chambre requise', detail: 'Veuillez sélectionner une chambre' });
-      return;
-    }
-    this.currentStep = step;
-  }
-
   get montantTotal(): number {
     if (!this.selectedChambre) return 0;
-    const type = this.sejourForm.get('typeLocation')?.value;
-    return type === 'PASSAGE' ? this.selectedChambre.tarifPassage : this.selectedChambre.tarifNuitee;
+    return this.isSejour ? this.selectedChambre.tarifNuitee : this.selectedChambre.tarifPassage;
   }
 
   get resteAPayer(): number {
@@ -194,16 +170,19 @@ export class CheckInComponent implements OnInit {
   }
 
   confirmCheckIn(): void {
-    if (!this.foundClient || !this.selectedChambre) return;
+    if (!this.foundClient) {
+      this.messageService.add({ severity: 'warn', summary: 'Client requis', detail: 'Recherchez ou créez un client' });
+      return;
+    }
+    if (!this.selectedChambre) {
+      this.messageService.add({ severity: 'warn', summary: 'Chambre requise', detail: 'Sélectionnez une chambre disponible' });
+      return;
+    }
     this.checkingIn = true;
 
     const formVal = this.sejourForm.value;
-    const dateEntree = formVal.dateEntree instanceof Date
-      ? formVal.dateEntree.toISOString().split('T')[0]
-      : formVal.dateEntree;
-    const dateSortie = formVal.dateSortie instanceof Date
-      ? formVal.dateSortie.toISOString().split('T')[0]
-      : formVal.dateSortie;
+    const dateEntree = formVal.dateEntree instanceof Date ? formVal.dateEntree.toISOString().split('T')[0] : formVal.dateEntree;
+    const dateSortie = formVal.dateSortie instanceof Date ? formVal.dateSortie.toISOString().split('T')[0] : formVal.dateSortie;
 
     const request: SejourRequest = {
       clientId: this.foundClient.id,
@@ -222,11 +201,7 @@ export class CheckInComponent implements OnInit {
         this.createdSejour = sejour;
         this.success = true;
         this.checkingIn = false;
-        this.messageService.add({
-          severity: 'success',
-          summary: 'Check-in réussi',
-          detail: `N° Reçu : ${sejour.numeroRecu}`
-        });
+        this.messageService.add({ severity: 'success', summary: 'Check-in réussi', detail: `N° Reçu : ${sejour.numeroRecu}` });
       },
       error: () => {
         this.checkingIn = false;
@@ -240,11 +215,9 @@ export class CheckInComponent implements OnInit {
   }
 
   newCheckIn(): void {
-    this.currentStep = 1;
     this.foundClient = null;
     this.selectedChambre = null;
     this.clientNotFound = false;
-    this.showCreateClient = false;
     this.searchQuery = '';
     this.success = false;
     this.createdSejour = null;
@@ -252,10 +225,8 @@ export class CheckInComponent implements OnInit {
     this.loadChambresLibres();
   }
 
-  formatCurrency(amount: number): string {
-    return new Intl.NumberFormat('fr-CI', {
-      style: 'currency', currency: 'XOF', maximumFractionDigits: 0
-    }).format(amount || 0);
+  formatCurrency(amount: number | undefined): string {
+    return new Intl.NumberFormat('fr-CI', { style: 'currency', currency: 'XOF', maximumFractionDigits: 0 }).format(amount || 0);
   }
 
   isClientFieldInvalid(field: string): boolean {

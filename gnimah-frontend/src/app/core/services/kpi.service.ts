@@ -10,10 +10,11 @@ export class KpiService {
 
   constructor(private http: HttpClient) {}
 
+  /** debut/fin are plain "YYYY-MM-DD" dates; the backend expects full LocalDateTime strings. */
   getDashboard(debut?: string, fin?: string): Observable<KpiResponse> {
     let params = new HttpParams();
-    if (debut) params = params.set('debut', debut);
-    if (fin) params = params.set('fin', fin);
+    if (debut) params = params.set('debut', `${debut}T00:00:00`);
+    if (fin) params = params.set('fin', `${fin}T23:59:59`);
     return this.http.get<KpiResponse>(`${this.API}/dashboard`, { params });
   }
 

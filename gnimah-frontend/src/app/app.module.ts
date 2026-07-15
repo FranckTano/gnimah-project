@@ -1,6 +1,9 @@
-import { NgModule } from '@angular/core';
+import { NgModule, LOCALE_ID } from '@angular/core';
 import { BrowserModule } from '@angular/platform-browser';
-import { CommonModule } from '@angular/common';
+import { CommonModule, registerLocaleData } from '@angular/common';
+import localeFr from '@angular/common/locales/fr';
+
+registerLocaleData(localeFr, 'fr');
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { HTTP_INTERCEPTORS, HttpClientModule } from '@angular/common/http';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
@@ -22,6 +25,20 @@ import { ConfirmDialogModule } from 'primeng/confirmdialog';
 import { MenuModule } from 'primeng/menu';
 import { providePrimeNG } from 'primeng/config';
 import Lara from '@primeng/themes/lara';
+import { definePreset } from '@primeng/themes';
+
+// GNIMAH brand preset — retints Lara's primary palette to the hotel's wine/burgundy
+// identity so every remaining PrimeNG default (dialogs, selects, datepicker, focus rings)
+// blends with the hand-styled .gn-* pages instead of showing PrimeNG's stock blue.
+const GnimahPreset = definePreset(Lara, {
+  semantic: {
+    primary: {
+      50: '#fbeef1', 100: '#f6dfe4', 200: '#e6b9c5', 300: '#d6939f',
+      400: '#bc5b73', 500: '#8c2f4d', 600: '#7a2843', 700: '#671f38',
+      800: '#551a2e', 900: '#3f1422', 950: '#2a0d17'
+    }
+  }
+});
 import { BadgeModule } from 'primeng/badge';
 import { TagModule } from 'primeng/tag';
 import { ChipModule } from 'primeng/chip';
@@ -119,11 +136,12 @@ import { UtilisateursComponent } from './features/administration/utilisateurs/ut
     DatePickerModule
   ],
   providers: [
+    { provide: LOCALE_ID, useValue: 'fr' },
     MessageService,
     ConfirmationService,
     { provide: HTTP_INTERCEPTORS, useClass: AuthInterceptor, multi: true },
     { provide: HTTP_INTERCEPTORS, useClass: ErrorInterceptor, multi: true },
-    providePrimeNG({ theme: { preset: Lara } })
+    providePrimeNG({ theme: { preset: GnimahPreset } })
   ],
   bootstrap: [AppComponent]
 })

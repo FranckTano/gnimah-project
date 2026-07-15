@@ -13,7 +13,11 @@ export class AuthGuard {
   ): Observable<boolean | UrlTree> | Promise<boolean | UrlTree> | boolean | UrlTree {
     if (this.authService.isLoggedIn()) {
       const requiredRole = route.data['role'];
-      if (requiredRole && !this.authService.hasDirecteurAccess() && requiredRole === 'DIRECTEUR') {
+      if (requiredRole === 'DIRECTEUR' && !this.authService.hasDirecteurAccess()) {
+        this.router.navigate(['/dashboard']);
+        return false;
+      }
+      if (requiredRole === 'ADMIN' && !this.authService.isAdmin()) {
         this.router.navigate(['/dashboard']);
         return false;
       }

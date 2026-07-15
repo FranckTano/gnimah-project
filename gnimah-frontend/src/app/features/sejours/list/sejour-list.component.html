@@ -1,78 +1,57 @@
-<div class="page-header">
-  <h1><i class="pi pi-sign-in mr-2"></i>Séjours</h1>
-  <p>Liste de tous les séjours enregistrés</p>
-</div>
+<div class="gn-route">
+  <div class="gn-card" style="padding:22px;">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
+      <div class="gn-serif" style="font-size:18px;color:#2e2024;">Séjours</div>
+      <a routerLink="/sejours/check-in" class="gn-btn-p" style="padding:9px 16px;font-size:13px;text-decoration:none;"><i class="ti ti-plus"></i>Nouveau check-in</a>
+    </div>
 
-<div class="panel">
-  <p-toolbar>
-    <ng-template pTemplate="start">
-      <a routerLink="/check-in">
-        <p-button label="Nouveau Check-In" icon="pi pi-plus" severity="success"></p-button>
-      </a>
-    </ng-template>
-  </p-toolbar>
-
-  <p-table
-    [value]="sejours"
-    [lazy]="true"
-    [loading]="loading"
-    [paginator]="true"
-    [rows]="rows"
-    [totalRecords]="totalRecords"
-    [rowsPerPageOptions]="[10, 20, 50]"
-    (onLazyLoad)="load($event)"
-    styleClass="p-datatable-sm p-datatable-striped"
-    responsiveLayout="scroll">
-
-    <ng-template pTemplate="header">
-      <tr>
-        <th>N° Reçu</th>
-        <th>Client</th>
-        <th>Chambre</th>
-        <th>Type</th>
-        <th>Entrée</th>
-        <th>Sortie</th>
-        <th>Montant Total</th>
-        <th>Reste</th>
-        <th>Statut</th>
-        <th>Actions</th>
-      </tr>
-    </ng-template>
-
-    <ng-template pTemplate="body" let-s>
-      <tr>
-        <td><code>{{ s.numeroRecu }}</code></td>
-        <td>
-          <div class="font-bold">{{ s.clientNom }}</div>
-          <div class="text-sm" style="color:#64748b">{{ s.clientTelephone }}</div>
-        </td>
-        <td>{{ s.chambreNumero }} <span class="text-sm" style="color:#64748b">{{ s.chambreType }}</span></td>
-        <td>{{ s.typeLocation === 'PASSAGE' ? 'Passage (h)' : 'Séjour (n)' }}</td>
-        <td>{{ s.dateEntree | date:'dd/MM/yy HH:mm' }}</td>
-        <td>{{ s.dateSortie ? (s.dateSortie | date:'dd/MM/yy HH:mm') : '-' }}</td>
-        <td class="font-bold">{{ formatMontant(s.montantTotal) }}</td>
-        <td [style.color]="s.resteAPayer > 0 ? '#dc2626' : '#16a34a'">{{ formatMontant(s.resteAPayer) }}</td>
-        <td>
-          <p-tag [value]="getStatutLabel(s.statut)" [severity]="getStatutSeverity(s.statut)"></p-tag>
-        </td>
-        <td>
-          <p-button
-            *ngIf="s.statut === 'EN_COURS'"
-            icon="pi pi-sign-out"
-            label="Check-Out"
-            [loading]="checkOutLoading && selectedSejourId === s.id"
-            severity="warn"
-            size="small"
-            (onClick)="confirmCheckOut(s)">
-          </p-button>
-        </td>
-      </tr>
-    </ng-template>
-
-    <ng-template pTemplate="emptymessage">
-      <tr><td colspan="10" class="text-center" style="padding:2rem">Aucun séjour trouvé</td></tr>
-    </ng-template>
-  </p-table>
+    <div class="gn-tw">
+      <p-table [value]="sejours" [lazy]="true" [loading]="loading" [paginator]="true" [rows]="rows"
+        [totalRecords]="totalRecords" [rowsPerPageOptions]="[10,20,50]" (onLazyLoad)="load($event)"
+        styleClass="gn-ptable" responsiveLayout="scroll">
+        <ng-template pTemplate="header">
+          <tr>
+            <th class="gn-th">Client</th>
+            <th class="gn-th">Chambre</th>
+            <th class="gn-th">Type</th>
+            <th class="gn-th">Entrée</th>
+            <th class="gn-th">Sortie</th>
+            <th class="gn-th">Montant / Reste</th>
+            <th class="gn-th">Statut</th>
+            <th class="gn-th">Actions</th>
+          </tr>
+        </ng-template>
+        <ng-template pTemplate="body" let-s>
+          <tr class="gn-rowh">
+            <td>
+              <div style="display:flex;align-items:center;gap:11px;">
+                <div class="gn-av deep" style="width:38px;height:38px;font-size:12.5px;">{{ initials(s.clientNom) }}</div>
+                <div><div style="font-weight:600;font-size:14px;color:#3a2c30;">{{ s.clientNom }}</div><div style="font-size:12px;color:#a99a9d;">{{ s.numeroRecu }}</div></div>
+              </div>
+            </td>
+            <td style="font-size:13.5px;color:#6d585d;">{{ s.chambreNumero }} · {{ s.chambreType }}</td>
+            <td style="font-size:13.5px;color:#6d585d;">{{ s.typeLocation === 'PASSAGE' ? 'Passage (h)' : 'Séjour (n)' }}</td>
+            <td style="font-size:13.5px;color:#6d585d;">{{ s.dateEntree | date:'dd/MM/yy HH:mm' }}</td>
+            <td style="font-size:13.5px;color:#6d585d;">{{ s.dateSortie ? (s.dateSortie | date:'dd/MM/yy HH:mm') : '—' }}</td>
+            <td style="font-size:13px;">
+              <span style="color:#3a2c30;font-weight:600;">{{ formatMontant(s.montantTotal) }}</span>
+              <span [ngClass]="s.resteAPayer > 0 ? 'c-red' : 'c-green'"> · {{ formatMontant(s.resteAPayer) }}</span>
+            </td>
+            <td><span class="gn-bdg" [ngClass]="statutTone(s.statut)">{{ getStatutLabel(s.statut) }}</span></td>
+            <td>
+              <button *ngIf="s.statut === 'EN_COURS'" class="gn-btn-o" style="padding:7px 14px;font-size:12.5px;" [disabled]="checkOutLoading && selectedSejourId === s.id" (click)="confirmCheckOut(s)">
+                <i class="ti ti-loader-2 gn-spin" *ngIf="checkOutLoading && selectedSejourId === s.id"></i>
+                <i class="ti ti-door-exit" *ngIf="!(checkOutLoading && selectedSejourId === s.id)"></i> Check-out
+              </button>
+            </td>
+          </tr>
+        </ng-template>
+        <ng-template pTemplate="emptymessage">
+          <tr><td colspan="8" class="gn-empty" style="text-align:center;">Aucun séjour trouvé</td></tr>
+        </ng-template>
+      </p-table>
+    </div>
+  </div>
 </div>
 
 <p-confirmDialog></p-confirmDialog>

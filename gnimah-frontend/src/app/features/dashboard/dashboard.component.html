@@ -1,132 +1,158 @@
-<div class="dashboard">
-  <div class="page-header">
-    <h1><i class="pi pi-home mr-2"></i>Tableau de bord</h1>
-    <p>{{ today | date:'EEEE d MMMM yyyy':'':'fr' }}</p>
+<!-- DASHBOARD DIRECTEUR -->
+<div class="gn-route" *ngIf="isDirecteur">
+  <div class="gn-slabel" style="color:#a99a9d;margin-bottom:10px;">Vue d'ensemble des chambres</div>
+  <div class="gn-kpi6">
+    <div class="gn-card" style="padding:16px;"><div style="font-size:12px;color:#8a7a7e;">Total chambres</div><div class="gn-serif" style="font-size:24px;margin-top:6px;color:#2e2024;">{{ totalChambres }}</div></div>
+    <div class="gn-card" style="padding:16px;"><div style="font-size:12px;color:#8a7a7e;">Disponibles</div><div class="gn-serif c-green" style="font-size:24px;margin-top:6px;">{{ chambresLibres }}</div></div>
+    <div class="gn-card" style="padding:16px;"><div style="font-size:12px;color:#8a7a7e;">Occupées</div><div class="gn-serif c-wine" style="font-size:24px;margin-top:6px;">{{ chambresOccupees }}</div></div>
+    <div class="gn-card" style="padding:16px;"><div style="font-size:12px;color:#8a7a7e;">Maintenance</div><div class="gn-serif c-slate" style="font-size:24px;margin-top:6px;">{{ chambresEnMaintenance }}</div></div>
+    <div class="gn-card" style="padding:16px;"><div style="font-size:12px;color:#8a7a7e;">Taux d'occupation</div><div class="gn-serif" style="font-size:24px;margin-top:6px;color:#2e2024;">{{ tauxOccupation }}%</div></div>
+    <div class="gn-card" style="padding:16px;"><div style="font-size:12px;color:#8a7a7e;">Clients hébergés</div><div class="gn-serif c-green" style="font-size:24px;margin-top:6px;">{{ sejoursEnCours.length }}</div></div>
   </div>
 
-  <!-- KPI Cards -->
-  <div class="kpi-grid">
-    <div class="kpi-card kpi-sejours">
-      <div class="kpi-icon"><i class="pi pi-users"></i></div>
-      <div class="kpi-content">
-        <span class="kpi-value">{{ sejoursEnCours.length }}</span>
-        <span class="kpi-label">Séjours en cours</span>
-      </div>
+  <div class="gn-slabel" style="color:#a99a9d;margin:18px 0 10px;">Activité du jour</div>
+  <div class="gn-kpi">
+    <div class="gn-card" style="padding:20px;">
+      <div style="font-size:13.5px;color:#8a7a7e;font-weight:500;">Arrivées du jour</div>
+      <div class="gn-serif c-wine" style="font-size:32px;font-weight:500;margin-top:8px;">{{ arriveesDuJour.length }}</div>
     </div>
-    <div class="kpi-card kpi-libres">
-      <div class="kpi-icon"><i class="pi pi-check-circle"></i></div>
-      <div class="kpi-content">
-        <span class="kpi-value">{{ chambresLibres }}</span>
-        <span class="kpi-label">Chambres libres</span>
-      </div>
+    <div class="gn-card" style="padding:20px;">
+      <div style="font-size:13.5px;color:#8a7a7e;font-weight:500;">Départs du jour</div>
+      <div class="gn-serif c-amber" style="font-size:32px;font-weight:500;margin-top:8px;">{{ departsJour.length }}</div>
     </div>
-    <div class="kpi-card kpi-arrivees">
-      <div class="kpi-icon"><i class="pi pi-sign-in"></i></div>
-      <div class="kpi-content">
-        <span class="kpi-value">{{ arriveesDuJour.length }}</span>
-        <span class="kpi-label">Arrivées du jour</span>
-      </div>
+    <div class="gn-card" style="padding:20px;">
+      <div style="font-size:13.5px;color:#8a7a7e;font-weight:500;">Réservations à venir</div>
+      <div class="gn-serif c-slate" style="font-size:32px;font-weight:500;margin-top:8px;">{{ reservationsAVenir }}</div>
     </div>
-    <div class="kpi-card kpi-departs">
-      <div class="kpi-icon"><i class="pi pi-sign-out"></i></div>
-      <div class="kpi-content">
-        <span class="kpi-value">{{ departsJour.length }}</span>
-        <span class="kpi-label">Départs du jour</span>
-      </div>
+    <div class="gn-card" style="padding:20px;">
+      <div style="font-size:13.5px;color:#8a7a7e;font-weight:500;">Reste à payer</div>
+      <div class="gn-serif c-red" style="font-size:32px;font-weight:500;margin-top:8px;">{{ formatCurrency(kpi?.resteAPayer) }}</div>
     </div>
-    <ng-container *ngIf="authService.hasDirecteurAccess() && kpi">
-      <div class="kpi-card kpi-ca">
-        <div class="kpi-icon"><i class="pi pi-dollar"></i></div>
-        <div class="kpi-content">
-          <span class="kpi-value">{{ formatCurrency(kpi.chiffreAffaires) }}</span>
-          <span class="kpi-label">CA du jour</span>
-        </div>
-      </div>
-      <div class="kpi-card kpi-taux">
-        <div class="kpi-icon"><i class="pi pi-percentage"></i></div>
-        <div class="kpi-content">
-          <span class="kpi-value">{{ tauxOccupation }}%</span>
-          <span class="kpi-label">Taux d'occupation</span>
-        </div>
-      </div>
-    </ng-container>
   </div>
 
-  <div class="dashboard-grid">
-    <!-- Séjours en cours -->
-    <div class="dashboard-panel">
-      <div class="panel-header">
-        <h3><i class="pi pi-list mr-2"></i>Séjours en cours</h3>
-        <a routerLink="/sejours" class="p-button p-button-text p-button-sm">Voir tout</a>
-      </div>
-      <p-table [value]="sejoursEnCours" [rows]="5" styleClass="p-datatable-sm" responsiveLayout="scroll">
-        <ng-template pTemplate="header">
-          <tr>
-            <th>N° Reçu</th>
-            <th>Client</th>
-            <th>Chambre</th>
-            <th>Entrée</th>
-            <th>RAP</th>
-          </tr>
-        </ng-template>
-        <ng-template pTemplate="body" let-s>
-          <tr>
-            <td><code>{{ s.numeroRecu }}</code></td>
-            <td>{{ s.clientNom }}</td>
-            <td><p-tag [value]="s.chambreNumero" severity="info"></p-tag></td>
-            <td>{{ s.dateEntree | date:'dd/MM HH:mm' }}</td>
-            <td [class.text-red-500]="s.resteAPayer > 0">
-              {{ formatCurrency(s.resteAPayer) }}
-            </td>
-          </tr>
-        </ng-template>
-        <ng-template pTemplate="emptymessage">
-          <tr><td colspan="5" class="text-center text-500 py-3">Aucun séjour en cours</td></tr>
-        </ng-template>
-      </p-table>
+  <div class="gn-slabel" style="color:#a99a9d;margin:18px 0 10px;">Revenus</div>
+  <div class="gn-dash3">
+    <div class="gn-card gn-kpicard">
+      <div class="gn-kpiglow"></div>
+      <div class="gn-kpihead"><div class="gn-tile wine"><i class="ti ti-cash-banknote"></i></div><div class="gn-kpilabel">Revenus du jour</div></div>
+      <div class="gn-serif gn-kpivalue">{{ formatCurrency(kpi?.chiffreAffaires) }}</div>
+      <div class="gn-kpidelta"><span class="c-green">{{ formatCurrency(kpi?.encaissements) }}</span> <span class="gn-kpisub">encaissés</span></div>
     </div>
+    <div class="gn-card gn-kpicard">
+      <div class="gn-kpiglow"></div>
+      <div class="gn-kpihead"><div class="gn-tile brown"><i class="ti ti-calendar-dollar"></i></div><div class="gn-kpilabel">Revenus mensuels</div></div>
+      <div class="gn-serif gn-kpivalue">{{ formatCurrency(kpiMonthly?.chiffreAffaires) }}</div>
+      <div class="gn-kpidelta"><span class="c-gray">{{ kpiMonthly?.totalSejours || 0 }}</span> <span class="gn-kpisub">séjour(s) ce mois</span></div>
+    </div>
+  </div>
 
-    <!-- Plan des chambres -->
-    <div class="dashboard-panel">
-      <div class="panel-header">
-        <h3><i class="pi pi-th-large mr-2"></i>État des chambres</h3>
-        <a routerLink="/chambres" class="p-button p-button-text p-button-sm">Plan complet</a>
+  <div class="gn-dash2" style="margin-top:18px;">
+    <div class="gn-card" style="padding:22px;">
+      <div class="gn-chartheader">
+        <div class="gn-serif" style="font-size:18px;color:#2e2024;">Chiffre d'affaires · 7 derniers jours</div>
       </div>
-      <div class="chambre-grid-mini">
-        <div
-          *ngFor="let c of chambres"
-          class="chambre-mini"
-          [class]="'chambre-' + c.etat.toLowerCase()"
-          [pTooltip]="'Chambre ' + c.numero + ' — ' + c.etat"
-        >
-          <span class="chambre-num">{{ c.numero }}</span>
-        </div>
+      <svg *ngIf="chartBars.length" viewBox="0 0 560 220" preserveAspectRatio="none" style="width:100%;height:230px;margin-top:12px;">
+        <ng-container *ngFor="let b of chartBars">
+          <rect [attr.x]="b.x" [attr.y]="b.y" [attr.width]="b.w" [attr.height]="b.h" rx="5" fill="#8c2f4d"></rect>
+          <text [attr.x]="b.labelX" [attr.y]="b.labelY" text-anchor="middle" font-family="Newsreader,serif" font-size="14" fill="#7a6a6e">{{ b.label }}</text>
+          <text [attr.x]="b.dayX" y="210" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="12" fill="#a99a9d">{{ b.day }}</text>
+        </ng-container>
+      </svg>
+      <div *ngIf="!chartBars.length" class="gn-empty">Pas encore de données sur la période.</div>
+    </div>
+    <div class="gn-card" style="padding:22px;">
+      <div class="gn-serif" style="font-size:18px;color:#2e2024;">Taux d'occupation</div>
+      <div style="display:flex;justify-content:center;margin:14px 0 6px;">
+        <svg width="200" height="200" viewBox="0 0 120 120">
+          <circle cx="60" cy="60" r="52" fill="none" stroke="#f2e3e6" stroke-width="15"></circle>
+          <circle cx="60" cy="60" r="52" fill="none" stroke="#b23a55" stroke-width="15" stroke-linecap="round"
+                  [attr.stroke-dasharray]="occupationDashArray" transform="rotate(-90 60 60)"></circle>
+          <text x="60" y="57" text-anchor="middle" font-family="Newsreader,serif" font-size="30" fill="#8c2f4d">{{ tauxOccupation }}%</text>
+          <text x="60" y="74" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="8.5" fill="#a99a9d">{{ kpi?.chambresOccupees || 0 }} / {{ kpi?.totalChambres || 0 }} occupées</text>
+        </svg>
       </div>
-      <div class="chambre-legend">
-        <span><span class="dot libre"></span>Libre</span>
-        <span><span class="dot occupee"></span>Occupée</span>
-        <span><span class="dot a_nettoyer"></span>À nettoyer</span>
-        <span><span class="dot en_maintenance"></span>Maintenance</span>
+      <div style="display:flex;justify-content:center;gap:20px;font-size:12.5px;color:#8a7a7e;">
+        <span style="display:inline-flex;align-items:center;gap:6px;"><span class="gn-dot c-wine"></span>Occupées {{ kpi?.chambresOccupees || 0 }}</span>
+        <span style="display:inline-flex;align-items:center;gap:6px;"><span class="gn-dot" style="color:#f2e3e6;"></span>Libres {{ chambresLibres }}</span>
       </div>
     </div>
+  </div>
 
-    <!-- Arrivées du jour -->
-    <div class="dashboard-panel" *ngIf="arriveesDuJour.length > 0">
-      <div class="panel-header">
-        <h3><i class="pi pi-calendar-plus mr-2"></i>Arrivées attendues</h3>
-      </div>
-      <div class="arrivals-list">
-        <div *ngFor="let r of arriveesDuJour" class="arrival-item">
-          <p-avatar [label]="(r.clientNom || '?').charAt(0)" shape="circle" styleClass="mr-2"></p-avatar>
-          <div class="arrival-info">
-            <span class="arrival-name">{{ r.clientNom }}</span>
-            <span class="arrival-detail">
-              Chambre {{ r.chambreNumero || r.typeChambre }} — {{ r.nbNuits }} nuit(s)
-            </span>
-          </div>
-          <p-tag value="Confirmée" severity="success"></p-tag>
+  <div class="gn-dash3" style="margin-top:18px;">
+    <div class="gn-card" style="padding:22px;">
+      <div class="gn-serif" style="font-size:18px;color:#2e2024;margin-bottom:16px;">Indicateurs hôteliers</div>
+      <div *ngFor="let b of indicators" style="margin-bottom:15px;">
+        <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:6px;">
+          <div><span class="gn-serif" style="color:#8c2f4d;font-size:15px;font-weight:600;">{{ b.l }}</span> <span style="font-size:12px;color:#a99a9d;">{{ b.s }}</span></div>
+          <div style="font-weight:700;font-size:14px;color:#3a2c30;">{{ b.v }}</div>
         </div>
+        <svg viewBox="0 0 100 6" preserveAspectRatio="none" style="width:100%;height:6px;">
+          <rect width="100" height="6" rx="3" fill="#f2e3e6"></rect>
+          <rect [attr.width]="b.w" height="6" rx="3" fill="#8c2f4d"></rect>
+        </svg>
       </div>
+      <div *ngIf="!indicators.length" class="gn-empty">Indicateurs indisponibles.</div>
+    </div>
+    <div class="gn-card" style="padding:22px;">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
+        <div class="gn-serif" style="font-size:18px;color:#2e2024;">Performance par agent</div>
+        <div style="font-size:12px;color:#a99a9d;">Aujourd'hui</div>
+      </div>
+      <div *ngFor="let a of agentPerformance" style="display:flex;align-items:center;gap:12px;padding:12px 0;border-top:1px solid #f2e8e4;">
+        <div class="gn-av" [ngClass]="a.tone" style="width:40px;height:40px;font-size:13px;">{{ a.initials }}</div>
+        <div style="flex:1;"><div style="font-weight:600;font-size:14px;color:#3a2c30;">{{ a.name }}</div><div style="font-size:12px;color:#a99a9d;">{{ a.count }}</div></div>
+        <div class="gn-serif" style="font-size:16px;color:#8c2f4d;">{{ a.ca }}</div>
+      </div>
+      <div *ngIf="!agentPerformance.length" class="gn-empty">Aucune activité agent aujourd'hui.</div>
+    </div>
+  </div>
+</div>
+
+<!-- ACCUEIL AGENT -->
+<div class="gn-route" *ngIf="!isDirecteur">
+  <div class="gn-kpi">
+    <div class="gn-card" style="padding:20px;">
+      <div style="font-size:13.5px;color:#8a7a7e;font-weight:500;">Arrivées du jour</div>
+      <div class="gn-serif c-wine" style="font-size:36px;font-weight:500;margin-top:8px;">{{ arriveesDuJour.length }}</div>
+      <div style="font-size:12.5px;color:#a99a9d;margin-top:4px;">à enregistrer</div>
+    </div>
+    <div class="gn-card" style="padding:20px;">
+      <div style="font-size:13.5px;color:#8a7a7e;font-weight:500;">Départs du jour</div>
+      <div class="gn-serif c-amber" style="font-size:36px;font-weight:500;margin-top:8px;">{{ departsJour.length }}</div>
+      <div style="font-size:12.5px;color:#a99a9d;margin-top:4px;">chambres à libérer</div>
+    </div>
+    <div class="gn-card" style="padding:20px;">
+      <div style="font-size:13.5px;color:#8a7a7e;font-weight:500;">Chambres à nettoyer</div>
+      <div class="gn-serif c-gold" style="font-size:36px;font-weight:500;margin-top:8px;">{{ chambresANettoyer.length }}</div>
+      <div style="font-size:12.5px;color:#a99a9d;margin-top:4px;">housekeeping</div>
+    </div>
+    <div class="gn-card" style="padding:20px;">
+      <div style="font-size:13.5px;color:#8a7a7e;font-weight:500;">Séjours en cours</div>
+      <div class="gn-serif c-green" style="font-size:36px;font-weight:500;margin-top:8px;">{{ sejoursEnCours.length }}</div>
+      <div style="font-size:12.5px;color:#a99a9d;margin-top:4px;">aujourd'hui</div>
+    </div>
+  </div>
+
+  <div class="gn-agh" style="margin-top:18px;">
+    <div class="gn-card" style="padding:22px;">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;">
+        <div class="gn-serif" style="font-size:18px;color:#2e2024;">🛬 Arrivées du jour</div>
+        <span class="gn-bdg wine">{{ arriveesDuJour.length }}</span>
+      </div>
+      <div *ngFor="let a of arriveesDuJour" style="display:flex;align-items:center;gap:14px;padding:14px 0;border-top:1px solid #f2e8e4;">
+        <div style="flex:1;"><div style="font-weight:600;font-size:14px;color:#3a2c30;">{{ a.clientNom }}</div><div style="font-size:12.5px;color:#a99a9d;">{{ a.chambreNumero || a.typeChambre }} · {{ a.nbNuits }} nuit(s)</div></div>
+        <a routerLink="/sejours/check-in" class="gn-btn-p" style="padding:8px 16px;font-size:13px;text-decoration:none;">Check-in</a>
+      </div>
+      <div *ngIf="!arriveesDuJour.length" class="gn-empty">Aucune arrivée prévue aujourd'hui.</div>
+    </div>
+    <div class="gn-card" style="padding:22px;">
+      <div class="gn-serif" style="font-size:18px;color:#2e2024;margin-bottom:6px;">🔔 À traiter</div>
+      <div *ngFor="let t of agentTodos" style="display:flex;align-items:center;gap:13px;padding:13px 14px;border-radius:14px;margin-top:10px;" [style.background]="t.bg">
+        <i class="ti" [ngClass]="[t.icon, t.cls]" style="font-size:20px;"></i>
+        <div style="flex:1;font-size:13.5px;font-weight:500;color:#3a2c30;">{{ t.label }}</div>
+        <div [ngClass]="t.cls" style="font-size:12px;font-weight:600;">{{ t.tag }}</div>
+      </div>
+      <div *ngIf="!agentTodos.length" class="gn-empty">Rien à traiter pour l'instant 🎉</div>
     </div>
   </div>
 </div>

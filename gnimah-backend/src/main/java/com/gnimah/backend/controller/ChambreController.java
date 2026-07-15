@@ -44,10 +44,24 @@ public class ChambreController {
         return ResponseEntity.ok(chambreService.updateEtat(id, body.get("etat")));
     }
 
+    @PatchMapping("/{id}/actif")
+    @PreAuthorize("hasAnyRole('DIRECTEUR','ADMIN')")
+    @Operation(summary = "Activer / désactiver une chambre (suppression logique)")
+    public ResponseEntity<ChambreResponse> toggleActif(@PathVariable Long id) {
+        return ResponseEntity.ok(chambreService.toggleActif(id));
+    }
+
     @GetMapping
-    @Operation(summary = "Lister toutes les chambres")
+    @Operation(summary = "Lister toutes les chambres actives")
     public ResponseEntity<List<ChambreResponse>> findAll() {
         return ResponseEntity.ok(chambreService.findAll());
+    }
+
+    @GetMapping("/toutes")
+    @PreAuthorize("hasAnyRole('DIRECTEUR','ADMIN')")
+    @Operation(summary = "Lister toutes les chambres, y compris désactivées (écran de gestion)")
+    public ResponseEntity<List<ChambreResponse>> findAllAdmin() {
+        return ResponseEntity.ok(chambreService.findAllAdmin());
     }
 
     @GetMapping("/disponibles")

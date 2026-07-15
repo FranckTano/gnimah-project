@@ -37,6 +37,9 @@ public class ChambreService {
                 .etage(request.getEtage())
                 .description(request.getDescription())
                 .equipements(request.getEquipements())
+                .vue(request.getVue())
+                .observations(request.getObservations())
+                .photos(request.getPhotos())
                 .build();
         return toResponse(chambreRepository.save(chambre));
     }
@@ -53,6 +56,9 @@ public class ChambreService {
         chambre.setEtage(request.getEtage());
         chambre.setDescription(request.getDescription());
         chambre.setEquipements(request.getEquipements());
+        chambre.setVue(request.getVue());
+        chambre.setObservations(request.getObservations());
+        chambre.setPhotos(request.getPhotos());
         return toResponse(chambreRepository.save(chambre));
     }
 
@@ -63,9 +69,24 @@ public class ChambreService {
         return toResponse(chambreRepository.save(chambre));
     }
 
+    /** Soft delete / restore — rooms are referenced by historical séjours & réservations, so they're deactivated, never hard-deleted. */
+    @Transactional
+    public ChambreResponse toggleActif(Long id) {
+        Chambre chambre = findById(id);
+        chambre.setActif(!chambre.isActif());
+        return toResponse(chambreRepository.save(chambre));
+    }
+
     @Transactional(readOnly = true)
     public List<ChambreResponse> findAll() {
         return chambreRepository.findByActifTrue().stream()
+                .map(this::toResponse).collect(Collectors.toList());
+    }
+
+    /** Includes deactivated rooms — for the room-management screen only (findAll() feeds the live room board). */
+    @Transactional(readOnly = true)
+    public List<ChambreResponse> findAllAdmin() {
+        return chambreRepository.findAll().stream()
                 .map(this::toResponse).collect(Collectors.toList());
     }
 
@@ -103,6 +124,9 @@ public class ChambreService {
                 .etage(c.getEtage())
                 .description(c.getDescription())
                 .equipements(c.getEquipements())
+                .vue(c.getVue())
+                .observations(c.getObservations())
+                .photos(c.getPhotos())
                 .actif(c.isActif())
                 .disponible(c.isDisponible())
                 .build();

@@ -1,96 +1,58 @@
-<div class="page-header">
-  <h1><i class="pi pi-calendar-plus mr-2"></i>Nouvelle Réservation</h1>
-  <p>Enregistrement d'une réservation client</p>
+<div class="gn-route">
+  <div class="gn-card" style="padding:28px;max-width:640px;margin:0 auto;">
+    <form [formGroup]="form" (ngSubmit)="save()">
+      <label class="gn-flabel">Client *</label>
+      <select class="gn-input" formControlName="clientId" style="margin-top:6px;margin-bottom:14px;" [class.gn-invalid]="isInvalid('clientId')">
+        <option [ngValue]="null" disabled>Sélectionner un client</option>
+        <option *ngFor="let c of clients" [ngValue]="c.id">{{ c.nomComplet }} — {{ c.telephone }}</option>
+      </select>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+        <div>
+          <label class="gn-flabel">Chambre spécifique</label>
+          <select class="gn-input" formControlName="chambreId" style="margin-top:6px;">
+            <option [ngValue]="null">Choisir une chambre</option>
+            <option *ngFor="let c of chambres" [ngValue]="c.id">{{ c.numero }} · {{ c.type }}</option>
+          </select>
+        </div>
+        <div>
+          <label class="gn-flabel">Ou type de chambre</label>
+          <select class="gn-input" formControlName="typeChambre" style="margin-top:6px;">
+            <option [ngValue]="null">Type souhaité</option>
+            <option *ngFor="let t of typesChambres" [value]="t.value">{{ t.label }}</option>
+          </select>
+        </div>
+      </div>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:14px;">
+        <div>
+          <label class="gn-flabel">Date d'arrivée *</label>
+          <input class="gn-input" type="date" formControlName="dateArrivee" [min]="today" style="margin-top:6px;" [class.gn-invalid]="isInvalid('dateArrivee')" />
+        </div>
+        <div>
+          <label class="gn-flabel">Date de départ *</label>
+          <input class="gn-input" type="date" formControlName="dateDepart" style="margin-top:6px;" [class.gn-invalid]="isInvalid('dateDepart')" />
+        </div>
+      </div>
+
+      <div style="margin-top:14px;">
+        <label class="gn-flabel">Acompte (XOF)</label>
+        <input class="gn-input" type="number" min="0" formControlName="acompte" style="margin-top:6px;" />
+      </div>
+
+      <div style="margin-top:14px;">
+        <label class="gn-flabel">Notes</label>
+        <textarea class="gn-input" formControlName="notes" rows="3" placeholder="Demandes spéciales…" style="margin-top:6px;resize:vertical;"></textarea>
+      </div>
+
+      <div style="display:flex;gap:10px;margin-top:22px;">
+        <button type="submit" class="gn-btn-p" style="flex:1;padding:13px;font-size:14px;" [disabled]="saving">
+          <i class="ti ti-loader-2 gn-spin" *ngIf="saving"></i><span>Créer la réservation</span>
+        </button>
+        <a routerLink="/reservations" class="gn-btn-o" style="padding:13px 20px;font-size:14px;text-decoration:none;">Annuler</a>
+      </div>
+    </form>
+  </div>
 </div>
 
-<div class="panel" style="max-width:650px; margin:0 auto">
-  <form [formGroup]="form" (ngSubmit)="save()">
-    <div class="p-fluid">
-
-      <div class="field mb-3">
-        <label class="font-bold">Client <span class="text-red-500">*</span></label>
-        <p-select
-          formControlName="clientId"
-          [options]="clients"
-          optionLabel="nomComplet"
-          optionValue="id"
-          placeholder="Sélectionner un client"
-          [filter]="true"
-          filterBy="nomComplet,telephone"
-          [class.ng-invalid]="isInvalid('clientId')">
-        </p-select>
-        <small *ngIf="isInvalid('clientId')" class="p-error">Client requis</small>
-      </div>
-
-      <div class="grid">
-        <div class="col-6">
-          <div class="field">
-            <label class="font-bold">Chambre spécifique</label>
-            <p-select
-              formControlName="chambreId"
-              [options]="chambres"
-              optionLabel="numero"
-              optionValue="id"
-              placeholder="Choisir une chambre"
-              [showClear]="true">
-            </p-select>
-          </div>
-        </div>
-        <div class="col-6">
-          <div class="field">
-            <label class="font-bold">Ou type de chambre</label>
-            <p-select
-              formControlName="typeChambre"
-              [options]="typesChambres"
-              optionLabel="label"
-              optionValue="value"
-              placeholder="Type souhaité"
-              [showClear]="true">
-            </p-select>
-          </div>
-        </div>
-      </div>
-
-      <div class="grid">
-        <div class="col-6">
-          <div class="field">
-            <label class="font-bold">Date d'arrivée <span class="text-red-500">*</span></label>
-            <p-datepicker
-              formControlName="dateArrivee"
-              dateFormat="dd/mm/yy"
-              [minDate]="today"
-              [class.ng-invalid]="isInvalid('dateArrivee')">
-            </p-datepicker>
-            <small *ngIf="isInvalid('dateArrivee')" class="p-error">Date d'arrivée requise</small>
-          </div>
-        </div>
-        <div class="col-6">
-          <div class="field">
-            <label class="font-bold">Date de départ <span class="text-red-500">*</span></label>
-            <p-datepicker
-              formControlName="dateDepart"
-              dateFormat="dd/mm/yy"
-              [class.ng-invalid]="isInvalid('dateDepart')">
-            </p-datepicker>
-            <small *ngIf="isInvalid('dateDepart')" class="p-error">Date de départ requise</small>
-          </div>
-        </div>
-      </div>
-
-      <div class="field mb-3">
-        <label class="font-bold">Acompte (XOF)</label>
-        <p-inputNumber formControlName="acompte" [min]="0" mode="decimal" locale="fr-CI" suffix=" XOF"></p-inputNumber>
-      </div>
-
-      <div class="field mb-3">
-        <label class="font-bold">Notes</label>
-        <textarea pTextarea formControlName="notes" rows="3" placeholder="Demandes spéciales..."></textarea>
-      </div>
-
-      <div class="flex gap-2">
-        <p-button type="submit" label="Créer la Réservation" icon="pi pi-check" severity="success" [loading]="saving" class="flex-1"></p-button>
-        <p-button type="button" label="Annuler" icon="pi pi-times" severity="secondary" routerLink="/reservations"></p-button>
-      </div>
-    </div>
-  </form>
-</div>
+<p-toast></p-toast>

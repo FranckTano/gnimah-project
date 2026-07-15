@@ -1,0 +1,1285 @@
+<!DOCTYPE html>
+<html>
+<head>
+<style data-omelette-print-defaults>
+@media print {
+  @page { margin: 0.5in; }
+  h1, h2, h3, h4, h5, h6 { break-after: avoid; }
+  figure, table, pre, blockquote, img, svg, tr, [class~="card" i] { break-inside: avoid; }
+  img, svg { max-width: 100%; }
+  p { orphans: 3; widows: 3; }
+}
+</style>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Newsreader:opsz,wght@6..72,300;6..72,400;6..72,500;6..72,600&family=DM+Sans:wght@400;500;600;700&display=swap">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.31.0/dist/tabler-icons.min.css">
+<style>
+*{box-sizing:border-box;}
+html,body{margin:0;padding:0;}
+body{font-family:'DM Sans',system-ui,sans-serif;color:#3a2c30;background:#ece0d8;-webkit-font-smoothing:antialiased;}
+a{color:#8c2f4d;text-decoration:none;} a:hover{color:#6f2440;}
+input,button,select,textarea{font-family:inherit;}
+.gn-serif{font-family:'Newsreader',Georgia,serif;}
+@keyframes gnFade{from{opacity:0;transform:translateY(6px);}to{opacity:1;transform:none;}}
+.gn-route{animation:gnFade .28s cubic-bezier(.22,1,.36,1);}
+
+.gn-root{min-height:100vh;}
+.gn-shell{display:grid;grid-template-columns:254px 1fr;min-height:100vh;}
+.gn-side{position:sticky;top:0;align-self:start;height:100vh;overflow-y:auto;background:linear-gradient(180deg,#45212a 0%,#2a1418 55%,#190d10 100%);color:#e6d3d7;display:flex;flex-direction:column;z-index:70;}
+.gn-side::-webkit-scrollbar{width:0;}
+.gn-backdrop{display:none;}
+.gn-ham{display:none;}
+.gn-main{min-width:0;display:flex;flex-direction:column;}
+.gn-topbar{position:sticky;top:0;z-index:40;background:rgba(236,224,216,.86);backdrop-filter:blur(10px);border-bottom:1px solid rgba(140,60,80,.10);padding:14px 26px;display:flex;align-items:center;gap:16px;}
+.gn-search{flex:1 1 auto;max-width:520px;margin:0 8px;}
+.gn-body{padding:26px 30px 64px;}
+
+.gn-card{background:#fff;border-radius:22px;box-shadow:0 1px 3px rgba(60,25,30,.05),0 12px 30px rgba(60,25,30,.05);}
+.gn-slabel{font-size:11px;letter-spacing:.15em;text-transform:uppercase;font-weight:600;}
+.gn-th{font-size:11px;letter-spacing:.11em;text-transform:uppercase;color:#b3a2a6;font-weight:600;}
+.gn-input{width:100%;border:1px solid #e6d8d2;border-radius:13px;padding:12px 14px;font-size:14px;color:#3a2c30;background:#fff;outline:none;transition:border-color .15s,box-shadow .15s;}
+.gn-input:focus{border-color:#c07892;box-shadow:0 0 0 3px rgba(160,60,90,.14);}
+
+.gn-btn-p{background:linear-gradient(180deg,#9a3453,#7f2542);color:#fff;border:none;border-radius:14px;font-weight:600;cursor:pointer;box-shadow:0 8px 20px rgba(140,47,77,.26);transition:filter .15s,transform .1s;}
+.gn-btn-p:hover{filter:brightness(1.07);} .gn-btn-p:active{transform:scale(.985);}
+.gn-btn-o{background:#fff;border:1px solid #ecdcd6;border-radius:14px;color:#4d3f43;font-weight:600;cursor:pointer;transition:background .15s;}
+.gn-btn-o:hover{background:#faf4f1;} .gn-btn-o:active{transform:scale(.985);}
+
+.gn-navitem{width:100%;display:flex;align-items:center;gap:12px;padding:11px 12px;border:none;background:transparent;color:#d3bcc1;font-size:14.5px;font-weight:500;border-radius:13px;cursor:pointer;text-align:left;position:relative;transition:background .15s,color .15s;}
+.gn-navitem:hover{background:rgba(255,255,255,.06);color:#fff;}
+.gn-navitem.on{background:rgba(199,106,132,.20);color:#fff;}
+.gn-navitem.on::before{content:'';position:absolute;left:0;top:9px;bottom:9px;width:3px;border-radius:0 3px 3px 0;background:#d67c96;}
+
+.gn-seg{border:none;background:transparent;padding:6px 15px;border-radius:100px;font-size:13px;font-weight:600;color:#9a7a82;cursor:pointer;transition:.15s;}
+.gn-seg.on{background:#fff;color:#8c2f4d;box-shadow:0 1px 3px rgba(0,0,0,.09);}
+.gn-icobtn{width:40px;height:40px;border-radius:12px;background:#fff;border:1px solid #ecdcd6;color:#6d585d;display:inline-flex;align-items:center;justify-content:center;cursor:pointer;font-size:19px;position:relative;flex:none;}
+.gn-icobtn:hover{background:#faf4f1;}
+
+.gn-bdg{display:inline-flex;align-items:center;gap:5px;padding:4px 11px;border-radius:100px;font-size:12px;font-weight:600;white-space:nowrap;}
+.gn-bdg.green{background:#e6f4ec;color:#2f9e6f;} .gn-bdg.amber{background:#fbeecb;color:#b98a1e;}
+.gn-bdg.wine{background:#f6dfe4;color:#b23a55;} .gn-bdg.gray{background:#efe7e4;color:#9a8a86;}
+.gn-bdg.red{background:#f8e0e0;color:#d0455a;} .gn-bdg.slate{background:#eceff5;color:#5f7191;}
+.gn-bdg.gold{background:#f4e6c8;color:#a07b28;}
+
+.gn-av{border-radius:11px;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:600;flex:none;}
+.gn-av.wine{background:#b23a55;} .gn-av.gold{background:#b8902f;} .gn-av.slate{background:#5f7191;}
+.gn-av.green{background:#2f9e6f;} .gn-av.deep{background:#8c2f4d;}
+
+.gn-tile{width:40px;height:40px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:20px;color:#fff;flex:none;}
+.gn-tile.wine{background:#8c2f4d;} .gn-tile.brown{background:#6b3b32;} .gn-tile.green{background:#2f9e6f;} .gn-tile.gold{background:#c79a35;}
+
+.c-wine{color:#b23a55;} .c-amber{color:#c9922f;} .c-gold{color:#d9a441;} .c-green{color:#2f9e6f;}
+.c-slate{color:#5f7191;} .c-gray{color:#9a8a86;} .c-red{color:#d0455a;} .c-deep{color:#8c2f4d;}
+
+.gn-dot{width:9px;height:9px;border-radius:50%;display:inline-block;background:currentColor;flex:none;}
+.gn-room{border-radius:16px;border:1px solid rgba(70,30,35,.05);border-left:4px solid #ccc;padding:14px;background:#fff;transition:transform .12s;}
+.gn-room:hover{transform:translateY(-2px);}
+.gn-room.libre{border-left-color:#2f9e6f;background:#eef7f2;} .gn-room.occupee{border-left-color:#b23a55;background:#fbeef1;}
+.gn-room.nettoyer{border-left-color:#e0a93e;background:#fdf4e3;} .gn-room.entretien{border-left-color:#5f7191;background:#eef1f6;}
+.gn-room.hs{border-left-color:#a5a5a5;background:#f1efee;}
+
+.gn-chip{border:1px solid #e6d3d9;background:#fff;color:#8c2f4d;border-radius:12px;padding:9px 13px;font-size:13px;font-weight:600;cursor:pointer;transition:.15s;}
+.gn-chip:hover{background:#fbeef1;} .gn-chip.on{background:#8c2f4d;color:#fff;border-color:#8c2f4d;}
+
+.gn-table{width:100%;border-collapse:collapse;min-width:640px;}
+.gn-table th{text-align:left;padding:0 16px 14px;} .gn-table td{padding:16px;border-top:1px solid #f2e8e4;vertical-align:middle;}
+.gn-tw{overflow-x:auto;}
+.gn-rowh:hover{background:#faf4f1;}
+
+.gn-kpi{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;}
+.gn-dash2{display:grid;grid-template-columns:1.12fr .88fr;gap:18px;}
+.gn-dash3{display:grid;grid-template-columns:1fr 1fr;gap:18px;}
+.gn-ck{display:grid;grid-template-columns:1fr 348px;gap:18px;align-items:start;}
+.gn-rcpt{display:grid;grid-template-columns:1fr 316px;gap:18px;align-items:start;}
+.gn-cal{display:grid;grid-template-columns:1fr 326px;gap:18px;align-items:start;}
+.gn-rooms{display:grid;grid-template-columns:repeat(6,1fr);gap:14px;}
+.gn-hk{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;align-items:start;}
+.gn-resv{display:grid;grid-template-columns:repeat(5,1fr);gap:14px;}
+.gn-agh{display:grid;grid-template-columns:1fr 1.1fr;gap:18px;align-items:start;}
+.gn-caldays{display:grid;grid-template-columns:repeat(7,1fr);gap:6px;}
+
+.gn-login{display:grid;grid-template-columns:1.05fr .95fr;min-height:100vh;}
+.gn-login-hero{position:relative;overflow:hidden;background:radial-gradient(120% 90% at 76% 22%,#7c2942 0%,#3c1b23 46%,#1c0e12 100%);color:#efdce0;padding:56px 60px;display:flex;flex-direction:column;}
+
+@media(max-width:1140px){
+  .gn-kpi{grid-template-columns:repeat(2,1fr);}
+  .gn-dash2,.gn-dash3,.gn-agh{grid-template-columns:1fr;}
+  .gn-rooms{grid-template-columns:repeat(4,1fr);}
+  .gn-resv{grid-template-columns:repeat(3,1fr);}
+}
+@media(max-width:900px){
+  .gn-shell{grid-template-columns:1fr;}
+  .gn-side{position:fixed;top:0;left:0;width:272px;transform:translateX(-102%);transition:transform .3s cubic-bezier(.22,1,.36,1);box-shadow:0 0 60px rgba(0,0,0,.4);}
+  .gn-side.open{transform:translateX(0);}
+  .gn-backdrop{display:block;position:fixed;inset:0;background:rgba(24,12,15,.5);z-index:60;opacity:0;pointer-events:none;transition:opacity .3s;}
+  .gn-backdrop.open{opacity:1;pointer-events:auto;}
+  .gn-ham{display:inline-flex;}
+  .gn-hideSm{display:none !important;}
+  .gn-body{padding:18px 15px 52px;}
+  .gn-ck,.gn-rcpt,.gn-cal{grid-template-columns:1fr;}
+  .gn-hk{grid-template-columns:1fr;}
+  .gn-topbar{padding:12px 15px;}
+  .gn-login{grid-template-columns:1fr;}
+  .gn-login-hero{padding:38px 26px;}
+}
+@media(max-width:560px){
+  .gn-kpi{grid-template-columns:1fr;}
+  .gn-rooms{grid-template-columns:repeat(2,1fr);}
+  .gn-resv{grid-template-columns:repeat(2,1fr);}
+  .gn-caldays{gap:3px;}
+}
+</style>
+</helmet>
+
+<div class="gn-root">
+
+<sc-if value="{{ showLogin }}" hint-placeholder-val="{{ true }}">
+<div class="gn-login">
+  <div class="gn-login-hero">
+    <div style="position:absolute;width:380px;height:380px;border-radius:50%;right:-90px;top:-60px;background:radial-gradient(circle,rgba(199,106,132,.34),transparent 70%);"></div>
+    <div style="display:flex;align-items:center;gap:14px;position:relative;">
+      <div class="gn-serif" style="width:56px;height:56px;border-radius:16px;background:#9d3654;display:flex;align-items:center;justify-content:center;font-size:30px;color:#fff;box-shadow:0 8px 20px rgba(0,0,0,.3);">G</div>
+      <div>
+        <div class="gn-serif" style="font-size:24px;letter-spacing:.14em;line-height:1;">GNIMAH</div>
+        <div class="gn-slabel" style="color:#c99aa5;margin-top:5px;">Résidence Hôtelière</div>
+      </div>
+    </div>
+    <div style="margin-top:52px;position:relative;">
+      <div class="gn-slabel" style="color:#c78a98;">Gestion administrative</div>
+      <h1 class="gn-serif" style="font-weight:400;font-size:44px;line-height:1.12;margin:16px 0 0;letter-spacing:-.01em;">Chaque séjour,<br>chaque reçu, chaque<br>chambre — au<br>même endroit.</h1>
+      <p style="max-width:420px;color:#d3b7bd;font-size:15px;line-height:1.6;margin-top:20px;">Fini les registres papier. Enregistrez, facturez et pilotez la Résidence Hôtel GNIMAH en temps réel, du comptoir de réception à la direction.</p>
+    </div>
+    <div style="display:flex;gap:30px;margin-top:auto;padding-top:44px;position:relative;">
+      <div><div class="gn-serif" style="font-size:30px;">24</div><div class="gn-slabel" style="color:#bd8894;margin-top:3px;">Chambres</div></div>
+      <div style="width:1px;background:rgba(199,106,132,.35);"></div>
+      <div><div class="gn-serif" style="font-size:30px;">100%</div><div class="gn-slabel" style="color:#bd8894;margin-top:3px;">Dématérialisé</div></div>
+      <div style="width:1px;background:rgba(199,106,132,.35);"></div>
+      <div><div class="gn-serif" style="font-size:30px;">FCFA</div><div class="gn-slabel" style="color:#bd8894;margin-top:3px;">Multi-paiement</div></div>
+    </div>
+    <div style="margin-top:26px;font-size:12.5px;color:#9c7079;position:relative;">Abobo · Boulevard Belleville · Abidjan, Côte d'Ivoire</div>
+  </div>
+  <div style="display:flex;align-items:center;justify-content:center;padding:44px 34px;">
+    <div style="width:100%;max-width:360px;">
+      <h2 class="gn-serif" style="font-weight:500;font-size:30px;margin:0;color:#2e2024;">Bienvenue</h2>
+      <p style="color:#9a8a8e;font-size:14px;margin:7px 0 26px;">Connectez-vous à votre espace de gestion.</p>
+      <label style="font-size:13px;font-weight:600;color:#4d3f43;">Identifiant</label>
+      <div style="position:relative;margin:7px 0 18px;">
+        <i class="ti ti-user" style="position:absolute;left:14px;top:50%;transform:translateY(-50%);color:#b3a2a6;font-size:18px;"></i>
+        <input class="gn-input" value="reception.gnimah" style="padding-left:42px;" />
+      </div>
+      <label style="font-size:13px;font-weight:600;color:#4d3f43;">Mot de passe</label>
+      <div style="position:relative;margin:7px 0 14px;">
+        <i class="ti ti-lock" style="position:absolute;left:14px;top:50%;transform:translateY(-50%);color:#b3a2a6;font-size:18px;"></i>
+        <input class="gn-input" type="password" value="demo1234" style="padding-left:42px;" />
+      </div>
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:22px;">
+        <label style="display:flex;align-items:center;gap:8px;font-size:13.5px;color:#6d585d;cursor:pointer;"><input type="checkbox" style="accent-color:#8c2f4d;width:15px;height:15px;"> Se souvenir</label>
+        <a href="#" style="font-size:13px;">Mot de passe oublié ?</a>
+      </div>
+      <button class="gn-btn-p" onClick="{{ login }}" style="width:100%;padding:14px;font-size:15px;">Se connecter</button>
+      <div style="margin-top:20px;background:#fbeef1;border:1px solid #f3d9e0;border-radius:14px;padding:13px 15px;font-size:12.5px;color:#8a6b71;line-height:1.5;"><b style="color:#8c2f4d;">Démo</b> — cliquez simplement sur « Se connecter ». Le sélecteur Directeur / Agent est en haut de l'app.</div>
+    </div>
+  </div>
+</div>
+</sc-if>
+
+<sc-if value="{{ loggedIn }}" hint-placeholder-val="{{ false }}">
+<div class="gn-shell">
+  <div class="gn-backdrop {{ drawerCls }}" onClick="{{ closeDrawer }}"></div>
+  <aside class="gn-side {{ drawerCls }}">
+    <div style="padding:22px 20px 6px;display:flex;align-items:center;gap:12px;">
+      <div class="gn-serif" style="width:44px;height:44px;border-radius:13px;background:#9d3654;display:flex;align-items:center;justify-content:center;font-size:24px;color:#fff;flex:none;">G</div>
+      <div><div class="gn-serif" style="font-size:19px;letter-spacing:.12em;line-height:1;">GNIMAH</div><div class="gn-slabel" style="color:#a4737f;font-size:9.5px;margin-top:4px;">Résidence Hôtelière</div></div>
+    </div>
+    <nav style="flex:1;padding:8px 6px 14px;">
+      <sc-for list="{{ navSections }}" as="sec" hint-placeholder-count="3">
+        <div style="margin-top:16px;">
+          <div class="gn-slabel" style="color:#9d6b77;padding:0 16px 6px;font-size:10px;">{{ sec.label }}</div>
+          <sc-for list="{{ sec.items }}" as="it" hint-placeholder-count="4">
+            <button class="{{ it.cls }}" onClick="{{ it.onClick }}"><i class="ti {{ it.icon }}" style="font-size:20px;"></i><span>{{ it.label }}</span></button>
+          </sc-for>
+        </div>
+      </sc-for>
+    </nav>
+    <div style="padding:14px;">
+      <div style="display:flex;align-items:center;gap:11px;background:rgba(255,255,255,.06);border-radius:16px;padding:11px 12px;">
+        <div class="gn-av" style="width:38px;height:38px;font-size:13px;background:linear-gradient(180deg,#c79a35,#a87d22);">{{ user.initials }}</div>
+        <div style="flex:1;min-width:0;"><div style="font-weight:600;font-size:13.5px;color:#fff;">{{ user.name }}</div><div style="font-size:11.5px;color:#b593 9c;color:#b5939c;">{{ user.role }}</div></div>
+        <button onClick="{{ logout }}" style="background:transparent;border:none;color:#c9a2ab;cursor:pointer;font-size:19px;display:flex;"><i class="ti ti-logout-2"></i></button>
+      </div>
+    </div>
+  </aside>
+
+  <div class="gn-main">
+    <header class="gn-topbar">
+      <button class="gn-icobtn gn-ham" onClick="{{ toggleDrawer }}"><i class="ti ti-menu-2"></i></button>
+      <div style="min-width:0;">
+        <div class="gn-serif" style="font-size:25px;font-weight:500;line-height:1.1;color:#2e2024;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">{{ pageTitle }}</div>
+        <div class="gn-hideSm" style="font-size:12.5px;color:#9a8a8e;margin-top:2px;">{{ pageSub }}</div>
+      </div>
+      <div class="gn-search gn-hideSm" style="position:relative;">
+        <i class="ti ti-search" style="position:absolute;left:16px;top:50%;transform:translateY(-50%);color:#b3a2a6;font-size:18px;"></i>
+        <input class="gn-input" placeholder="Rechercher client, reçu, chambre…" style="padding-left:44px;border-radius:100px;" />
+      </div>
+      <div class="gn-hideSm" style="display:inline-flex;background:#f0e2e6;border:1px solid #e6d3d9;border-radius:100px;padding:3px;flex:none;">
+        <button class="gn-seg {{ segDir }}" onClick="{{ goDirecteur }}">Directeur</button>
+        <button class="gn-seg {{ segAgent }}" onClick="{{ goAgent }}">Agent</button>
+      </div>
+      <button class="gn-icobtn" style="margin-left:auto;"><i class="ti ti-bell"></i><span style="position:absolute;top:9px;right:10px;width:7px;height:7px;border-radius:50%;background:#d0455a;"></span></button>
+      <div class="gn-hideSm" style="text-align:right;line-height:1.25;flex:none;"><div style="font-size:13px;font-weight:600;color:#4d3f43;">Lun 13 juil. 2026</div><div style="font-size:11px;color:#a99a9d;">Abidjan</div></div>
+    </header>
+
+    <div class="gn-body">
+
+    <!-- DASHBOARD DIRECTEUR -->
+    <sc-if value="{{ v_dash }}" hint-placeholder-val="{{ false }}">
+      <div class="gn-route">
+        <div class="gn-kpi">
+          <sc-for list="{{ kpis }}" as="k" hint-placeholder-count="4">
+            <div class="gn-card" style="padding:20px;position:relative;overflow:hidden;">
+              <div style="position:absolute;right:-24px;top:-24px;width:90px;height:90px;border-radius:50%;background:#faf0f2;"></div>
+              <div style="display:flex;align-items:center;gap:11px;position:relative;"><div class="gn-tile {{ k.tone }}"><i class="ti {{ k.icon }}"></i></div><div style="font-size:13.5px;color:#8a7a7e;font-weight:500;">{{ k.label }}</div></div>
+              <div class="gn-serif" style="font-size:32px;font-weight:500;margin-top:14px;color:#2e2024;position:relative;">{{ k.value }}</div>
+              <div style="font-size:12.5px;margin-top:5px;position:relative;"><span class="{{ k.deltaCls }}" style="font-weight:600;">{{ k.delta }}</span> <span style="color:#a99a9d;">{{ k.deltaSub }}</span></div>
+            </div>
+          </sc-for>
+        </div>
+
+        <div class="gn-dash2" style="margin-top:18px;">
+          <div class="gn-card" style="padding:22px;">
+            <div style="display:flex;align-items:center;justify-content:space-between;"><div class="gn-serif" style="font-size:18px;color:#2e2024;">Chiffre d'affaires · 7 derniers jours</div><div style="display:flex;gap:14px;font-size:12px;color:#8a7a7e;"><span style="display:inline-flex;align-items:center;gap:5px;"><span class="gn-dot c-wine"></span>Passage</span><span style="display:inline-flex;align-items:center;gap:5px;"><span class="gn-dot" style="color:#6b3b32;"></span>Séjour</span></div></div>
+            <svg viewBox="0 0 560 220" preserveAspectRatio="none" style="width:100%;height:230px;margin-top:12px;">
+              <sc-for list="{{ chartBars }}" as="b" hint-placeholder-count="7">
+                <rect x="{{ b.x }}" y="{{ b.sY }}" width="{{ b.w }}" height="{{ b.sH }}" rx="5" fill="#6b3b32"></rect>
+                <rect x="{{ b.x }}" y="{{ b.pY }}" width="{{ b.w }}" height="{{ b.pH }}" rx="5" fill="#c76a86"></rect>
+                <text x="{{ b.labelX }}" y="{{ b.labelY }}" text-anchor="middle" font-family="Newsreader,serif" font-size="14" fill="#7a6a6e">{{ b.label }}</text>
+                <text x="{{ b.dayX }}" y="210" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="12" fill="#a99a9d">{{ b.day }}</text>
+              </sc-for>
+            </svg>
+          </div>
+          <div class="gn-card" style="padding:22px;">
+            <div class="gn-serif" style="font-size:18px;color:#2e2024;">Taux d'occupation</div>
+            <div style="display:flex;justify-content:center;margin:14px 0 6px;">
+              <svg width="200" height="200" viewBox="0 0 120 120">
+                <circle cx="60" cy="60" r="52" fill="none" stroke="#f2e3e6" stroke-width="15"></circle>
+                <circle cx="60" cy="60" r="52" fill="none" stroke="#b23a55" stroke-width="15" stroke-linecap="round" stroke-dasharray="245 327" transform="rotate(-90 60 60)"></circle>
+                <text x="60" y="57" text-anchor="middle" font-family="Newsreader,serif" font-size="30" fill="#8c2f4d">75%</text>
+                <text x="60" y="74" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="8.5" fill="#a99a9d">18 / 24 occupées</text>
+              </svg>
+            </div>
+            <div style="display:flex;justify-content:center;gap:20px;font-size:12.5px;color:#8a7a7e;"><span style="display:inline-flex;align-items:center;gap:6px;"><span class="gn-dot c-wine"></span>Vendues 18</span><span style="display:inline-flex;align-items:center;gap:6px;"><span class="gn-dot" style="color:#f2e3e6;"></span>Libres 6</span></div>
+          </div>
+        </div>
+
+        <div class="gn-dash3" style="margin-top:18px;">
+          <div class="gn-card" style="padding:22px;">
+            <div class="gn-serif" style="font-size:18px;color:#2e2024;margin-bottom:16px;">Indicateurs hôteliers</div>
+            <sc-for list="{{ indic }}" as="b" hint-placeholder-count="4">
+              <div style="margin-bottom:15px;">
+                <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:6px;"><div><span class="gn-serif" style="color:#8c2f4d;font-size:15px;font-weight:600;">{{ b.l }}</span> <span style="font-size:12px;color:#a99a9d;">{{ b.s }}</span></div><div style="font-weight:700;font-size:14px;color:#3a2c30;">{{ b.v }}</div></div>
+                <svg viewBox="0 0 100 6" preserveAspectRatio="none" style="width:100%;height:6px;"><rect width="100" height="6" rx="3" fill="#f2e3e6"></rect><rect width="{{ b.w }}" height="6" rx="3" fill="#8c2f4d"></rect></svg>
+              </div>
+            </sc-for>
+          </div>
+          <div class="gn-card" style="padding:22px;">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;"><div class="gn-serif" style="font-size:18px;color:#2e2024;">Performance par agent</div><div style="font-size:12px;color:#a99a9d;">Ce mois</div></div>
+            <sc-for list="{{ agents }}" as="a" hint-placeholder-count="2">
+              <div style="display:flex;align-items:center;gap:12px;padding:12px 0;border-top:1px solid #f2e8e4;">
+                <div class="gn-av {{ a.tone }}" style="width:40px;height:40px;font-size:13px;">{{ a.initials }}</div>
+                <div style="flex:1;"><div style="font-weight:600;font-size:14px;color:#3a2c30;">{{ a.name }}</div><div style="font-size:12px;color:#a99a9d;">{{ a.count }}</div></div>
+                <div class="gn-serif" style="font-size:16px;color:#8c2f4d;">{{ a.ca }}</div>
+              </div>
+            </sc-for>
+          </div>
+        </div>
+      </div>
+    </sc-if>
+
+    <!-- ACCUEIL AGENT -->
+    <sc-if value="{{ v_agent }}" hint-placeholder-val="{{ false }}">
+      <div class="gn-route">
+        <div class="gn-kpi">
+          <sc-for list="{{ agentStats }}" as="s" hint-placeholder-count="4">
+            <div class="gn-card" style="padding:20px;">
+              <div style="font-size:13.5px;color:#8a7a7e;font-weight:500;">{{ s.label }}</div>
+              <div class="gn-serif {{ s.cls }}" style="font-size:36px;font-weight:500;margin-top:8px;">{{ s.n }}</div>
+              <div style="font-size:12.5px;color:#a99a9d;margin-top:4px;">{{ s.sub }}</div>
+            </div>
+          </sc-for>
+        </div>
+        <div class="gn-agh" style="margin-top:18px;">
+          <div class="gn-card" style="padding:22px;">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;"><div class="gn-serif" style="font-size:18px;color:#2e2024;">🛬 Arrivées du jour</div><span class="gn-bdg wine">5</span></div>
+            <sc-for list="{{ arrivals }}" as="a" hint-placeholder-count="3">
+              <div style="display:flex;align-items:center;gap:14px;padding:14px 0;border-top:1px solid #f2e8e4;">
+                <div class="gn-serif" style="font-size:16px;color:#8c2f4d;width:46px;">{{ a.time }}</div>
+                <div style="flex:1;"><div style="font-weight:600;font-size:14px;color:#3a2c30;">{{ a.name }}</div><div style="font-size:12.5px;color:#a99a9d;">{{ a.room }}</div></div>
+                <button class="gn-btn-p" onClick="{{ goCheckin }}" style="padding:8px 16px;font-size:13px;">Check-in</button>
+              </div>
+            </sc-for>
+          </div>
+          <div class="gn-card" style="padding:22px;">
+            <div class="gn-serif" style="font-size:18px;color:#2e2024;margin-bottom:6px;">🔔 À traiter</div>
+            <sc-for list="{{ todos }}" as="t" hint-placeholder-count="4">
+              <div style="display:flex;align-items:center;gap:13px;padding:13px 14px;border-radius:14px;margin-top:10px;background:{{ t.bg }};">
+                <i class="ti {{ t.icon }} {{ t.cls }}" style="font-size:20px;"></i>
+                <div style="flex:1;font-size:13.5px;font-weight:500;color:#3a2c30;">{{ t.label }}</div>
+                <div class="{{ t.cls }}" style="font-size:12px;font-weight:600;">{{ t.tag }}</div>
+              </div>
+            </sc-for>
+          </div>
+        </div>
+      </div>
+    </sc-if>
+
+    <!-- CHECK-IN -->
+    <sc-if value="{{ v_checkin }}" hint-placeholder-val="{{ false }}">
+      <div class="gn-route gn-ck">
+        <div class="gn-card" style="padding:24px;">
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+            <sc-for list="{{ ckModes }}" as="m" hint-placeholder-count="2">
+              <button onClick="{{ m.onClick }}" class="{{ m.cls }}" style="text-align:left;border-radius:16px;padding:15px 18px;cursor:pointer;border:1px solid transparent;">
+                <div style="font-weight:700;font-size:15px;display:flex;align-items:center;gap:8px;"><i class="ti {{ m.icon }}"></i>{{ m.title }}</div>
+                <div style="font-size:12.5px;margin-top:4px;opacity:.8;">{{ m.sub }}</div>
+              </button>
+            </sc-for>
+          </div>
+          <div class="gn-slabel" style="color:#b3a2a6;margin:24px 0 12px;">Client</div>
+          <div style="display:grid;grid-template-columns:110px 1fr 1fr;gap:12px;">
+            <div><label style="font-size:12.5px;font-weight:600;color:#6d585d;">Civilité</label><select class="gn-input" style="margin-top:6px;"><option>M.</option><option>Mme</option></select></div>
+            <div><label style="font-size:12.5px;font-weight:600;color:#6d585d;">Nom & prénom</label><input class="gn-input" value="Kouassi Ama" style="margin-top:6px;" /></div>
+            <div><label style="font-size:12.5px;font-weight:600;color:#6d585d;">Téléphone</label><input class="gn-input" value="+225 07 08 55 21" style="margin-top:6px;" /></div>
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:14px;">
+            <div><label style="font-size:12.5px;font-weight:600;color:#6d585d;">Type de pièce</label><select class="gn-input" style="margin-top:6px;"><option>CNI</option><option>Passeport</option><option>Permis</option></select></div>
+            <div><label style="font-size:12.5px;font-weight:600;color:#6d585d;">N° de pièce</label><input class="gn-input" value="CI0084213" style="margin-top:6px;" /></div>
+          </div>
+          <div class="gn-slabel" style="color:#b3a2a6;margin:24px 0 12px;">Chambre & dates</div>
+          <label style="font-size:12.5px;font-weight:600;color:#6d585d;">Chambre disponible</label>
+          <div style="display:flex;flex-wrap:wrap;gap:9px;margin-top:9px;">
+            <sc-for list="{{ ckRooms }}" as="r" hint-placeholder-count="6">
+              <button class="{{ r.cls }}" onClick="{{ r.onClick }}">{{ r.label }}</button>
+            </sc-for>
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:16px;">
+            <div><label style="font-size:12.5px;font-weight:600;color:#6d585d;">Date d'entrée</label><input class="gn-input" type="date" value="2026-07-13" style="margin-top:6px;" /></div>
+            <div><label style="font-size:12.5px;font-weight:600;color:#6d585d;">Date de sortie</label><input class="gn-input" type="date" value="2026-07-15" style="margin-top:6px;" /></div>
+          </div>
+        </div>
+        <div style="background:linear-gradient(180deg,#2b1519,#1a0d10);border-radius:22px;padding:24px;color:#e6d3d7;box-shadow:0 12px 30px rgba(60,25,30,.14);">
+          <div class="gn-slabel" style="color:#a4737f;">Récapitulatif</div>
+          <div style="margin-top:16px;">
+            <sc-for list="{{ ckSummary }}" as="row" hint-placeholder-count="5">
+              <div style="display:flex;justify-content:space-between;padding:11px 0;border-bottom:1px solid rgba(255,255,255,.08);font-size:13.5px;"><span style="color:#bfa4aa;">{{ row.l }}</span><span style="font-weight:600;color:#fff;">{{ row.v }}</span></div>
+            </sc-for>
+          </div>
+          <div style="display:flex;justify-content:space-between;align-items:baseline;margin-top:16px;"><span style="color:#bfa4aa;font-size:13.5px;">Montant total</span><span class="gn-serif" style="font-size:30px;color:#fff;">{{ ckTotal }}</span></div>
+          <label style="font-size:12px;color:#bfa4aa;margin-top:16px;display:block;">Acompte / arrhes reçu (RAP auto)</label>
+          <input class="gn-input" value="{{ ckAcompte }}" onInput="{{ ckAcompteChange }}" style="margin-top:6px;background:#3a2126;border-color:#4a2c32;color:#fff;" />
+          <div style="display:flex;justify-content:space-between;align-items:center;background:#3a2126;border-radius:13px;padding:13px 15px;margin-top:12px;"><span style="color:#bfa4aa;font-size:13.5px;">Reste à payer</span><span class="gn-serif" style="font-size:19px;color:#f0b6c4;">{{ ckRap }}</span></div>
+          <button class="gn-btn-p" onClick="{{ goReceipt }}" style="width:100%;padding:14px;margin-top:16px;font-size:14.5px;">Valider & générer le reçu</button>
+          <div style="text-align:center;font-size:11.5px;color:#8f6b72;margin-top:10px;">La chambre passera automatiquement en « Occupée »</div>
+        </div>
+      </div>
+    </sc-if>
+
+    <!-- RESERVATIONS -->
+    <sc-if value="{{ v_reservations }}" hint-placeholder-val="{{ false }}">
+      <div class="gn-route">
+        <div class="gn-resv">
+          <sc-for list="{{ resvStats }}" as="s" hint-placeholder-count="5">
+            <div class="gn-card" style="padding:18px;"><div style="display:flex;align-items:center;gap:8px;font-size:13px;color:#8a7a7e;"><span class="gn-dot {{ s.cls }}"></span>{{ s.label }}</div><div class="gn-serif" style="font-size:32px;color:#2e2024;margin-top:8px;">{{ s.n }}</div></div>
+          </sc-for>
+        </div>
+        <div class="gn-card" style="padding:22px;margin-top:18px;">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;"><div class="gn-serif" style="font-size:18px;color:#2e2024;">Réservations à venir</div><button class="gn-btn-p" style="padding:9px 16px;font-size:13px;"><i class="ti ti-plus" style="margin-right:5px;"></i>Nouvelle réservation</button></div>
+          <div class="gn-tw"><table class="gn-table">
+            <thead><tr><th class="gn-th">Client</th><th class="gn-th">Chambre</th><th class="gn-th">Arrivée</th><th class="gn-th">Départ</th><th class="gn-th">Statut</th></tr></thead>
+            <tbody>
+              <sc-for list="{{ reservations }}" as="r" hint-placeholder-count="6">
+                <tr class="gn-rowh">
+                  <td><div style="display:flex;align-items:center;gap:11px;"><div class="gn-av {{ r.tone }}" style="width:38px;height:38px;font-size:12.5px;">{{ r.initials }}</div><div><div style="font-weight:600;font-size:14px;color:#3a2c30;">{{ r.name }}</div><div style="font-size:12px;color:#a99a9d;">{{ r.phone }}</div></div></div></td>
+                  <td style="font-size:14px;color:#4d3f43;font-weight:500;">{{ r.room }}</td>
+                  <td style="font-size:13.5px;color:#6d585d;">{{ r.arrival }}</td>
+                  <td style="font-size:13.5px;color:#6d585d;">{{ r.depart }}</td>
+                  <td><span class="gn-bdg {{ r.tone2 }}">{{ r.status }}</span></td>
+                </tr>
+              </sc-for>
+            </tbody>
+          </table></div>
+        </div>
+      </div>
+    </sc-if>
+
+    <!-- PLAN DES CHAMBRES -->
+    <sc-if value="{{ v_rooms }}" hint-placeholder-val="{{ false }}">
+      <div class="gn-route">
+        <div style="display:flex;flex-wrap:wrap;gap:10px;margin-bottom:20px;">
+          <sc-for list="{{ roomFilters }}" as="f" hint-placeholder-count="5">
+            <div class="gn-card" style="display:inline-flex;align-items:center;gap:8px;padding:9px 15px;border-radius:100px;font-size:13px;font-weight:600;color:#4d3f43;"><span class="gn-dot {{ f.cls }}"></span>{{ f.label }} <span style="color:#a99a9d;">{{ f.count }}</span></div>
+          </sc-for>
+        </div>
+        <sc-for list="{{ floors }}" as="fl" hint-placeholder-count="3">
+          <div style="margin-bottom:24px;">
+            <div class="gn-slabel" style="color:#a99a9d;margin-bottom:12px;">{{ fl.name }}</div>
+            <div class="gn-rooms">
+              <sc-for list="{{ fl.rooms }}" as="rm" hint-placeholder-count="6">
+                <div class="gn-room {{ rm.key }}">
+                  <div style="display:flex;justify-content:space-between;align-items:flex-start;"><div class="gn-serif" style="font-size:26px;color:#33262a;line-height:1;">{{ rm.no }}</div><span class="gn-dot {{ rm.stateCls }}" style="margin-top:6px;"></span></div>
+                  <div style="font-weight:600;font-size:13px;color:#4d3f43;margin-top:10px;">{{ rm.type }}</div>
+                  <div class="{{ rm.stateCls }}" style="font-size:13px;font-weight:600;">{{ rm.state }}</div>
+                  <div style="font-size:12px;color:#9a8a8e;margin-top:6px;">{{ rm.priceLabel }}</div>
+                </div>
+              </sc-for>
+            </div>
+          </div>
+        </sc-for>
+      </div>
+    </sc-if>
+
+    <!-- HOUSEKEEPING -->
+    <sc-if value="{{ v_hk }}" hint-placeholder-val="{{ false }}">
+      <div class="gn-route gn-hk">
+        <sc-for list="{{ hkCols }}" as="col" hint-placeholder-count="3">
+          <div class="gn-card" style="padding:18px;">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;"><div style="display:flex;align-items:center;gap:9px;font-weight:600;font-size:15px;color:#3a2c30;"><span class="gn-dot {{ col.cls }}"></span>{{ col.title }}</div><span style="background:#f4ece9;color:#9a8a8e;border-radius:100px;padding:2px 10px;font-size:12px;font-weight:600;">{{ col.count }}</span></div>
+            <sc-for list="{{ col.tasks }}" as="t" hint-placeholder-count="2">
+              <div style="border:1px solid #f0e6e2;border-radius:16px;padding:15px;margin-top:12px;">
+                <div style="display:flex;align-items:center;justify-content:space-between;"><div class="gn-serif" style="font-size:19px;color:#33262a;">Ch. {{ t.room }}</div><span class="gn-bdg {{ t.tone }}">{{ t.badge }}</span></div>
+                <div style="font-size:13.5px;color:#6d585d;margin-top:7px;">{{ t.desc }}</div>
+                <div style="display:flex;align-items:center;justify-content:space-between;margin-top:12px;"><div style="display:flex;align-items:center;gap:8px;"><div class="gn-av {{ t.avTone }}" style="width:26px;height:26px;font-size:10.5px;border-radius:8px;">{{ t.initials }}</div><span style="font-size:12.5px;color:#6d585d;">{{ t.who }}</span></div><span style="font-size:12px;color:#a99a9d;">{{ t.time }}</span></div>
+              </div>
+            </sc-for>
+          </div>
+        </sc-for>
+      </div>
+    </sc-if>
+
+    <!-- CALENDRIER -->
+    <sc-if value="{{ v_cal }}" hint-placeholder-val="{{ false }}">
+      <div class="gn-route gn-cal">
+        <div class="gn-card" style="padding:22px;">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;"><div class="gn-serif" style="font-size:20px;color:#2e2024;">Juillet 2026</div><div style="display:flex;gap:8px;"><button class="gn-icobtn" style="width:34px;height:34px;font-size:16px;"><i class="ti ti-chevron-left"></i></button><button class="gn-icobtn" style="width:34px;height:34px;font-size:16px;"><i class="ti ti-chevron-right"></i></button></div></div>
+          <div class="gn-caldays" style="margin-bottom:6px;">
+            <sc-for list="{{ weekdays }}" as="d" hint-placeholder-count="7"><div class="gn-th" style="text-align:left;padding:4px 6px;">{{ d }}</div></sc-for>
+          </div>
+          <div class="gn-caldays">
+            <sc-for list="{{ calCells }}" as="c" hint-placeholder-count="35">
+              <div style="min-height:74px;border:1px solid {{ c.border }};border-radius:11px;padding:7px;background:{{ c.cellbg }};">
+                <div style="font-size:12.5px;font-weight:600;color:#8a7a7e;">{{ c.day }}</div>
+                <sc-if value="{{ c.hasEv }}" hint-placeholder-val="{{ false }}"><div style="margin-top:5px;font-size:9.5px;font-weight:700;line-height:1.2;padding:4px 6px;border-radius:7px;background:{{ c.evBg }};color:{{ c.evFg }};">{{ c.evLabel }}</div></sc-if>
+              </div>
+            </sc-for>
+          </div>
+        </div>
+        <div class="gn-card" style="padding:22px;">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;"><div class="gn-serif" style="font-size:18px;color:#2e2024;">Événements à venir</div><button class="gn-icobtn" style="width:32px;height:32px;font-size:16px;background:#8c2f4d;color:#fff;border:none;"><i class="ti ti-plus"></i></button></div>
+          <sc-for list="{{ events }}" as="e" hint-placeholder-count="4">
+            <div style="display:flex;gap:14px;padding:14px 0;border-top:1px solid #f2e8e4;">
+              <div style="text-align:center;flex:none;"><div class="gn-serif {{ e.cls }}" style="font-size:22px;line-height:1;">{{ e.day }}</div><div class="gn-slabel" style="color:#b3a2a6;font-size:9px;margin-top:2px;">{{ e.mon }}</div></div>
+              <div><div style="font-weight:600;font-size:14px;color:#3a2c30;">{{ e.title }}</div><div style="font-size:12.5px;color:#8a7a7e;margin-top:2px;">{{ e.sub }}</div><div style="font-size:12px;color:#a99a9d;margin-top:2px;">{{ e.time }}</div></div>
+            </div>
+          </sc-for>
+        </div>
+      </div>
+    </sc-if>
+
+    <!-- FICHES CLIENTS -->
+    <sc-if value="{{ v_clients }}" hint-placeholder-val="{{ false }}">
+      <div class="gn-route">
+        <div class="gn-card" style="padding:22px;">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;"><div class="gn-serif" style="font-size:18px;color:#2e2024;">Fichier clients</div><button class="gn-btn-p" style="padding:9px 16px;font-size:13px;"><i class="ti ti-plus" style="margin-right:5px;"></i>Nouveau client</button></div>
+          <div class="gn-tw"><table class="gn-table">
+            <thead><tr><th class="gn-th">Client</th><th class="gn-th">Téléphone</th><th class="gn-th">Pièce</th><th class="gn-th">Séjours</th><th class="gn-th">Statut</th></tr></thead>
+            <tbody>
+              <sc-for list="{{ clients }}" as="c" hint-placeholder-count="7">
+                <tr class="gn-rowh">
+                  <td><div style="display:flex;align-items:center;gap:11px;"><div class="gn-av {{ c.tone }}" style="width:40px;height:40px;font-size:13px;">{{ c.initials }}</div><div><div style="font-weight:600;font-size:14px;color:#3a2c30;">{{ c.name }}</div><div style="font-size:12px;color:#a99a9d;">{{ c.since }}</div></div></div></td>
+                  <td style="font-size:13.5px;color:#6d585d;">{{ c.phone }}</td>
+                  <td style="font-size:13.5px;color:#6d585d;">{{ c.piece }}</td>
+                  <td style="font-weight:700;font-size:14px;color:#3a2c30;">{{ c.stays }}</td>
+                  <td><span class="gn-bdg {{ c.tone2 }}"><sc-if value="{{ c.fidele }}" hint-placeholder-val="{{ false }}"><i class="ti ti-star-filled" style="font-size:11px;"></i></sc-if>{{ c.statut }}</span></td>
+                </tr>
+              </sc-for>
+            </tbody>
+          </table></div>
+        </div>
+      </div>
+    </sc-if>
+
+    <!-- RECU / FACTURE -->
+    <sc-if value="{{ v_receipts }}" hint-placeholder-val="{{ false }}">
+      <div class="gn-route gn-rcpt">
+        <div class="gn-card" style="padding:34px;">
+          <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:16px;">
+            <div style="display:flex;gap:16px;"><div class="gn-serif" style="width:64px;height:64px;border-radius:16px;background:#9d3654;display:flex;align-items:center;justify-content:center;font-size:34px;color:#fff;flex:none;">G</div>
+            <div><div class="gn-serif" style="font-size:23px;letter-spacing:.04em;color:#2e2024;">RÉSIDENCE HÔTEL GNIMAH</div><div style="font-size:12.5px;color:#8a7a7e;line-height:1.5;margin-top:5px;">Abobo, Bd Belleville, Carrefour Mosquée<br>Rue Cocotier, Lot 227, Îlot 110 · Abidjan</div></div></div>
+            <div style="text-align:right;flex:none;"><div class="gn-slabel" style="color:#b3a2a6;">Reçu N°</div><div class="gn-serif" style="font-size:24px;color:#8c2f4d;">GN-4820</div><div style="font-size:12px;color:#a99a9d;margin-top:4px;">13 juillet 2026 · 14:32</div></div>
+          </div>
+          <div style="height:2px;background:#8c2f4d;margin:22px 0;"></div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:24px;">
+            <div><div class="gn-slabel" style="color:#b3a2a6;">Client</div><div style="font-weight:700;font-size:15px;color:#2e2024;margin-top:8px;">M. Kouassi Ama</div><div style="font-size:13px;color:#6d585d;margin-top:4px;">+225 07 08 55 21<br>CNI · CI0084213</div></div>
+            <div><div class="gn-slabel" style="color:#b3a2a6;">Séjour</div><div style="font-weight:700;font-size:15px;color:#2e2024;margin-top:8px;">Chambre 207 · Suite</div><div style="font-size:13px;color:#6d585d;margin-top:4px;">13 juil. 2026 → 15 juil. 2026<br>Mode : Séjour (nuitée)</div></div>
+          </div>
+          <table style="width:100%;border-collapse:collapse;margin-top:26px;">
+            <thead><tr><th class="gn-th" style="text-align:left;padding-bottom:12px;">Désignation</th><th class="gn-th" style="text-align:center;padding-bottom:12px;">Qté</th><th class="gn-th" style="text-align:right;padding-bottom:12px;">P.U.</th><th class="gn-th" style="text-align:right;padding-bottom:12px;">Montant</th></tr></thead>
+            <tbody><tr style="border-top:1px solid #f2e8e4;"><td style="padding:14px 0;font-size:14px;color:#3a2c30;">Location chambre — Séjour (nuitée)</td><td style="text-align:center;font-size:14px;color:#4d3f43;">2</td><td style="text-align:right;font-size:14px;color:#4d3f43;">35 000 F</td><td style="text-align:right;font-size:14px;font-weight:600;color:#3a2c30;">70 000 F</td></tr></tbody>
+          </table>
+          <div style="margin-top:20px;margin-left:auto;max-width:300px;">
+            <div style="display:flex;justify-content:space-between;padding:8px 0;font-size:14px;color:#6d585d;"><span>Montant total</span><span style="font-weight:600;">70 000 F</span></div>
+            <div style="display:flex;justify-content:space-between;padding:8px 0;font-size:14px;color:#6d585d;border-bottom:1px solid #f2e8e4;"><span>Acompte reçu</span><span style="font-weight:600;">35 000 F</span></div>
+            <div style="display:flex;justify-content:space-between;padding:12px 0 0;font-size:16px;font-weight:700;color:#2e2024;"><span>Reste à payer</span><span class="gn-serif" style="font-size:20px;color:#8c2f4d;">35 000 F</span></div>
+          </div>
+          <div style="display:flex;justify-content:space-between;align-items:flex-end;margin-top:30px;padding-top:18px;border-top:1px solid #f2e8e4;"><div style="font-size:12px;color:#a99a9d;line-height:1.6;">Merci de votre confiance.<br>Reçu valant facture — Régime TVA non applicable.</div><div class="gn-serif" style="font-size:18px;letter-spacing:.15em;color:#c9b0b6;border-top:1px solid #e6d3d9;padding-top:6px;">GNIMAH</div></div>
+        </div>
+        <div>
+          <div class="gn-card" style="padding:20px;">
+            <div style="font-weight:600;font-size:15px;color:#3a2c30;margin-bottom:14px;">Actions</div>
+            <button class="gn-btn-p" onClick="{{ doPrint }}" style="width:100%;padding:13px;font-size:14px;margin-bottom:10px;"><i class="ti ti-printer" style="margin-right:7px;"></i>Imprimer le reçu</button>
+            <button class="gn-btn-o" style="width:100%;padding:12px;font-size:13.5px;margin-bottom:9px;text-align:left;padding-left:16px;"><i class="ti ti-file-type-pdf" style="margin-right:8px;color:#8c2f4d;"></i>Télécharger le PDF</button>
+            <button class="gn-btn-o" style="width:100%;padding:12px;font-size:13.5px;margin-bottom:9px;text-align:left;padding-left:16px;"><i class="ti ti-brand-whatsapp" style="margin-right:8px;color:#25D366;"></i>Envoyer par WhatsApp</button>
+            <button class="gn-btn-o" style="width:100%;padding:12px;font-size:13.5px;text-align:left;padding-left:16px;"><i class="ti ti-mail" style="margin-right:8px;color:#5f7191;"></i>Envoyer par e-mail</button>
+          </div>
+          <div class="gn-card" style="padding:20px;margin-top:16px;">
+            <div style="font-weight:600;font-size:14px;color:#3a2c30;margin-bottom:12px;">Mode de paiement</div>
+            <sc-for list="{{ payOpts }}" as="p" hint-placeholder-count="3">
+              <label onClick="{{ p.onClick }}" style="display:flex;align-items:center;gap:11px;padding:9px 0;cursor:pointer;font-size:13.5px;color:#4d3f43;"><span style="width:18px;height:18px;border-radius:50%;border:2px solid {{ p.ring }};display:flex;align-items:center;justify-content:center;flex:none;"><span style="width:9px;height:9px;border-radius:50%;background:{{ p.fill }};"></span></span>{{ p.label }}</label>
+            </sc-for>
+          </div>
+          <button class="gn-btn-o" onClick="{{ goCheckin }}" style="width:100%;padding:14px;margin-top:16px;font-size:13.5px;border-style:dashed;color:#8a7a7e;">+ Nouvel enregistrement</button>
+        </div>
+      </div>
+    </sc-if>
+
+    </div>
+  </div>
+</div>
+</sc-if>
+
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{
+  &quot;initialView&quot;: {&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;login&quot;,&quot;app&quot;],&quot;default&quot;:&quot;login&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Démo&quot;},
+  &quot;role&quot;: {&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;directeur&quot;,&quot;agent&quot;],&quot;default&quot;:&quot;directeur&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Démo&quot;}
+}">
+class Component extends DCLogic {
+  constructor(props){
+    super(props);
+    this.state = {
+      loggedIn: (props.initialView||'login')==='app',
+      role: props.role==='agent'?'agent':'directeur',
+      route: 'home',
+      drawer: false,
+      ckMode: 'sejour',
+      ckRoom: null,
+      ckAcompte: 20000,
+      pay: 'mm'
+    };
+    this.login=this.login.bind(this);
+    this.logout=this.logout.bind(this);
+    this.toggleDrawer=this.toggleDrawer.bind(this);
+    this.closeDrawer=this.closeDrawer.bind(this);
+    this.goDirecteur=()=>this.setState({role:'directeur'});
+    this.goAgent=()=>this.setState({role:'agent'});
+    this.goCheckin=()=>this.setState({route:'checkin',drawer:false});
+    this.goReceipt=()=>this.setState({route:'receipts',drawer:false});
+    this.doPrint=()=>{ try{ window.print(); }catch(e){} };
+    this.ckAcompteChange=(e)=>{ const v=parseInt((''+(e.target.value||'')).replace(/[^0-9]/g,''))||0; this.setState({ckAcompte:v}); };
+
+    // ---- static data ----
+    this.floorsData=[
+      {name:'Rez-de-chaussée', rooms:[
+        {no:'101',type:'Standard',state:'Libre',price:15000},{no:'102',type:'Standard',state:'Occupée',price:15000},
+        {no:'103',type:'Confort',state:'À nettoyer',price:22000},{no:'104',type:'Confort',state:'Occupée',price:22000},
+        {no:'105',type:'Standard',state:'Libre',price:15000},{no:'106',type:'Confort',state:'En entretien',price:22000}]},
+      {name:'1er étage', rooms:[
+        {no:'201',type:'Confort',state:'Occupée',price:22000},{no:'202',type:'Suite',state:'Occupée',price:35000},
+        {no:'203',type:'Confort',state:'Libre',price:22000},{no:'204',type:'Suite',state:'À nettoyer',price:35000},
+        {no:'205',type:'Confort',state:'Occupée',price:22000},{no:'206',type:'Standard',state:'Occupée',price:15000},
+        {no:'207',type:'Suite',state:'Libre',price:35000},{no:'208',type:'Confort',state:'Occupée',price:22000}]},
+      {name:'2e étage', rooms:[
+        {no:'301',type:'Confort',state:'Occupée',price:22000},{no:'302',type:'Suite',state:'Occupée',price:35000},
+        {no:'303',type:'Standard',state:'Libre',price:15000},{no:'304',type:'VIP',state:'Occupée',price:40000},
+        {no:'305',type:'Confort',state:'À nettoyer',price:22000},{no:'306',type:'Confort',state:'Occupée',price:22000},
+        {no:'307',type:'Suite',state:'Occupée',price:35000},{no:'308',type:'Standard',state:'Occupée',price:15000},
+        {no:'309',type:'Confort',state:'Libre',price:22000},{no:'310',type:'Standard',state:'Hors service',price:15000}]}
+    ];
+    this.reservationsData=[
+      {name:'M. Yao Konan',phone:'+225 07 11 22 33',room:'207 · Suite',arrival:'13 juil · 14:00',depart:'15 juil',status:'Arrivée',tone2:'wine',initials:'YK',tone:'deep'},
+      {name:'Mme Fatou Diallo',phone:'+225 05 44 55 66',room:'101 · Standard',arrival:'13 juil · 15:30',depart:'14 juil',status:'Confirmée',tone2:'green',initials:'FD',tone:'wine'},
+      {name:'M. Ibrahim Cissé',phone:'+225 07 88 99 00',room:'304 · VIP',arrival:'13 juil · 17:00',depart:'16 juil',status:'Confirmée',tone2:'green',initials:'IC',tone:'deep'},
+      {name:'Mme Grace Abena',phone:'+225 01 23 45 67',room:'203 · Confort',arrival:'14 juil · 12:00',depart:'15 juil',status:'En attente',tone2:'amber',initials:'GA',tone:'gold'},
+      {name:'M. Sékou Doumbia',phone:'+225 07 65 43 21',room:'310 · Standard',arrival:'15 juil · 16:00',depart:'17 juil',status:'Confirmée',tone2:'green',initials:'SD',tone:'slate'},
+      {name:'Mme Lucie Kouamé',phone:'+225 05 09 08 07',room:'204 · Suite',arrival:'16 juil · 13:00',depart:'—',status:'Annulée',tone2:'gray',initials:'LK',tone:'green'},
+      {name:'M. Adama Bamba',phone:'+225 07 33 44 55',room:'206 · Standard',arrival:'12 juil · 11:00',depart:'—',status:'No-show',tone2:'red',initials:'AB',tone:'wine'}
+    ];
+    this.clientsData=[
+      {name:'M. Yao Konan',since:'Client depuis 2023',phone:'+225 07 11 22 33',piece:'CNI',stays:'8',statut:'Fidèle',initials:'YK',tone:'deep'},
+      {name:'Mme Fatou Diallo',since:'Client depuis 2024',phone:'+225 05 44 55 66',piece:'Passeport',stays:'3',statut:'Standard',initials:'FD',tone:'wine'},
+      {name:'M. Ibrahim Cissé',since:'Client depuis 2022',phone:'+225 07 88 99 00',piece:'CNI',stays:'12',statut:'Fidèle',initials:'IC',tone:'deep'},
+      {name:'Mme Grace Abena',since:'Nouveau',phone:'+225 01 23 45 67',piece:'CNI',stays:'1',statut:'Standard',initials:'GA',tone:'gold'},
+      {name:'M. Sékou Doumbia',since:'Client depuis 2024',phone:'+225 07 65 43 21',piece:'Permis',stays:'5',statut:'Fidèle',initials:'SD',tone:'slate'},
+      {name:'Mme Lucie Kouamé',since:'Client depuis 2025',phone:'+225 05 09 08 07',piece:'CNI',stays:'2',statut:'Standard',initials:'LK',tone:'green'},
+      {name:'M. Adama Bamba',since:'Client depuis 2023',phone:'+225 07 33 44 55',piece:'Passeport',stays:'6',statut:'Fidèle',initials:'AB',tone:'wine'}
+    ];
+    this.hkData=[
+      {title:'À faire',cls:'c-gold',tasks:[
+        {room:'103',desc:'Ménage complet + change linge',who:'Mariam K.',initials:'MK',avTone:'wine',time:'09:00',badge:'Urgent',tone:'red'},
+        {room:'204',desc:'Nettoyage suite après départ',who:'Bakary T.',initials:'BT',avTone:'slate',time:'10:30',badge:'Normal',tone:'slate'},
+        {room:'306',desc:'Réapprovisionnement mini-bar',who:'Aya K.',initials:'AK',avTone:'gold',time:'11:00',badge:'Bas',tone:'green'}]},
+      {title:'En cours',cls:'c-slate',tasks:[
+        {room:'106',desc:'Réparation climatisation',who:'Jean (maint.)',initials:'JT',avTone:'deep',time:'depuis 08:40',badge:'Urgent',tone:'red'},
+        {room:'305',desc:'Ménage + vérification sanitaire',who:'Mariam K.',initials:'MK',avTone:'wine',time:'depuis 09:15',badge:'Normal',tone:'slate'}]},
+      {title:'Terminé',cls:'c-green',tasks:[
+        {room:'201',desc:'Ménage validé par superviseur',who:'Bakary T.',initials:'BT',avTone:'slate',time:'08:20',badge:'OK',tone:'green'},
+        {room:'302',desc:'Suite VIP prête',who:'Aya K.',initials:'AK',avTone:'gold',time:'07:55',badge:'OK',tone:'green'}]}
+    ];
+    this.eventsData=[
+      {day:'13',mon:'Juil',title:'Célébration familiale',sub:'M. Konan · 40 pers.',time:'18:00 · Salle A',cls:'c-deep'},
+      {day:'18',mon:'Juil',title:'Séminaire entreprise',sub:'Groupe Ivoire Tech',time:'08:30 · Salle B',cls:'c-deep'},
+      {day:'24',mon:'Juil',title:'Réception mariage',sub:'Famille Kouamé',time:'16:00 · Salle A + jardin',cls:'c-green'},
+      {day:'28',mon:'Juil',title:'Réservation salle',sub:'Association Belleville',time:'14:00 · Salle B',cls:'c-gold'}
+    ];
+    this.calEvents={
+      5:{t:'Réunion Groupe Azur',bg:'#8c2f4d',fg:'#fff'},
+      13:{t:'Célébration · Salle A',bg:'#8c2f4d',fg:'#fff',today:true},
+      18:{t:'Séminaire (2j)',bg:'#5a2035',fg:'#fff'},
+      24:{t:'Mariage · réception',bg:'#2f9e6f',fg:'#fff'},
+      28:{t:'Réservation salle',bg:'#e6c25a',fg:'#5a4410'}
+    };
+    // chart bars
+    const days=[['Lun',180],['Mar',220],['Mer',230],['Jeu',245],['Ven',330],['Sam',380],['Dim',285]];
+    const scale=150/380;
+    this.chartBars=days.map((d,i)=>{ const v=d[1]; const sH=Math.round(0.68*v*scale); const pH=Math.round(0.32*v*scale); const tot=sH+pH; const x=24+i*76; const topY=185-tot; return {x, w:34, sY:topY, sH, pY:topY+sH, pH, day:d[0], dayX:x+17, label:v+'k', labelY:topY-7, labelX:x+17}; });
+    this.indicData=[
+      {l:'ADR',s:'Average Daily Rate',v:'24 500 F',w:82},
+      {l:'RevPAR',s:'Revenue per Available Room',v:'19 110 F',w:64},
+      {l:'TRevPAR',s:'Revenu total / chambre dispo.',v:'21 300 F',w:72},
+      {l:'ALOS',s:'Durée moyenne de séjour',v:'1,8 nuit',w:46}
+    ];
+    this.ckRoomsData=[
+      {no:'101',type:'Standard',price:15000},{no:'105',type:'Standard',price:15000},{no:'203',type:'Confort',price:22000},
+      {no:'207',type:'Suite',price:35000},{no:'304',type:'VIP',price:40000},{no:'310',type:'Standard',price:15000}
+    ];
+  }
+  componentDidUpdate(prev){
+    if(prev.role!==this.props.role && this.props.role) this.setState({role:this.props.role==='agent'?'agent':'directeur'});
+    if(prev.initialView!==this.props.initialView) this.setState({loggedIn:this.props.initialView==='app'});
+  }
+  login(){ this.setState({loggedIn:true, route:'home'}); }
+  logout(){ this.setState({loggedIn:false, drawer:false}); }
+  toggleDrawer(){ this.setState(s=>({drawer:!s.drawer})); }
+  closeDrawer(){ this.setState({drawer:false}); }
+  fmt(n){ return (''+Math.round(n)).replace(/\B(?=(\d{3})+(?!\d))/g,' ')+' F'; }
+  stateInfo(state){
+    const m={'Libre':{key:'libre',cls:'c-green'},'Occupée':{key:'occupee',cls:'c-wine'},'À nettoyer':{key:'nettoyer',cls:'c-amber'},'En entretien':{key:'entretien',cls:'c-slate'},'Hors service':{key:'hs',cls:'c-gray'}};
+    return m[state]||{key:'libre',cls:'c-green'};
+  }
+  renderVals(){
+    const st=this.state;
+    const dir=st.role==='directeur';
+    const route=st.route;
+    const go=(r)=>()=>this.setState({route:r,drawer:false});
+
+    const items=[
+      {id:'home', label: dir?'Tableau de bord':'Accueil du jour', icon:'ti-layout-dashboard', section:'GÉNÉRAL'},
+      {id:'checkin', label:'Check-in / Séjour', icon:'ti-login-2', section:'OPÉRATIONS'},
+      {id:'reservations', label:'Réservations', icon:'ti-calendar-check', section:'OPÉRATIONS'},
+      {id:'rooms', label:'Plan des chambres', icon:'ti-layout-grid', section:'OPÉRATIONS'},
+      {id:'housekeeping', label:'Housekeeping', icon:'ti-spray', section:'OPÉRATIONS'},
+      {id:'calendar', label:'Calendrier & événements', icon:'ti-calendar-event', section:'OPÉRATIONS'},
+      {id:'clients', label:'Fiches clients', icon:'ti-users', section:'OPÉRATIONS'},
+      {id:'receipts', label:'Reçus & factures', icon:'ti-receipt-2', section:'FACTURATION'}
+    ];
+    const navSections=['GÉNÉRAL','OPÉRATIONS','FACTURATION'].map(s=>({
+      label:s,
+      items: items.filter(i=>i.section===s).map(i=>({id:i.id,label:i.label,icon:i.icon,cls:'gn-navitem'+(i.id===route?' on':''),onClick:go(i.id)}))
+    }));
+
+    const titles={
+      home: dir?{t:'Tableau de bord', s:"Vue d'ensemble de l'activité · 13 juillet 2026"}:{t:'Bonjour, Aya 👋', s:'Voici votre journée à la réception'},
+      checkin:{t:"Enregistrement d'un séjour", s:'Check-in client · émission du reçu'},
+      reservations:{t:'Réservations', s:'Planning des arrivées et statuts'},
+      rooms:{t:'Plan des chambres', s:'Disponibilité et état en temps réel'},
+      housekeeping:{t:'Housekeeping', s:"Suivi de l'entretien des chambres"},
+      calendar:{t:'Calendrier & événements', s:"Occupation et événements de l'hôtel"},
+      clients:{t:'Fiches clients', s:'Base clients et historique des séjours'},
+      receipts:{t:'Reçu / Facture', s:'Document généré automatiquement'}
+    };
+    const tt=titles[route]||titles.home;
+    const user = dir?{initials:'MG', name:'M. Gnimah', role:'Directeur'}:{initials:'AK', name:'Aya Koffi', role:'Agent de réception'};
+
+    // rooms
+    const floors=this.floorsData.map(f=>({name:f.name, rooms:f.rooms.map(r=>{ const si=this.stateInfo(r.state); return {no:r.no,type:r.type,state:r.state,key:si.key,stateCls:si.cls,priceLabel:this.fmt(r.price).replace(' F','')+' F/nuit'}; })}));
+    const roomFilters=[
+      {label:'Libre',count:'6',cls:'c-green'},{label:'Occupée',count:'13',cls:'c-wine'},
+      {label:'À nettoyer',count:'3',cls:'c-gold'},{label:'En entretien',count:'1',cls:'c-slate'},
+      {label:'Hors service',count:'1',cls:'c-gray'}
+    ];
+
+    // dashboard
+    const kpis=[
+      {label:'CA du jour',value:'285 000 F',icon:'ti-cash-banknote',tone:'wine',delta:'▲ 12%',deltaCls:'c-green',deltaSub:'vs hier'},
+      {label:'CA du mois',value:'7 450 000 F',icon:'ti-chart-line',tone:'brown',delta:'▲ 8%',deltaCls:'c-green',deltaSub:'vs juin'},
+      {label:'Encaissé aujourd\'hui',value:'240 000 F',icon:'ti-circle-check',tone:'green',delta:'6 reçus',deltaCls:'c-gray',deltaSub:'émis'},
+      {label:'Reste à payer',value:'45 000 F',icon:'ti-hourglass',tone:'gold',delta:'3 séjours',deltaCls:'c-gray',deltaSub:'en cours'}
+    ];
+    const agents=[
+      {name:'Aya Koffi',count:'42 enregistrements',ca:'1 240 000 F',initials:'AK',tone:'gold'},
+      {name:"Kouadio N'Guessan",count:'35 enregistrements',ca:'980 000 F',initials:'KN',tone:'slate'}
+    ];
+
+    // agent home
+    const agentStats=[
+      {label:'Arrivées du jour',n:'5',sub:'2 déjà enregistrées',cls:'c-wine'},
+      {label:'Départs du jour',n:'4',sub:'1 en retard',cls:'c-amber'},
+      {label:'Chambres à nettoyer',n:'3',sub:'housekeeping',cls:'c-gold'},
+      {label:'Reçus émis',n:'6',sub:"aujourd'hui",cls:'c-green'}
+    ];
+    const arrivals=[
+      {time:'14:00',name:'M. Yao Konan',room:'Chambre 207 · Suite'},
+      {time:'15:30',name:'Mme Fatou Diallo',room:'Chambre 101 · Standard'},
+      {time:'17:00',name:'M. Ibrahim Cissé',room:'Chambre 304 · VIP'}
+    ];
+    const todos=[
+      {icon:'ti-brush',label:'Chambre 103 à nettoyer',tag:'Housekeeping',bg:'#fdf4e3',cls:'c-gold'},
+      {icon:'ti-cash',label:'Reste à payer — M. Konan (45 000 F)',tag:'Caisse',bg:'#fbeef1',cls:'c-wine'},
+      {icon:'ti-air-conditioning',label:'Climatisation Ch. 106 en panne',tag:'Maintenance',bg:'#eef1f6',cls:'c-slate'},
+      {icon:'ti-plane-departure',label:'Départ 202 prévu à 12:00',tag:'Départ',bg:'#eef7f2',cls:'c-green'}
+    ];
+
+    // reservations stats
+    const resvStats=[
+      {label:'Confirmées',n:'12',cls:'c-green'},{label:'En attente',n:'4',cls:'c-gold'},
+      {label:'Arrivées jour',n:'5',cls:'c-wine'},{label:'Annulées',n:'2',cls:'c-gray'},{label:'No-show',n:'1',cls:'c-red'}
+    ];
+
+    // clients
+    const clients=this.clientsData.map(c=>({...c, tone2:c.statut==='Fidèle'?'gold':'gray', fidele:c.statut==='Fidèle'}));
+
+    // check-in summary
+    const room=st.ckRoom;
+    const unit = st.ckMode==='sejour' ? (room?room.price:25000) : 5000;
+    const qty = st.ckMode==='sejour' ? 2 : 3;
+    const total = unit*qty;
+    const rap = Math.max(0, total - (st.ckAcompte||0));
+    const ckSummary=[
+      {l:'Chambre', v: room?(room.no+' · '+room.type):'À sélectionner'},
+      {l:'Type de location', v: st.ckMode==='sejour'?'Séjour (nuitée)':'Passage (heure)'},
+      {l: st.ckMode==='sejour'?'Nombre de nuits':'Nombre d\'heures', v: ''+qty},
+      {l:'Tarif unitaire', v: this.fmt(unit)}
+    ];
+    const ckModes=[
+      {id:'sejour',title:'Séjour',sub:'À la nuitée',icon:'ti-moon',cls:'gn-ckmode'+(st.ckMode==='sejour'?'':''),onClick:()=>this.setState({ckMode:'sejour'})},
+      {id:'passage',title:'Passage',sub:'À l\'heure · non remboursable',icon:'ti-clock',onClick:()=>this.setState({ckMode:'passage'})}
+    ];
+    ckModes.forEach(m=>{ m.cls = (st.ckMode===m.id)?'gn-ckon':'gn-ckoff'; });
+    // inline classes for modes via style: use predefined
+    const ckRooms=this.ckRoomsData.map(r=>({label:r.no+' · '+r.type, cls:'gn-chip'+(st.ckRoom&&st.ckRoom.no===r.no?' on':''), onClick:()=>this.setState({ckRoom:r})}));
+
+    // pay options
+    const payDef=[{id:'esp',label:'Espèces'},{id:'mm',label:'Mobile Money (Wave, Orange, MTN)'},{id:'cb',label:'Carte bancaire'}];
+    const payOpts=payDef.map(p=>({label:p.label, ring: st.pay===p.id?'#8c2f4d':'#d8c8cc', fill: st.pay===p.id?'#8c2f4d':'transparent', onClick:()=>this.setState({pay:p.id})}));
+
+    // calendar cells (July 2026, Monday-start, July 1 = Wednesday -> lead 2)
+    const lead=2; const cells=[];
+    for(let i=0;i<35;i++){
+      const day=i-lead+1;
+      if(day<1||day>31){ cells.push({day:'',border:'transparent',cellbg:'transparent',hasEv:false,evLabel:'',evBg:'',evFg:''}); }
+      else{ const ev=this.calEvents[day]; cells.push({day:''+day, border: ev&&ev.today?'#e79bb0':'#f2e8e4', cellbg: ev&&ev.today?'#fdeef2':'#fdfbfa', hasEv:!!ev, evLabel: ev?ev.t:'', evBg: ev?ev.bg:'', evFg: ev?ev.fg:''}); }
+    }
+
+    return {
+      showLogin: !st.loggedIn,
+      loggedIn: st.loggedIn,
+      drawerCls: st.drawer?'open':'',
+      login:this.login, logout:this.logout, toggleDrawer:this.toggleDrawer, closeDrawer:this.closeDrawer,
+      goDirecteur:this.goDirecteur, goAgent:this.goAgent, goCheckin:this.goCheckin, goReceipt:this.goReceipt, doPrint:this.doPrint,
+      segDir: dir?'on':'', segAgent: dir?'':'on',
+      navSections, user,
+      pageTitle:tt.t, pageSub:tt.s,
+      v_dash: route==='home'&&dir, v_agent: route==='home'&&!dir, v_checkin: route==='checkin',
+      v_reservations: route==='reservations', v_rooms: route==='rooms', v_hk: route==='housekeeping',
+      v_cal: route==='calendar', v_clients: route==='clients', v_receipts: route==='receipts',
+      kpis, chartBars:this.chartBars, indic:this.indicData, agents,
+      agentStats, arrivals, todos,
+      resvStats, reservations:this.reservationsData,
+      floors, roomFilters,
+      hkCols:this.hkData.map(c=>({title:c.title,cls:c.cls,count:c.tasks.length,tasks:c.tasks})),
+      weekdays:['Lun','Mar','Mer','Jeu','Ven','Sam','Dim'], calCells:cells, events:this.eventsData,
+      clients,
+      ckModes, ckRooms, ckSummary, ckTotal:this.fmt(total), ckRap:this.fmt(rap), ckAcompte:''+(st.ckAcompte||0), ckAcompteChange:this.ckAcompteChange,
+      payOpts
+    };
+  }
+}
+</script>
+<script>
+(async () => {
+  if (!document.title || !document.title.trim()) document.title = "GNIMAH";
+  // rAF raced with a short timeout: inside a cross-origin iframe (PrintMode),
+  // rAF can be throttled or paused even while the tab is focused, which would
+  // hang the scroll loop and never reach print(). Same pattern as
+  // buildExportSettleScript (export/shared.ts).
+  var raf = function () {
+    return Promise.race([
+      new Promise(function (r) { requestAnimationFrame(r); }),
+      new Promise(function (r) { setTimeout(r, 50); }),
+    ]);
+  };
+  var t0 = performance.now();
+  var mark = function (phase) {
+    var ms = Math.round(performance.now() - t0);
+    console.info('[autoprint]', phase, ms + 'ms');
+    try { parent.postMessage({ __omelette_autoprint: { phase: phase, ms: ms } }, '*'); } catch (e) {}
+  };
+  mark('start');
+  // Prepend so page-supplied @page / break rules (deck-stage's margin:0,
+  // author CSS) keep source-order precedence over the baseline.
+  const baseCss = document.createElement('style');
+  baseCss.textContent = "@media print {\n  figure, table { break-inside: avoid; }\n  *, *::before, *::after {\n    print-color-adjust: exact; -webkit-print-color-adjust: exact;\n    backdrop-filter: none !important; -webkit-backdrop-filter: none !important;\n    animation-delay: -99s !important; animation-duration: .001s !important;\n    animation-iteration-count: 1 !important; animation-fill-mode: both !important;\n    animation-play-state: running !important; transition-duration: 0s !important;\n  }\n}";
+  document.head.prepend(baseCss);
+  if (document.readyState === 'loading') {
+    await new Promise((r) => document.addEventListener('DOMContentLoaded', r, { once: true }));
+  }
+  let ds = document.querySelector('deck-stage');
+  // whenDefined never resolves when nothing registers the element, so only
+  // await it when a <deck-stage> tag exists (and race a timeout regardless).
+  if (ds && !customElements.get('deck-stage')) {
+    try {
+      await Promise.race([
+        customElements.whenDefined('deck-stage'),
+        new Promise((r) => setTimeout(r, 3000)),
+      ]);
+    } catch (e) {}
+    ds = document.querySelector('deck-stage');
+  }
+  // dc-runtime assigns window.DCLogic at init and mounts into #dc-root on
+  // DOMContentLoaded; settle on that subtree so React has rendered before
+  // print(). Non-DC pages fall through to weighing body.
+  const isDc = !ds && 'DCLogic' in window;
+  const settleRoot = ds || (isDc ? document.getElementById('dc-root') : null) || document.body;
+  if (settleRoot) {
+    // Weigh only content children — skip script/style/template so inline
+    // Babel/CSS doesn't register as stable "content" before the framework
+    // has mounted anything.
+    const MEDIA = 'img,svg,canvas,video,picture,iframe,embed,object';
+    const weigh = () => {
+      let text = 0, media = 0;
+      for (const c of settleRoot.children) {
+        const t = c.tagName;
+        if (t === 'SCRIPT' || t === 'STYLE' || t === 'TEMPLATE') continue;
+        text += (c.textContent || '').trim().length;
+        media += c.querySelectorAll(MEDIA).length + (c.matches(MEDIA) ? 1 : 0);
+      }
+      return text + media * 100;
+    };
+    // "Non-zero and stable" alone is not sufficient to mean rendered: generic
+    // body can carry a static shell while async main content is pending, and
+    // #dc-root can carry the root DC's static text while child refs are still
+    // .sc-placeholder boxes. Gate generic on readyState 'complete', and never
+    // accept stability while a dc-runtime placeholder is present.
+    const isGeneric = settleRoot === document.body;
+    // A placeholder whose fetch failed (.sc-placeholder-error inside) keeps
+    // .sc-placeholder forever — don't wait on it. JS loop, not :has(), so an
+    // engine without :has() support can't throw out of the while and skip
+    // print() entirely.
+    var pendingPlaceholders = function () {
+      var all = settleRoot.querySelectorAll('.sc-placeholder'), n = 0;
+      for (var i = 0; i < all.length; i++)
+        if (!all[i].querySelector('.sc-placeholder-error')) n++;
+      return n;
+    };
+    const deadline = Date.now() + 15000;
+    let last = -1, stable = 0;
+    while (Date.now() < deadline) {
+      const n = weigh();
+      const ready =
+        (!isGeneric || document.readyState === 'complete') &&
+        pendingPlaceholders() === 0;
+      if (n > 0 && n === last && ready) { if (++stable >= 2) break; } else { stable = 0; }
+      last = n;
+      await new Promise((r) => setTimeout(r, 250));
+    }
+  }
+  mark('settle-done' + (settleRoot ? ' (errs=' + settleRoot.querySelectorAll('.sc-placeholder-error').length + ' pending=' + pendingPlaceholders() + ')' : ''));
+  // Project support.js may predate runtime default-seeding; push via bridge.
+  if (isDc && window.__dcSetProps && window.__dcRootName) {
+    try {
+      const dpEl = document.querySelector('script[data-dc-script]');
+      const meta = JSON.parse((dpEl && dpEl.getAttribute('data-props')) || '{}');
+      const bag = {};
+      for (const k in meta)
+        if (k[0] !== '$' && meta[k] && meta[k].default !== undefined)
+          bag[k] = meta[k].default;
+      if (Object.keys(bag).length) {
+        window.__dcSetProps(window.__dcRootName(), bag);
+        await new Promise((r) => setTimeout(r, 50));
+      }
+    } catch (e) {}
+  }
+  // Reveal content gated on scroll or visibility before printing. Lazy <img>,
+  // IntersectionObserver fade-ins, and collapsed <details> don't render while
+  // off-screen, so a long page would print with them blank or closed. Open
+  // every <details>, force native-lazy images eager, and scroll the document
+  // through its full height to trip lazy-load + IO; then wait (bounded) for the
+  // newly-triggered images. Inert for deck-stage (slides aren't scroll-gated).
+  try {
+    for (const d of document.querySelectorAll('details')) d.open = true;
+    for (const img of document.querySelectorAll('img[loading="lazy"]'))
+      img.loading = 'eager';
+    const scroller = document.scrollingElement || document.documentElement;
+    const full = Math.max(scroller.scrollHeight, document.body.scrollHeight);
+    const step = window.innerHeight || 800;
+    var scrollDeadline = Date.now() + 4000;
+    for (let y = 0; y <= full && Date.now() < scrollDeadline; y += step) {
+      window.scrollTo(0, y);
+      await raf();
+    }
+    window.scrollTo(0, 0);
+    await Promise.race([
+      Promise.all(
+        [...document.images].map((img) =>
+          img.complete
+            ? null
+            : new Promise((res) => {
+                img.addEventListener('load', res, { once: true });
+                img.addEventListener('error', res, { once: true });
+              })
+        )
+      ),
+      new Promise((r) => setTimeout(r, 4000)),
+    ]);
+  } catch (e) {}
+  mark('scroll-done');
+  try { await Promise.race([document.fonts.ready, new Promise((r) => setTimeout(r, 3000))]); } catch (e) {}
+  mark('fonts-done');
+  // Jump every animation to its end state so print() never captures a slide
+  // mid-entrance. Ordering matters: the 0s-transition style must be live
+  // BEFORE data-deck-active is set so attribute-keyed transitions don't
+  // start a (now-0s) run from the pre-active base.
+  const st = document.createElement('style');
+  st.textContent = '*,*::before,*::after{animation-delay:-99s !important;animation-duration:.001s !important;animation-iteration-count:1 !important;animation-fill-mode:both !important;animation-play-state:running !important;transition-duration:0s !important}';
+  document.head.appendChild(st);
+  for (const d of document.querySelectorAll('deck-stage')) {
+    for (const c of d.children) {
+      const t = c.tagName;
+      if (t === 'SCRIPT' || t === 'STYLE' || t === 'TEMPLATE') continue;
+      c.setAttribute('data-deck-active', '');
+    }
+  }
+  // Re-append deck-stage's @page last so no author @page can add a margin and
+  // spill each full-bleed slide onto two sheets. Backstop for old copies.
+  if (ds) {
+    let pg = document.getElementById('deck-stage-print-page');
+    if (!pg) {
+      pg = document.createElement('style');
+      pg.textContent = '@page{size:' + (+ds.getAttribute('width') || 1920) +
+        'px ' + (+ds.getAttribute('height') || 1080) + 'px;margin:0}';
+    }
+    document.body.appendChild(pg);
+  }
+  try {
+    const sweep = () => {
+      for (const a of document.getAnimations()) {
+        try { a.finish(); } catch (e) {
+          try { a.currentTime = (a.effect && a.effect.getComputedTiming().duration) || 0; a.pause(); } catch (e2) {}
+        }
+      }
+    };
+    sweep();
+    await raf();
+    sweep();
+    await raf();
+  } catch (e) {}
+  // A document that owns its print CSS (the doc-page starter injects the
+  // meta at runtime; hand-rolled print designs author it) gets no automatic
+  // page geometry and keeps its forced breaks: strip the injected default
+  // @page — write time cannot see a runtime-injected meta — skip the frame
+  // override below, and skip the fakepage-flattening further down. What
+  // still applies: the print baseline and break-hygiene defaults (no @page
+  // in either; low specificity, so the document's own print CSS wins) and
+  // the break-inside relaxation on >page elements (avoid on those cannot
+  // be honored whoever authored it).
+  var ownsPrint = !!document.querySelector('meta[name="omelette-owns-print" i]');
+  if (ownsPrint) {
+    var dst = document.querySelector('style[data-omelette-print-defaults]');
+    if (dst && dst.textContent) {
+      dst.textContent = dst.textContent.replace(/@page\b[^{}]*\{[^}]*\}/, '');
+    }
+  }
+  // Size the PDF page to the rendered design unless the file opted into
+  // standard paper via @page{size:letter|A4|…} or declared print ownership
+  // via the meta above. Decks own their own @page.
+  // Wrappers (body, …) lose padding+margin so the frame sits at (0,0); the
+  // frame itself loses only margin — its padding is INSIDE the measured
+  // rect and must stay, or content shifts and leaves a gap at bottom/right.
+  var __m = null;
+  try { __m = (() => {
+  var STAMP = true;
+  var docEl = document.documentElement;
+  var doc = { width: docEl.scrollWidth, height: docEl.scrollHeight };
+  // Name-presence check, case-insensitive — the same contract as the
+  // instant-PDF path's runtime check in deck-stage-export.ts. The name is
+  // a string literal here because that file interpolates this script into
+  // its print script, so importing a shared constant from it would be a
+  // cycle; measure.test.ts pins the literal so the two cannot drift apart
+  // silently.
+  var ownsPrint = !!document.querySelector('meta[name="omelette-owns-print" i]');
+
+  var ds = document.querySelector('deck-stage');
+  if (ds) {
+    var dw = Number(ds.getAttribute('width')) || 1920;
+    var dh = Number(ds.getAttribute('height')) || 1080;
+    var n = typeof ds.length === 'number' ? ds.length : ds.children.length;
+    var idx = typeof ds.index === 'number' ? ds.index : 0;
+    var frames = [];
+    for (var i = 0; i < n; i++) frames.push({ left: 0, top: 0, width: dw, height: dh });
+    return { kind: 'deck', source: 'declared', doc: doc, frames: frames,
+      authored: frames.map(function(){return{width:true,height:true}}),
+      deck: { width: dw, height: dh, slideCount: n, index: idx },
+      signals: { paperPage: false, pxPage: false, ownsPrint: ownsPrint } };
+  }
+
+  // Declared kind: a doc-page tag names the kind outright, so no signal
+  // heuristics run (like the deck branch above, signals report false —
+  // they describe inferred classifications only). The tag alone is not
+  // trusted: the element must have upgraded (shadowRoot present), so a
+  // leftover tag whose script was deleted falls through to the heuristics
+  // that handle plain markup.
+  var stageSx = window.scrollX || 0, stageSy = window.scrollY || 0;
+  var dp = document.querySelector('doc-page');
+  if (dp && dp.shadowRoot) {
+    // Crop to the sheet, not the host — the desk around it is screen-only
+    // chrome that must not land in PNG exports.
+    var sheet = dp.shadowRoot.querySelector('.sheet');
+    var sr = (sheet || dp).getBoundingClientRect();
+    return { kind: 'paper-doc', source: 'declared', doc: doc,
+      frames: [{ left: sr.left + stageSx, top: sr.top + stageSy,
+        width: sr.width, height: sr.height }],
+      authored: [{ width: false, height: false }],
+      signals: { paperPage: false, pxPage: false, ownsPrint: ownsPrint } };
+  }
+  var paperPage = false, pxPage = false;
+  var eachRule = function (fn) {
+    for (var s = 0; s < document.styleSheets.length; s++) {
+      var rs; try { rs = document.styleSheets[s].cssRules; } catch (e) { continue; }
+      for (var r = 0; r < rs.length; r++) {
+        fn(rs[r]);
+        if (rs[r].cssRules) for (var n = 0; n < rs[r].cssRules.length; n++) fn(rs[r].cssRules[n]);
+      }
+    }
+  };
+  eachRule(function (r) {
+    if (r.type !== 6) return;
+    var m = /\bsize\s*:\s*([^;}]+)/i.exec(r.cssText || '');
+    if (!m) return;
+    if (/\b(letter|a[3-5]|legal|ledger)\b/i.test(m[1])) paperPage = true;
+    if (/\d+(?:\.\d+)?px\b/i.test(m[1])) pxPage = true;
+  });
+  var signals = { paperPage: paperPage, pxPage: pxPage, ownsPrint: ownsPrint };
+
+  var pxVal = function (v) {
+    var m = /^(\d+(?:\.\d+)?)px$/.exec(v || ''); return m ? +m[1] : 0;
+  };
+  var authoredPx = function (el, prop) {
+    if (pxVal(el.style[prop])) return true;
+    var attr = el.getAttribute(prop);
+    if (attr && /^\d+$/.test(attr)) return true;
+    var hit = false;
+    eachRule(function (r) {
+      if (hit || r.type !== 1 || !r.style) return;
+      try { if (el.matches(r.selectorText) && pxVal(r.style[prop])) hit = true; } catch (e) {}
+    });
+    return hit;
+  };
+
+  var el = document.body, rootPxW = false;
+  for (;;) {
+    var kids = [];
+    for (var c = 0; c < el.children.length; c++) {
+      var t = el.children[c].tagName;
+      if (t !== 'SCRIPT' && t !== 'STYLE' && t !== 'TEMPLATE') kids.push(el.children[c]);
+    }
+    if (kids.length !== 1 || !(kids[0] instanceof HTMLElement)) break;
+    if (STAMP) el.setAttribute('data-om-frame-wrap', '');
+    el = kids[0];
+    rootPxW = authoredPx(el, 'width');
+    if (rootPxW) break;
+  }
+  if (!rootPxW) rootPxW = authoredPx(el, 'width');
+
+  // @page{size:letter} alone is a flowing doc; with a px-width root it's a
+  // fixed sheet pretending to be paper — fall through and size to render.
+  if (paperPage && !rootPxW) {
+    return { kind: 'paper-doc', source: 'inferred', doc: doc, signals: signals,
+      frames: [{ left: 0, top: 0, width: doc.width, height: doc.height }],
+      authored: [{ width: false, height: false }] };
+  }
+
+  var sx = window.scrollX || 0, sy = window.scrollY || 0;
+  var rectOf = function (e) {
+    var r = e.getBoundingClientRect();
+    var oy; try { oy = getComputedStyle(e).overflowY; } catch (err) {}
+    var h = oy === 'visible' ? Math.max(r.height, e.scrollHeight || 0) : r.height;
+    return { left: r.left + sx, top: r.top + sy, width: r.width, height: h };
+  };
+
+  // Multi-frame: off unless the page opts in via data-om-multi-frame on the
+  // stop element — the explicit opt-in is what guards against card grids
+  // and pricing tables that match the geometry but aren't separate
+  // canvases. Two ways to name the frames, explicit first:
+  // 1. Descendants marked data-om-frame-export (the social-frames starter
+  //    marks each asset frame; shells/panels around them are presentation,
+  //    so nesting is expected). Document order.
+  // 2. Fallback, no marked descendants: direct children with an authored px
+  //    width AND height (the original geometry heuristic).
+  // Frames may be different sizes (a gallery mixes 1080×1920 stories with
+  // 728×90 banners); data-om-frame-label rides along for export filenames.
+  if (el.hasAttribute('data-om-multi-frame')) {
+    var visOk = function (e) {
+      var cs; try { cs = getComputedStyle(e); } catch (err) { return false; }
+      return cs.display !== 'none' && cs.visibility !== 'hidden' && cs.position !== 'fixed';
+    };
+    // A frame's crop is its VISUAL box — never the scrollHeight-inflated
+    // rect that rectOf computes for page roots. Shadow-DOM hover controls
+    // (image-slot's Replace bar parks 29px below its host) and similar
+    // escaping UI contribute scrollable overflow to the frame, and the
+    // inflated height both squashes the nominal-size resize and drags
+    // content below the frame into the crop. Zoom-independent; bit every
+    // slot-bearing frame.
+    var frameRectOf = function (e) {
+      var r = e.getBoundingClientRect();
+      return { left: r.left + sx, top: r.top + sy, width: r.width, height: r.height };
+    };
+    var pushCand = function (list, e) {
+      if (!visOk(e)) return;
+      var rc = frameRectOf(e);
+      if (rc.width < 2 || rc.height < 2) return;
+      var lbl = e.getAttribute('data-om-frame-label');
+      if (lbl) rc.label = lbl;
+      list.push(rc);
+    };
+    var cands = [];
+    var marked = el.querySelectorAll('[data-om-frame-export]');
+    if (marked.length) {
+      for (var mk = 0; mk < marked.length; mk++) pushCand(cands, marked[mk]);
+    } else {
+      for (var k = 0; k < el.children.length; k++) {
+        var ch = el.children[k];
+        if (!authoredPx(ch, 'width') || !authoredPx(ch, 'height')) continue;
+        pushCand(cands, ch);
+      }
+    }
+    if (cands.length >= 2) {
+      return { kind: 'multi-frame', source: 'inferred', doc: doc, signals: signals,
+        frames: cands, authored: cands.map(function(){return{width:true,height:true}}) };
+    }
+  }
+
+  if (STAMP) el.setAttribute('data-om-frame', '');
+  return { kind: 'single-canvas', source: 'inferred', doc: doc, signals: signals,
+    frames: [rectOf(el)],
+    authored: [{ width: rootPxW, height: authoredPx(el, 'height') }] };
+})(); } catch (e) {}
+  var frame = null;
+  if (!ownsPrint && __m && __m.kind === 'single-canvas') {
+    var f = __m.frames && __m.frames[0];
+    if (f && f.width >= 200 && f.height >= 200) {
+      frame = f;
+      var fst = document.createElement('style');
+      fst.textContent = '@media print{@page{size:' + Math.ceil(f.width) + 'px ' +
+        Math.ceil(f.height) + 'px;margin:0}' +
+        'html,body,[data-om-frame-wrap]{padding:0!important;margin:0!important;background:none!important}' +
+        '[data-om-frame]{margin:0!important}}';
+      document.body.appendChild(fst);
+    }
+  }
+  // Relax break-inside on oversized elements. An element taller than a
+  // printable page can't honor break-inside: avoid — browsers either overflow
+  // it or push it whole to the next page, leaving a blank gap, then break it
+  // anyway at an arbitrary point. After the final layout (content revealed,
+  // animations jumped), find elements taller than a page that still compute
+  // break-inside: avoid and reset them to auto, so the browser breaks them at
+  // their children's boundaries instead (children keep their own avoid). PAGE_PX
+  // is a conservative portrait estimate at 96 CSS px/in — Letter/A4 usable
+  // height minus our 0.5in margins — so only clearly-oversized elements are
+  // touched and under-page elements still stay whole. Skipped for decks (slides
+  // are sized to the page) and for fixed-size canvases (frame set, or an author
+  // px-based @page) — runs as before for flowing docs on letter/A4.
+  try {
+    if (!ds && !frame && !(__m && __m.signals && __m.signals.pxPage)) {
+      const PAGE_PX = 1024;
+      // Our print defaults add a real @page margin only when the source has
+      // no @page of its own; computed style can't tell us (it reports screen
+      // media), so read the injected rule directly.
+      const defaults = document.querySelector('style[data-omelette-print-defaults]');
+      const pageInset = /@page\s*\{[^}]*margin/.test(defaults ? defaults.textContent || '' : '');
+      const SEL = 'section,article,figure,table,pre,blockquote,[class~="card" i],[class~="page" i],[class~="sheet" i]';
+      for (const el of document.body.querySelectorAll(SEL)) {
+        if (el instanceof HTMLElement && el.offsetHeight > PAGE_PX) {
+          el.setAttribute('data-om-oversized', '');
+          // Fake-paged docs simulate sheets with over-tall break-after:page
+          // boxes; honoring the break spills half-blank pages and ends a
+          // colored box mid-sheet. Flow them, and (only when we own the page
+          // inset) drop the redundant padding/background via the rule below.
+          const cs = getComputedStyle(el);
+          // An owns-print doc's forced breaks are intentional sheet
+          // boundaries, never fake-paged simulation — don't strip them.
+          // The break-inside relaxation above still applies: avoid on a
+          // >page element is impossible to honor whoever authored it.
+          if (
+            !ownsPrint &&
+            (cs.breakAfter === 'page' || cs.pageBreakAfter === 'always')
+          ) {
+            el.setAttribute('data-om-fakepage', '');
+          }
+        }
+      }
+      const ost = document.createElement('style');
+      ost.textContent = '@media print{' +
+        '[data-om-oversized]{break-inside:auto !important;page-break-inside:auto !important}' +
+        '[data-om-fakepage]{break-after:auto !important;page-break-after:auto !important}' +
+        (pageInset ? '[data-om-fakepage]{padding:0 !important;background:none !important}' : '') +
+        '}';
+      document.head.appendChild(ost);
+    }
+  } catch (e) {}
+  // macOS Preview renders Skia-PDF Luminosity soft-masks as opaque grey boxes;
+  // swap the CSS that triggers them for Preview-safe forms.
+  try {
+    for (const el of document.body.querySelectorAll('*')) {
+      const cs = getComputedStyle(el);
+
+      if (cs.boxShadow !== 'none' && cs.filter === 'none') {
+        const outs = [], kept = [];
+        for (const s of cs.boxShadow.split(/,(?![^(]*[)])/)) {
+          const t = s.trim();
+          const m = t.match(/^(rgba?[(][^)]+[)]) (-?[0-9.]+px) (-?[0-9.]+px) ([0-9.]+px) -?[0-9.]+px$/);
+          if (m && parseFloat(m[4]) > 0) outs.push('drop-shadow(' + m[2] + ' ' + m[3] + ' ' + m[4] + ' ' + m[1] + ')');
+          else kept.push(t);
+        }
+        if (outs.length) {
+          el.style.setProperty('filter', outs.join(' '), 'important');
+          el.style.setProperty('box-shadow', kept.join(', ') || 'none', 'important');
+        }
+      }
+
+      const mask = cs.maskImage && cs.maskImage !== 'none' ? cs.maskImage : cs.webkitMaskImage;
+      if (mask && mask !== 'none' && cs.filter === 'none') el.style.setProperty('filter', 'opacity(1)', 'important');
+    }
+  } catch (e) {}
+  mark('print-calling');
+  setTimeout(() => { try { window.print(); } catch (e) {} }, 200);
+})();
+</script>
+</body>
+</html>

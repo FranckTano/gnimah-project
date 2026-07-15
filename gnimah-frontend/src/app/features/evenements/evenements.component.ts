@@ -3,6 +3,24 @@ import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { EvenementService } from '../../core/services/evenement.service';
 import { EvenementResponse } from '../../core/models/evenement.model';
 import { MessageService, ConfirmationService } from 'primeng/api';
+import { PageHeaderService } from '../../core/services/page-header.service';
+
+interface CalCell {
+  day: string;
+  isToday: boolean;
+  hasEv: boolean;
+  evLabel: string;
+}
+
+interface UpcomingEvent {
+  day: string;
+  mon: string;
+  title: string;
+  sub: string;
+  time: string;
+}
+
+const EVENT_TONES = ['#8c2f4d', '#5a2035', '#2f9e6f', '#c79a35', '#5f7191'];
 
 @Component({
   selector: 'app-evenements',
@@ -18,14 +36,19 @@ export class EvenementsComponent implements OnInit {
   saving = false;
   form!: FormGroup;
 
+  viewDate = new Date();
+  weekdays = ['Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam', 'Dim'];
+
   constructor(
     private fb: FormBuilder,
     private evenementService: EvenementService,
     private messageService: MessageService,
-    private confirmationService: ConfirmationService
+    private confirmationService: ConfirmationService,
+    private pageHeaderService: PageHeaderService
   ) {}
 
   ngOnInit(): void {
+    this.pageHeaderService.set('Calendrier & événements', "Occupation et événements de l'hôtel");
     this.form = this.fb.group({
       titre: ['', Validators.required],
       description: [''],
@@ -40,10 +63,82 @@ export class EvenementsComponent implements OnInit {
 
   load(): void {
     this.loading = true;
-    this.evenementService.findAll().subscribe({
+    this.evenementService.findByMois(this.viewDate.getFullYear(), this.viewDate.getMonth() + 1).subscribe({
       next: (data) => { this.evenements = data; this.loading = false; },
       error: () => { this.loading = false; }
     });
+  }
+
+  get monthLabel(): string {
+    const label = this.viewDate.toLocaleDateString('fr-FR', { month: 'long', year: 'numeric' });
+    return label.charAt(0).toUpperCase() + label.slice(1);
+  }
+
+  prevMonth(): void {
+    this.viewDate = new Date(this.viewDate.getFullYear(), this.viewDate.getMonth() - 1, 1);
+    this.load();
+  }
+
+  nextMonth(): void {
+    this.viewDate = new Date(this.viewDate.getFullYear(), this.viewDate.getMonth() + 1, 1);
+    this.load();
+  }
+
+  get calCells(): CalCell[] {
+    const year = this.viewDate.getFullYear();
+    const month = this.viewDate.getMonth();
+    const firstDay = new Date(year, month, 1).getDay(); // 0=Sun
+    const lead = (firstDay + 6) % 7; // Monday-start offset
+    const daysInMonth = new Date(year, month + 1, 0).getDate();
+    const today = new Date();
+    const isCurrentMonth = today.getFullYear() === year && today.getMonth() === month;
+
+    const eventsByDay = new Map<number, EvenementResponse[]>();
+    this.evenements.forEach(e => {
+      const d = new Date(e.dateDebut);
+      if (d.getFullYear() === year && d.getMonth() === month) {
+        const list = eventsByDay.get(d.getDate()) || [];
+        list.push(e);
+        eventsByDay.set(d.getDate(), list);
+      }
+    });
+
+    const totalCells = Math.ceil((lead + daysInMonth) / 7) * 7;
+    const cells: CalCell[] = [];
+    for (let i = 0; i < totalCells; i++) {
+      const dayNum = i - lead + 1;
+      if (dayNum < 1 || dayNum > daysInMonth) {
+        cells.push({ day: '', isToday: false, hasEv: false, evLabel: '' });
+      } else {
+        const evs = eventsByDay.get(dayNum) || [];
+        cells.push({
+          day: '' + dayNum,
+          isToday: isCurrentMonth && today.getDate() === dayNum,
+          hasEv: evs.length > 0,
+          evLabel: evs.length ? (evs.length > 1 ? `${evs[0].titre} +${evs.length - 1}` : evs[0].titre) : ''
+        });
+      }
+    }
+    return cells;
+  }
+
+  get upcoming(): UpcomingEvent[] {
+    return [...this.evenements]
+      .sort((a, b) => new Date(a.dateDebut).getTime() - new Date(b.dateDebut).getTime())
+      .map(e => {
+        const d = new Date(e.dateDebut);
+        return {
+          day: d.getDate().toString().padStart(2, '0'),
+          mon: d.toLocaleDateString('fr-FR', { month: 'short' }).replace('.', ''),
+          title: e.titre,
+          sub: `${e.clientNom ? e.clientNom + ' · ' : ''}${e.nombreParticipants} pers.`,
+          time: `${d.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })} · ${e.lieu}`
+        };
+      });
+  }
+
+  eventTone(i: number): string {
+    return EVENT_TONES[i % EVENT_TONES.length];
   }
 
   openNew(): void {

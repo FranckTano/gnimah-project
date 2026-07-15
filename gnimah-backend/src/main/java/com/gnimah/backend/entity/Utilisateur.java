@@ -1,5 +1,6 @@
 package com.gnimah.backend.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.gnimah.backend.entity.enums.Role;
 import jakarta.persistence.*;
 import lombok.*;
@@ -32,6 +33,7 @@ public class Utilisateur {
     private String email;
 
     @Column(nullable = false)
+    @JsonIgnore
     private String password;
 
     @Enumerated(EnumType.STRING)

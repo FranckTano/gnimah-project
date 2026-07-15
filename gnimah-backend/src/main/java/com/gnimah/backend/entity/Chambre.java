@@ -49,6 +49,16 @@ public class Chambre {
     @Column(columnDefinition = "TEXT")
     private String equipements;
 
+    @Column(length = 30)
+    private String vue;
+
+    @Column(columnDefinition = "TEXT")
+    private String observations;
+
+    /** Comma-separated photo URLs — no upload pipeline yet, structure only. */
+    @Column(columnDefinition = "TEXT")
+    private String photos;
+
     @Column(nullable = false)
     private boolean actif = true;
 

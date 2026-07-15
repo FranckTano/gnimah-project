@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { ReservationService } from '../../../core/services/reservation.service';
 import { ReservationResponse, STATUT_RESERVATION_LABELS } from '../../../core/models/reservation.model';
 import { MessageService, ConfirmationService } from 'primeng/api';
+import { PageHeaderService } from '../../../core/services/page-header.service';
 
 @Component({
   selector: 'app-reservation-list',
@@ -14,16 +15,39 @@ export class ReservationListComponent implements OnInit {
   loading = false;
   totalRecords = 0;
   page = 0;
-  rows = 10;
+  rows = 20;
   statutLabels: Record<string, string> = STATUT_RESERVATION_LABELS;
 
   constructor(
     private reservationService: ReservationService,
     private messageService: MessageService,
-    private confirmationService: ConfirmationService
+    private confirmationService: ConfirmationService,
+    private pageHeaderService: PageHeaderService
   ) {}
 
-  ngOnInit(): void { this.load(); }
+  ngOnInit(): void {
+    this.pageHeaderService.set('Réservations', 'Planning des arrivées et statuts');
+    this.load();
+  }
+
+  get statCount() {
+    const r = this.reservations;
+    return {
+      confirmees: r.filter(x => x.statut === 'CONFIRMEE').length,
+      enAttente: r.filter(x => x.statut === 'EN_ATTENTE').length,
+      arrivees: r.filter(x => x.statut === 'ARRIVEE').length,
+      annulees: r.filter(x => x.statut === 'ANNULEE').length,
+      noShow: r.filter(x => x.statut === 'NO_SHOW').length
+    };
+  }
+
+  statutTone(s: string): string {
+    return { EN_ATTENTE: 'amber', CONFIRMEE: 'green', ARRIVEE: 'wine', ANNULEE: 'gray', NO_SHOW: 'red' }[s] || 'gray';
+  }
+
+  initials(name: string): string {
+    return (name || '?').split(' ').filter(Boolean).map(p => p.charAt(0)).join('').slice(0, 2).toUpperCase();
+  }
 
   load(event?: any): void {
     if (event) {

@@ -40,6 +40,8 @@ public class SecurityConfig {
                 .requestMatchers("/actuator/health").permitAll()
                 .requestMatchers(HttpMethod.GET, "/chambres/**").authenticated()
                 .requestMatchers("/kpi/**", "/statistiques/**").hasAnyRole("DIRECTEUR", "ADMIN")
+                // Le directeur peut consulter la liste du personnel (attribution des performances) mais pas la modifier.
+                .requestMatchers(HttpMethod.GET, "/utilisateurs/**").hasAnyRole("DIRECTEUR", "ADMIN")
                 .requestMatchers("/utilisateurs/**").hasRole("ADMIN")
                 .requestMatchers("/audit/**").hasAnyRole("DIRECTEUR", "ADMIN")
                 .anyRequest().authenticated()

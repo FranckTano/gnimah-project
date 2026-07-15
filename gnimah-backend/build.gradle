@@ -49,9 +49,10 @@ dependencies {
     implementation 'com.itextpdf:layout:8.0.4'
     implementation 'com.itextpdf:io:8.0.4'
 
-    // Lombok
-    compileOnly 'org.projectlombok:lombok'
-    annotationProcessor 'org.projectlombok:lombok'
+    // Lombok (pinned above the Spring Boot BOM's default — the older version
+    // resolved by 3.3.5 doesn't support the JDK installed in this environment)
+    compileOnly 'org.projectlombok:lombok:1.18.36'
+    annotationProcessor 'org.projectlombok:lombok:1.18.36'
 
     // OpenAPI / Swagger
     implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.6.0'

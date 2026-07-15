@@ -1,76 +1,55 @@
-.login-container {
-  min-height: 100vh;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: linear-gradient(135deg, #1e3a5f 0%, #2d6a9f 50%, #1a8fc1 100%);
-  padding: 1rem;
+:host { display: block; }
+
+.gn-login { display: grid; grid-template-columns: 1.05fr .95fr; min-height: 100vh; }
+
+.gn-login-hero {
+  position: relative; overflow: hidden;
+  background: radial-gradient(120% 90% at 76% 22%, #7c2942 0%, #3c1b23 46%, #1c0e12 100%);
+  color: #efdce0; padding: 56px 60px; display: flex; flex-direction: column;
 }
-
-.login-card {
-  background: white;
-  border-radius: 16px;
-  padding: 2.5rem;
-  width: 100%;
-  max-width: 420px;
-  box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+.gn-hero-glow {
+  position: absolute; width: 380px; height: 380px; border-radius: 50%; right: -90px; top: -60px;
+  background: radial-gradient(circle, rgba(199,106,132,.34), transparent 70%);
 }
-
-.login-header {
-  text-align: center;
-  margin-bottom: 2rem;
-
-  .hotel-logo {
-    width: 80px;
-    height: 80px;
-    background: linear-gradient(135deg, #1e3a5f, #2d6a9f);
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    margin: 0 auto 1rem;
-    i { color: white !important; }
-  }
-
-  h1 {
-    font-size: 1.5rem;
-    font-weight: 700;
-    color: #1e3a5f;
-    margin: 0 0 0.5rem;
-    line-height: 1.2;
-    span { color: #c9a227; }
-  }
-
-  p {
-    color: #64748b;
-    font-size: 0.875rem;
-    margin: 0;
-  }
+.gn-hero-brand { display: flex; align-items: center; gap: 14px; position: relative; }
+.gn-hero-logo {
+  width: 56px; height: 56px; border-radius: 16px; background: #9d3654; display: flex; align-items: center;
+  justify-content: center; font-size: 30px; color: #fff; box-shadow: 0 8px 20px rgba(0,0,0,.3);
 }
+.gn-hero-name { font-size: 24px; letter-spacing: .14em; line-height: 1; }
+.gn-hero-sub { color: #c99aa5; margin-top: 5px; }
 
-.field {
-  margin-bottom: 1.25rem;
+.gn-hero-pitch { margin-top: 52px; position: relative; }
+.gn-hero-title { font-weight: 400; font-size: 44px; line-height: 1.12; margin: 16px 0 0; letter-spacing: -.01em; }
+.gn-hero-text { max-width: 420px; color: #d3b7bd; font-size: 15px; line-height: 1.6; margin-top: 20px; }
 
-  label {
-    display: block;
-    font-weight: 600;
-    color: #374151;
-    margin-bottom: 0.5rem;
-    font-size: 0.875rem;
-  }
-}
+.gn-hero-stats { display: flex; gap: 30px; margin-top: auto; padding-top: 44px; position: relative; }
+.gn-hero-sep { width: 1px; background: rgba(199,106,132,.35); }
+.gn-stat-val { font-size: 30px; }
+.gn-stat-lbl { color: #bd8894; margin-top: 3px; }
+.gn-hero-addr { margin-top: 26px; font-size: 12.5px; color: #9c7079; position: relative; }
 
-.login-footer {
-  text-align: center;
-  margin-top: 1.5rem;
-  color: #9ca3af;
-}
+.gn-login-formwrap { display: flex; align-items: center; justify-content: center; padding: 44px 34px; }
+.gn-login-form { width: 100%; max-width: 360px; }
+.gn-welcome { font-weight: 500; font-size: 30px; margin: 0; color: #2e2024; }
+.gn-welcome-sub { color: #9a8a8e; font-size: 14px; margin: 7px 0 26px; }
 
-:host ::ng-deep {
-  .p-input-icon-left > .p-inputtext {
-    padding-left: 2.5rem;
-  }
-  .p-password input {
-    width: 100%;
-  }
+.gn-flabel { font-size: 13px; font-weight: 600; color: #4d3f43; }
+.gn-field-icon { position: relative; margin: 7px 0 18px; }
+.gn-field-icon i { position: absolute; left: 14px; top: 50%; transform: translateY(-50%); color: #b3a2a6; font-size: 18px; }
+.gn-field-icon .gn-input { padding-left: 42px; }
+
+.gn-remember-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 22px; }
+.gn-remember { display: flex; align-items: center; gap: 8px; font-size: 13.5px; color: #6d585d; cursor: pointer; }
+.gn-remember input { accent-color: #8c2f4d; width: 15px; height: 15px; }
+.gn-forgot { font-size: 13px; color: #8c2f4d; text-decoration: none; }
+.gn-forgot:hover { color: #6f2440; }
+
+.gn-submit { width: 100%; padding: 14px; font-size: 15px; }
+.gn-spin { animation: gnSpin .8s linear infinite; }
+@keyframes gnSpin { to { transform: rotate(360deg); } }
+
+@media (max-width: 900px) {
+  .gn-login { grid-template-columns: 1fr; }
+  .gn-login-hero { padding: 38px 26px; }
 }

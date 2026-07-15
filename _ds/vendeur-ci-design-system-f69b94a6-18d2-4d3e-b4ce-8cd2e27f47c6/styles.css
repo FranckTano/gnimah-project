@@ -1,0 +1,11 @@
+/* ============================================================
+   Vendeur.ci — Design System · point d'entrée global
+   Les projets consommateurs ne lient QUE ce fichier.
+   Uniquement des @import ici (aucune règle inline).
+   ============================================================ */
+@import url('./tokens/fonts.css');
+@import url('./tokens/colors.css');
+@import url('./tokens/typography.css');
+@import url('./tokens/spacing.css');
+@import url('./tokens/effects.css');
+@import url('./tokens/base.css');
