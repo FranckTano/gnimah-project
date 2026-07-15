@@ -11,6 +11,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
+
 @Service
 @RequiredArgsConstructor
 public class AuditService {
@@ -27,6 +29,7 @@ public class AuditService {
                 .entite(entite)
                 .entiteId(entiteId)
                 .details(details)
+                .createdAt(LocalDateTime.now())
                 .build();
         auditLogRepository.save(log);
     }

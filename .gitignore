@@ -1,7 +1,7 @@
-# Backend
-gnimah-backend/target/
+# Backend - Gradle
+gnimah-backend/build/
+gnimah-backend/.gradle/
 gnimah-backend/*.log
-gnimah-backend/.mvn/wrapper/maven-wrapper.jar
 
 # Frontend
 gnimah-frontend/node_modules/

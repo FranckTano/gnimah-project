@@ -1,3 +1,0 @@
--- Les données initiales (utilisateurs + chambres) sont insérées
--- automatiquement par DataInitializer.java au démarrage de l'application.
--- Les mots de passe sont encodés en BCrypt via PasswordEncoder Spring Security.
