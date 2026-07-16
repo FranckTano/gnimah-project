@@ -24,6 +24,9 @@ public class Chambre {
     @Column(nullable = false, unique = true, length = 20)
     private String numero;
 
+    @Column(length = 150)
+    private String nom;
+
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 20)
     private TypeChambre type = TypeChambre.STANDARD;

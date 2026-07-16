@@ -1,5 +1,5 @@
 <div class="gn-route">
-  <div style="display:flex;align-items:center;justify-content:flex-end;margin-bottom:16px;">
+  <div style="display:flex;align-items:center;justify-content:flex-end;margin-bottom:16px;" *ngIf="authService.hasTaskManagementAccess()">
     <button class="gn-btn-p" style="padding:9px 16px;font-size:13px;" (click)="openNew()"><i class="ti ti-plus"></i>Nouvelle tâche</button>
   </div>
 
@@ -13,9 +13,12 @@
       </div>
 
       <div *ngFor="let t of col.tasks" style="border:1px solid #f0e6e2;border-radius:16px;padding:15px;margin-top:12px;">
-        <div style="display:flex;align-items:center;justify-content:space-between;">
-          <div class="gn-serif" style="font-size:19px;color:#33262a;">Ch. {{ t.chambreNumero }}</div>
+        <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;">
+          <div class="gn-serif" style="font-size:16.5px;color:#33262a;">{{ t.titre }}</div>
           <span class="gn-bdg" [ngClass]="t.priorite === 'URGENTE' ? 'red' : 'slate'">{{ t.priorite === 'URGENTE' ? 'Urgent' : 'Normal' }}</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:6px;margin-top:5px;font-size:12px;color:#8a7a7e;">
+          <i class="ti" [ngClass]="cibleIcon(t)"></i><span>{{ cibleLabel(t) }}</span>
         </div>
         <div style="font-size:13.5px;color:#6d585d;margin-top:7px;">{{ t.description }}</div>
         <div style="display:flex;align-items:center;justify-content:space-between;margin-top:12px;">
@@ -24,6 +27,12 @@
             <span style="font-size:12.5px;color:#6d585d;">{{ t.assigneA || 'Non assigné' }}</span>
           </div>
           <span style="font-size:12px;color:#a99a9d;">{{ t.dateCreation | date:'HH:mm' }}</span>
+        </div>
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-top:8px;" *ngIf="t.dateLimite || t.responsableNom">
+          <span style="font-size:11.5px;color:#a99a9d;" *ngIf="t.responsableNom">Assignée par {{ t.responsableNom }}</span>
+          <span style="font-size:11.5px;font-weight:600;" [class.c-red]="isEnRetard(t)" [style.color]="isEnRetard(t) ? null : '#a99a9d'" *ngIf="t.dateLimite">
+            <i class="ti ti-clock" style="font-size:12px;"></i> {{ t.dateLimite | date:'dd/MM HH:mm' }}
+          </span>
         </div>
         <div style="display:flex;gap:8px;margin-top:12px;" *ngIf="t.statut !== 'TERMINE'">
           <button *ngIf="t.statut === 'A_FAIRE'" class="gn-btn-o" style="flex:1;padding:8px;font-size:12.5px;" (click)="changerStatut(t, 'EN_COURS')"><i class="ti ti-player-play"></i>Démarrer</button>
@@ -37,36 +46,78 @@
 </div>
 
 <!-- Dialog -->
-<p-dialog [(visible)]="showDialog" header="Nouvelle tâche d'entretien" [modal]="true" [style]="{width:'500px'}">
+<p-dialog [(visible)]="showDialog" header="Nouvelle tâche d'entretien" [modal]="true" [style]="{width:'560px'}" [draggable]="false">
   <form [formGroup]="form">
-    <div class="p-fluid">
-      <div class="field mb-3">
-        <label class="font-bold">Chambre <span class="text-red-500">*</span></label>
-        <p-select formControlName="chambreId" [options]="chambres" optionLabel="numero" optionValue="id" placeholder="Sélectionner une chambre" [class.ng-invalid]="isInvalid('chambreId')"></p-select>
-        <small *ngIf="isInvalid('chambreId')" class="p-error">Chambre requise</small>
+    <div>
+      <label class="gn-flabel">Titre *</label>
+      <input class="gn-input" formControlName="titre" placeholder="Ex: Nettoyage chambre 203" style="margin-top:6px;" [class.gn-invalid]="isInvalid('titre')" />
+    </div>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:12px;">
+      <div>
+        <label class="gn-flabel">Type *</label>
+        <select class="gn-input" formControlName="type" style="margin-top:6px;">
+          <option *ngFor="let t of typeOptions" [value]="t.value">{{ t.label }}</option>
+        </select>
       </div>
-      <div class="grid">
-        <div class="col-6">
-          <div class="field">
-            <label class="font-bold">Type <span class="text-red-500">*</span></label>
-            <p-select formControlName="type" [options]="typeOptions" optionLabel="label" optionValue="value"></p-select>
-          </div>
-        </div>
-        <div class="col-6">
-          <div class="field">
-            <label class="font-bold">Priorité</label>
-            <p-select formControlName="priorite" [options]="prioriteOptions" optionLabel="label" optionValue="value"></p-select>
-          </div>
-        </div>
+      <div>
+        <label class="gn-flabel">Priorité</label>
+        <select class="gn-input" formControlName="priorite" style="margin-top:6px;">
+          <option *ngFor="let p of prioriteOptions" [value]="p.value">{{ p.label }}</option>
+        </select>
       </div>
-      <div class="field mb-3">
-        <label class="font-bold">Description <span class="text-red-500">*</span></label>
-        <textarea pTextarea formControlName="description" rows="3" [class.ng-invalid]="isInvalid('description')"></textarea>
-        <small *ngIf="isInvalid('description')" class="p-error">Description requise</small>
+    </div>
+
+    <div style="margin-top:14px;">
+      <label class="gn-flabel">Cible de la tâche</label>
+      <div style="display:flex;gap:8px;margin-top:6px;flex-wrap:wrap;">
+        <button type="button" class="gn-chip" [class.on]="cible === 'AUCUNE'" (click)="setCible('AUCUNE')">Aucune</button>
+        <button type="button" class="gn-chip" [class.on]="cible === 'CHAMBRE'" (click)="setCible('CHAMBRE')">Chambre</button>
+        <button type="button" class="gn-chip" [class.on]="cible === 'SALLE'" (click)="setCible('SALLE')">Salle</button>
+        <button type="button" class="gn-chip" [class.on]="cible === 'EVENEMENT'" (click)="setCible('EVENEMENT')">Événement</button>
       </div>
-      <div class="field">
-        <label class="font-bold">Assigné à</label>
-        <input pInputText formControlName="assigneA" placeholder="Nom de l'agent"/>
+    </div>
+
+    <div style="margin-top:12px;" *ngIf="cible === 'CHAMBRE'">
+      <label class="gn-flabel">Chambre</label>
+      <select class="gn-input" formControlName="chambreId" style="margin-top:6px;">
+        <option [ngValue]="null">Sélectionner une chambre</option>
+        <option *ngFor="let c of chambres" [ngValue]="c.id">{{ c.nom || c.numero }} <span *ngIf="c.nom">— {{ c.numero }}</span></option>
+      </select>
+    </div>
+    <div style="margin-top:12px;" *ngIf="cible === 'SALLE'">
+      <label class="gn-flabel">Salle</label>
+      <input class="gn-input" formControlName="salle" placeholder="Ex: Salle de conférence" style="margin-top:6px;" />
+    </div>
+    <div style="margin-top:12px;" *ngIf="cible === 'EVENEMENT'">
+      <label class="gn-flabel">Événement</label>
+      <select class="gn-input" formControlName="evenementId" style="margin-top:6px;">
+        <option [ngValue]="null">Sélectionner un événement</option>
+        <option *ngFor="let e of evenements" [ngValue]="e.id">{{ e.titre }}</option>
+      </select>
+    </div>
+
+    <div style="margin-top:12px;">
+      <label class="gn-flabel">Description *</label>
+      <textarea class="gn-input" formControlName="description" rows="3" style="margin-top:6px;resize:vertical;" [class.gn-invalid]="isInvalid('description')"></textarea>
+    </div>
+
+    <div style="margin-top:12px;">
+      <label class="gn-flabel">Assigné à (Agent) *</label>
+      <select class="gn-input" formControlName="agentId" style="margin-top:6px;" [class.gn-invalid]="isInvalid('agentId')">
+        <option [ngValue]="null">Sélectionner un agent</option>
+        <option *ngFor="let a of agents" [ngValue]="a.id">{{ a.prenom }} {{ a.nom }}</option>
+      </select>
+    </div>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:12px;">
+      <div>
+        <label class="gn-flabel">Échéance</label>
+        <input class="gn-input" type="date" formControlName="dateLimiteJour" style="margin-top:6px;" />
+      </div>
+      <div>
+        <label class="gn-flabel">Heure</label>
+        <input class="gn-input" type="time" formControlName="dateLimiteHeure" style="margin-top:6px;" />
       </div>
     </div>
   </form>

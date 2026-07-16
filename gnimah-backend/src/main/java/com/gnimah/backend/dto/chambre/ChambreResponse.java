@@ -10,6 +10,7 @@ import java.math.BigDecimal;
 public class ChambreResponse {
     private Long id;
     private String numero;
+    private String nom;
     private String type;
     private int capacite;
     private BigDecimal tarifPassage;

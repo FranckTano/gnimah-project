@@ -51,7 +51,7 @@ shared/components/layout/     coquille de l'application (sidebar + topbar + <rou
 
 Chaque page définit son titre/sous-titre via `PageHeaderService.set(titre, sous-titre)` dans `ngOnInit` ; la topbar (dans `LayoutComponent`) s'y abonne et l'affiche — c'est ce qui évite de dupliquer un `<h1>` par page.
 
-**Identité visuelle** : un système de classes utilitaires `.gn-*` (défini dans `src/styles.scss`) porte tout le rendu — cartes (`.gn-card`), boutons (`.gn-btn-p` / `.gn-btn-o`), badges de statut (`.gn-bdg`), avatars (`.gn-av`), grilles de mise en page (`.gn-kpi`, `.gn-dash2`, `.gn-dash3`, …). Les composants PrimeNG restants (dialogs, `p-select`, `p-datepicker`, `p-chart`) héritent d'une palette bordeaux via un preset PrimeNG personnalisé (`GnimahPreset` dans `app.module.ts`, généré avec `definePreset(Lara, …)`).
+**Identité visuelle** : un système de classes utilitaires `.gn-*` (défini dans `src/styles.scss`) porte tout le rendu — cartes (`.gn-card`), boutons (`.gn-btn-p` / `.gn-btn-o`), badges de statut (`.gn-bdg`), avatars (`.gn-av`), grilles de mise en page (`.gn-kpi`, `.gn-dash2`, `.gn-dash3`, …). Les composants PrimeNG restants (dialogs, `p-select`, `p-datepicker`, `p-chart`) héritent d'une palette bordeaux via un preset PrimeNG personnalisé (`GnimahPreset` dans `app.module.ts`, généré avec `definePreset(Lara, …)`), avec `providePrimeNG({ theme: { preset: GnimahPreset, options: { darkModeSelector: false } } })` : sans ce `darkModeSelector: false`, PrimeNG bascule automatiquement en palette sombre dès que l'OS/navigateur est en `prefers-color-scheme: dark`, indépendamment du thème `.gn-*` codé en dur en clair — c'était la cause des dialogs/tableaux qui apparaissaient sombres alors que le reste de l'app restait clair.
 
 ### 1.3 Backend (`gnimah-backend/src/main/java/com/gnimah/backend`)
 
@@ -128,15 +128,15 @@ Chaque paiement est rattaché à un séjour (`sejour_id`). La liste (`Reçus & f
 
 ### 2.6 Housekeeping / Entretien (`/entretien`)
 
-Tâches de nettoyage/maintenance rattachées à une chambre : type (NETTOYAGE/MAINTENANCE/INSPECTION/RÉPARATION), priorité (Normale/Urgente), assigné à, statut (À_FAIRE → EN_COURS → TERMINÉ). Affiché en kanban 3 colonnes ; « Démarrer »/« Terminer » changent le statut (`PATCH /entretien/{id}/statut`).
+Tâches de nettoyage/maintenance rattachées à une chambre : type (NETTOYAGE/MAINTENANCE/INSPECTION/RÉPARATION), priorité (Normale/Urgente), assigné à (compte personnel réel — `TacheEntretien.agent`, sélectionné via `p-select` peuplé par `GET /utilisateurs`, plus de champ texte libre), statut (À_FAIRE → EN_COURS → TERMINÉ). Affiché en kanban 3 colonnes ; « Démarrer »/« Terminer » changent le statut (`PATCH /entretien/{id}/statut`). Le contrôleur passe par `dto/entretien/` + `TacheEntretienService` (même convention que Clients/Chambres) plutôt que des `Map<String,Object>` bruts.
 
 ### 2.7 Événements (`/evenements`)
 
-Réservations de salles (séminaires, mariages, réunions) : titre, lieu, dates, nombre de participants, montant. Vue calendrier mensuel (`GET /evenements/calendrier?annee=&mois=`) + liste « à venir » avec édition/suppression.
+Réservations de salles (séminaires, mariages, réunions) : titre, lieu, dates, nombre de participants, montant. Vue calendrier mensuel (`GET /evenements/calendrier?annee=&mois=`) + liste « à venir » avec édition (`PUT /evenements/{id}`)/suppression. Le contrôleur passe par `dto/evenement/EvenementRequest`/`EvenementResponse` + `EvenementService`, qui mappent les champs internes de l'entité (`intitule`, `salle`, `nbPersonnes`) vers le contrat attendu par le frontend (`titre`, `lieu`, `nombreParticipants`).
 
 ### 2.8 Personnel (`/administration/utilisateurs`, ADMIN uniquement)
 
-CRUD des comptes (nom, prénom, email, login, mot de passe, rôle). Comme pour les chambres, on **désactive** un compte plutôt que de le supprimer (`PATCH /utilisateurs/{id}/toggle-actif`) — un utilisateur désactivé ne peut plus se connecter mais reste l'auteur historique de ses séjours/tâches passés.
+CRUD complet des comptes (nom, prénom, email, login, mot de passe, rôle), y compris la modification (`PUT /utilisateurs/{id}`, via `UtilisateurService`/DTO dédiés). Comme pour les chambres, on **désactive** un compte plutôt que de le supprimer (`PATCH /utilisateurs/{id}/toggle-actif`) — un utilisateur désactivé ne peut plus se connecter mais reste l'auteur historique de ses séjours/tâches passés. Trois rôles gérés (AGENT/DIRECTEUR/ADMIN) — pas de rôle dédié « agent d'entretien » : Housekeeping assigne directement un compte existant (voir §2.6) plutôt que d'introduire un quatrième rôle, pour ne pas complexifier le modèle d'autorisation pour un gain marginal dans un hôtel de cette taille.
 
 ### 2.9 Statistiques & KPI (`/kpi`, DIRECTEUR/ADMIN uniquement)
 
@@ -152,9 +152,9 @@ Le tableau de bord (`/dashboard`) reprend une sélection resserrée de ces indic
 
 ### 2.10 Tableau de bord (`/dashboard`)
 
-Deux vues selon le rôle :
+Deux vues selon le rôle, précédées d'un état de chargement (`p-skeleton` calqué sur la forme des grilles de KPI, affiché tant que `DashboardComponent.loading` est `true`) :
 
-- **Directeur** : vue d'ensemble des chambres (total / disponibles / occupées / maintenance / taux d'occupation / clients hébergés), activité du jour (arrivées / départs / réservations à venir / reste à payer), revenus (jour + mois en cours), graphe CA 7 jours, donut d'occupation, indicateurs hôteliers, performance par agent.
+- **Directeur** : vue d'ensemble des chambres (total / disponibles / occupées / maintenance / taux d'occupation / clients hébergés), activité du jour (arrivées / départs / réservations à venir / reste à payer), revenus (jour + mois en cours), graphe CA 7 jours, graphe réservations 7 jours (`KpiResponse.reservationsParJour`, compté par jour de création de réservation via `ReservationRepository.countReservationsPeriode`), donut d'occupation, indicateurs hôteliers, performance par agent.
 - **Agent** : compteurs opérationnels (arrivées, départs, chambres à nettoyer, séjours en cours), liste des arrivées du jour avec check-in direct, liste « à traiter » (chambres à nettoyer, restes à payer, départs prévus) — construite dynamiquement à partir des vraies données (aucune donnée factice).
 
 ---
@@ -199,9 +199,11 @@ utilisateurs ──┬──< sejours >──┬── clients
 7. `taches_entretien` (a besoin de `chambres`)
 8. `evenements` (a besoin éventuellement de `clients`)
 
-### 3.4 Exemple de données de démonstration
+### 3.4 Données de démonstration
 
-Les chambres de démo (12 chambres, étages 1-3, tous types) sont déjà injectées par `V2__initial_rooms.sql`. Exemple d'ajout manuel cohérent avec les contraintes :
+Les chambres de démo (12 chambres, étages 1-3, tous types) sont injectées par `V2__initial_rooms.sql`. Les comptes (`admin`/`directeur`/`agent`) sont créés par `DataInitializer` (`@Order(1)`). Au-delà, `config/DemoDataSeeder.java` (`@Order(2)`, s'exécute donc après `DataInitializer`) peuple au premier démarrage : 6 clients, 3 réservations à venir, 2 séjours en cours (chambres 101 et 201 passées à `OCCUPÉE`), 4 séjours terminés sur les 6 derniers jours (dont 3 pour la cliente Fatou Diallo, afin qu'elle franchisse le seuil `nbSejours >= 3` et affiche le badge « Fidèle »), les paiements correspondants, 3 tâches d'entretien et 2 événements à venir. Le seeder est idempotent (`if (clientRepository.count() > 0) return;`) et n'est pas une migration Flyway : Flyway s'exécute *avant* que `DataInitializer` ne crée les utilisateurs, donc un script SQL ne pourrait pas relier proprement séjours/réservations à un agent réel — voir §3.3. Les dates sont calculées par rapport à `LocalDateTime.now()` au démarrage, donc toujours pertinentes (« aujourd'hui », « cette semaine ») quelle que soit la date réelle de lancement.
+
+Exemple d'ajout manuel cohérent avec les contraintes, au-delà des données de démo :
 
 ```sql
 -- Un client
@@ -240,6 +242,6 @@ Ce scénario suit exactement le cycle métier de l'application, du premier lance
 ## 5. Points d'attention pour la suite
 
 - **Environnement de build backend** : ce poste n'a que le JDK 25 sur le PATH, or Gradle 8.8 / Lombok (résolu par le BOM Spring Boot 3.3.5) ne le supportent pas. Deux ajustements ont été faits pour que `./gradlew` fonctionne ici : Lombok est épinglé en `1.18.36` dans `build.gradle`, et il faut lancer Gradle avec un JDK 17-21 (`export JAVA_HOME=<jdk17-ou-21>` avant `./gradlew`, ou configurer `org.gradle.java.home` localement — ce chemin n'a pas été committé car spécifique à cette machine).
-- **Photos de chambre** : la colonne `photos` existe (chaîne de texte, URLs séparées par virgule) mais aucun pipeline d'upload/stockage n'est branché — à prévoir si la fonctionnalité doit devenir utilisable.
-- **`ClientFormComponent`** (`features/clients/form/`) n'est raccordé à aucune route : la création/édition de client se fait via la boîte de dialogue intégrée à `Fiches clients`. Ce composant est mort ; à supprimer ou à re-brancher selon le besoin.
+- **Photos de chambre** : le champ `photos` (chaîne de texte, URLs séparées par virgule) est désormais géré dans le formulaire de chambre (ajout/suppression d'URLs avec aperçu), mais reste une liste d'URLs externes — aucun pipeline d'upload/stockage binaire (`MultipartFile`, stockage disque/S3, validation de type/taille) n'est branché. À prévoir si l'hôtel veut héberger lui-même ses photos plutôt que de coller des liens existants.
 - **Suppression = désactivation** pour les chambres et le personnel (voir §2.1 et §2.8) : c'est un choix délibéré (intégrité de l'historique), pas un oubli.
+- **Pas de rôle housekeeping dédié** : Housekeeping assigne une tâche à un compte du personnel existant (AGENT/DIRECTEUR/ADMIN), sans rôle « agent d'entretien » séparé — décision assumée pour ne pas complexifier `SecurityConfig`/`@PreAuthorize` sur ~9 contrôleurs pour un hôtel de cette taille (voir §2.8). À reconsidérer si l'équipe de ménage grandit et a besoin d'un accès applicatif propre (aujourd'hui, seul le personnel de réception/direction/administration se connecte à l'app).

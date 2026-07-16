@@ -11,6 +11,7 @@ import java.math.BigDecimal;
 public class ChambreRequest {
     @NotBlank(message = "Le numéro de chambre est requis")
     private String numero;
+    private String nom;
     @NotBlank(message = "Le type est requis")
     private String type;
     @Positive

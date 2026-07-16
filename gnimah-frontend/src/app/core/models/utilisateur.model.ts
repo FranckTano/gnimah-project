@@ -22,5 +22,6 @@ export interface UtilisateurRequest {
 export const roleLabel: Record<string, string> = {
   ADMIN: 'Administrateur',
   DIRECTEUR: 'Directeur',
+  RESPONSABLE: 'Responsable',
   AGENT: 'Agent de réception'
 };

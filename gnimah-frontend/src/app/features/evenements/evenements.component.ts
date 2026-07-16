@@ -52,8 +52,10 @@ export class EvenementsComponent implements OnInit {
     this.form = this.fb.group({
       titre: ['', Validators.required],
       description: [''],
-      dateDebut: [null, Validators.required],
-      dateFin: [null, Validators.required],
+      dateDebutJour: ['', Validators.required],
+      dateDebutHeure: ['08:00', Validators.required],
+      dateFinJour: ['', Validators.required],
+      dateFinHeure: ['18:00', Validators.required],
       lieu: ['', Validators.required],
       nombreParticipants: [0],
       montant: [0]
@@ -143,18 +145,27 @@ export class EvenementsComponent implements OnInit {
 
   openNew(): void {
     this.editingId = null;
-    this.form.reset({ nombreParticipants: 0, montant: 0 });
+    this.form.reset({ nombreParticipants: 0, montant: 0, dateDebutHeure: '08:00', dateFinHeure: '18:00' });
     this.showDialog = true;
   }
 
   openEdit(ev: EvenementResponse): void {
     this.editingId = ev.id;
+    const [debutJour, debutHeure] = this.splitDateTime(ev.dateDebut);
+    const [finJour, finHeure] = this.splitDateTime(ev.dateFin);
     this.form.patchValue({
       ...ev,
-      dateDebut: new Date(ev.dateDebut),
-      dateFin: new Date(ev.dateFin)
+      dateDebutJour: debutJour, dateDebutHeure: debutHeure,
+      dateFinJour: finJour, dateFinHeure: finHeure
     });
     this.showDialog = true;
+  }
+
+  private splitDateTime(iso: string): [string, string] {
+    const d = new Date(iso);
+    const jour = d.toISOString().split('T')[0];
+    const heure = `${d.getHours().toString().padStart(2, '0')}:${d.getMinutes().toString().padStart(2, '0')}`;
+    return [jour, heure];
   }
 
   save(): void {
@@ -163,8 +174,8 @@ export class EvenementsComponent implements OnInit {
     const v = this.form.value;
     const req = {
       ...v,
-      dateDebut: v.dateDebut instanceof Date ? v.dateDebut.toISOString() : v.dateDebut,
-      dateFin: v.dateFin instanceof Date ? v.dateFin.toISOString() : v.dateFin
+      dateDebut: `${v.dateDebutJour}T${v.dateDebutHeure}:00`,
+      dateFin: `${v.dateFinJour}T${v.dateFinHeure}:00`
     };
     const obs = this.editingId
       ? this.evenementService.update(this.editingId, req)

@@ -53,6 +53,25 @@
 .gn-bell { margin-left: auto; }
 .gn-bell-dot { position: absolute; top: 9px; right: 10px; width: 7px; height: 7px; border-radius: 50%; background: #d0455a; }
 
+.gn-notif-backdrop { position: fixed; inset: 0; z-index: 45; }
+.gn-notif-panel {
+  position: absolute; top: calc(100% + 10px); right: 26px; width: 360px; max-width: calc(100vw - 32px);
+  z-index: 50; padding: 16px; max-height: 420px; display: flex; flex-direction: column;
+}
+.gn-notif-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
+.gn-notif-markall { font-size: 12px; color: #8c2f4d; text-decoration: none; cursor: pointer; }
+.gn-notif-markall:hover { color: #6f2440; }
+.gn-notif-list { overflow-y: auto; }
+.gn-notif-item { display: flex; align-items: flex-start; gap: 11px; padding: 11px 4px; border-top: 1px solid #f2e8e4; cursor: pointer; border-radius: 10px; }
+.gn-notif-item:first-child { border-top: none; }
+.gn-notif-item:hover { background: #faf4f1; }
+.gn-notif-item.unread { background: #fbeef1; }
+.gn-notif-item.unread:hover { background: #f6dfe4; }
+
+@media (max-width: 900px) {
+  .gn-notif-panel { right: 15px; width: calc(100vw - 30px); }
+}
+
 .gn-dateinfo { text-align: right; line-height: 1.25; flex: none; }
 .gn-date { font-size: 13px; font-weight: 600; color: #4d3f43; text-transform: capitalize; }
 .gn-city { font-size: 11px; color: #a99a9d; }

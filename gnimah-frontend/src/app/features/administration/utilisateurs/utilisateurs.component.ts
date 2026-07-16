@@ -2,6 +2,8 @@ import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { UtilisateurService } from '../../../core/services/utilisateur.service';
 import { UtilisateurResponse, roleLabel } from '../../../core/models/utilisateur.model';
+import { PasswordResetService } from '../../../core/services/password-reset.service';
+import { PasswordResetRequestResponse } from '../../../core/models/password-reset.model';
 import { MessageService, ConfirmationService } from 'primeng/api';
 import { PageHeaderService } from '../../../core/services/page-header.service';
 
@@ -25,12 +27,20 @@ export class UtilisateursComponent implements OnInit {
   roles = [
     { label: 'Administrateur', value: 'ADMIN' },
     { label: 'Directeur', value: 'DIRECTEUR' },
+    { label: 'Responsable', value: 'RESPONSABLE' },
     { label: 'Agent de réception', value: 'AGENT' }
   ];
+
+  resetRequests: PasswordResetRequestResponse[] = [];
+  resolvingId: number | null = null;
+  showResolvedDialog = false;
+  resolvedUsername = '';
+  resolvedPassword = '';
 
   constructor(
     private fb: FormBuilder,
     private utilisateurService: UtilisateurService,
+    private passwordResetService: PasswordResetService,
     private messageService: MessageService,
     private confirmationService: ConfirmationService,
     private pageHeaderService: PageHeaderService
@@ -48,6 +58,31 @@ export class UtilisateursComponent implements OnInit {
       actif: [true]
     });
     this.load();
+    this.loadResetRequests();
+  }
+
+  loadResetRequests(): void {
+    this.passwordResetService.findEnAttente().subscribe({
+      next: (data) => { this.resetRequests = data; },
+      error: () => { /* pas bloquant pour le reste de la page */ }
+    });
+  }
+
+  resoudreDemande(r: PasswordResetRequestResponse): void {
+    this.resolvingId = r.id;
+    this.passwordResetService.resoudre(r.id).subscribe({
+      next: (res) => {
+        this.resolvingId = null;
+        this.resolvedUsername = res.username;
+        this.resolvedPassword = res.nouveauMotDePasse;
+        this.showResolvedDialog = true;
+        this.loadResetRequests();
+      },
+      error: () => {
+        this.resolvingId = null;
+        this.messageService.add({ severity: 'error', summary: 'Erreur', detail: 'Impossible de traiter cette demande' });
+      }
+    });
   }
 
   load(): void {
@@ -114,7 +149,7 @@ export class UtilisateursComponent implements OnInit {
   }
 
   roleTone(role: string): string {
-    return { ADMIN: 'wine', DIRECTEUR: 'gold', AGENT: 'slate' }[role] || 'gray';
+    return { ADMIN: 'wine', DIRECTEUR: 'gold', RESPONSABLE: 'green', AGENT: 'slate' }[role] || 'gray';
   }
 
   initials(u: UtilisateurResponse): string {

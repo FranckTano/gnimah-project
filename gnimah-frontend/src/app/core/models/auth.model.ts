@@ -10,8 +10,16 @@ export interface LoginResponse {
   username: string;
   nom: string;
   prenom: string;
-  role: 'ADMIN' | 'DIRECTEUR' | 'AGENT';
+  role: 'ADMIN' | 'DIRECTEUR' | 'RESPONSABLE' | 'AGENT';
   email: string;
+}
+
+export interface ForgotPasswordRequest {
+  username: string;
+}
+
+export interface ForgotPasswordResponse {
+  message: string;
 }
 
 export interface CurrentUser {
@@ -19,7 +27,7 @@ export interface CurrentUser {
   username: string;
   nom: string;
   prenom: string;
-  role: 'ADMIN' | 'DIRECTEUR' | 'AGENT';
+  role: 'ADMIN' | 'DIRECTEUR' | 'RESPONSABLE' | 'AGENT';
   email: string;
   nomComplet: string;
 }

@@ -1,8 +1,11 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
-import { Subscription } from 'rxjs';
+import { Router } from '@angular/router';
+import { Subscription, interval } from 'rxjs';
 import { AuthService } from '../../../core/services/auth.service';
 import { CurrentUser } from '../../../core/models/auth.model';
 import { PageHeaderService } from '../../../core/services/page-header.service';
+import { NotificationService } from '../../../core/services/notification.service';
+import { NotificationResponse, NOTIFICATION_ICONS } from '../../../core/models/notification.model';
 
 interface NavItem {
   label: string;
@@ -29,9 +32,19 @@ export class LayoutComponent implements OnInit, OnDestroy {
   pageSub = '';
   today = new Date();
 
+  showNotifPanel = false;
+  unreadCount = 0;
+  notifications: NotificationResponse[] = [];
+  notifIcons = NOTIFICATION_ICONS;
+
   private sub = new Subscription();
 
-  constructor(private authService: AuthService, private pageHeaderService: PageHeaderService) {}
+  constructor(
+    private authService: AuthService,
+    private pageHeaderService: PageHeaderService,
+    private notificationService: NotificationService,
+    private router: Router
+  ) {}
 
   ngOnInit(): void {
     this.currentUser = this.authService.currentUser;
@@ -42,10 +55,49 @@ export class LayoutComponent implements OnInit, OnDestroy {
         this.pageSub = h.subtitle;
       })
     );
+    this.refreshUnreadCount();
+    this.sub.add(interval(60000).subscribe(() => this.refreshUnreadCount()));
   }
 
   ngOnDestroy(): void {
     this.sub.unsubscribe();
+  }
+
+  refreshUnreadCount(): void {
+    this.notificationService.countNonLues().subscribe({
+      next: (res) => { this.unreadCount = res.count; },
+      error: () => { /* la cloche reste silencieuse si l'appel échoue */ }
+    });
+  }
+
+  toggleNotifPanel(): void {
+    this.showNotifPanel = !this.showNotifPanel;
+    if (this.showNotifPanel) {
+      this.notificationService.findRecentes().subscribe({
+        next: (data) => { this.notifications = data; },
+        error: () => { /* panneau reste vide si l'appel échoue */ }
+      });
+    }
+  }
+
+  onNotifClick(n: NotificationResponse): void {
+    if (!n.lu) {
+      this.notificationService.marquerLue(n.id).subscribe(() => {
+        n.lu = true;
+        this.refreshUnreadCount();
+      });
+    }
+    this.showNotifPanel = false;
+    if (n.lien) {
+      this.router.navigateByUrl(n.lien);
+    }
+  }
+
+  marquerToutesLues(): void {
+    this.notificationService.marquerToutesLues().subscribe(() => {
+      this.notifications.forEach(n => n.lu = true);
+      this.refreshUnreadCount();
+    });
   }
 
   buildMenu(): void {
@@ -64,6 +116,7 @@ export class LayoutComponent implements OnInit, OnDestroy {
       { label: 'Séjours en cours', icon: 'ti-bed', link: '/sejours' },
       { label: 'Réservations', icon: 'ti-calendar-check', link: '/reservations' },
       { label: 'Plan des chambres', icon: 'ti-layout-grid', link: '/chambres' },
+      { label: 'Chambres', icon: 'ti-door', link: '/chambres/liste' },
       { label: 'Housekeeping', icon: 'ti-spray', link: '/entretien' },
       { label: 'Calendrier & événements', icon: 'ti-calendar-event', link: '/evenements' },
       { label: 'Fiches clients', icon: 'ti-users', link: '/clients' }
@@ -98,6 +151,7 @@ export class LayoutComponent implements OnInit, OnDestroy {
     const role = this.currentUser?.role;
     if (role === 'ADMIN') return 'Administrateur';
     if (role === 'DIRECTEUR') return 'Directeur';
+    if (role === 'RESPONSABLE') return 'Responsable';
     return 'Agent de réception';
   }
 

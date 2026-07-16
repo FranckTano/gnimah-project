@@ -1,4 +1,20 @@
 <div class="gn-route">
+  <div class="gn-card" style="padding:22px;margin-bottom:18px;" *ngIf="resetRequests.length">
+    <div style="display:flex;align-items:center;gap:9px;margin-bottom:14px;">
+      <div class="gn-serif" style="font-size:16px;color:#2e2024;">Demandes de réinitialisation</div>
+      <span class="gn-bdg amber">{{ resetRequests.length }}</span>
+    </div>
+    <div *ngFor="let r of resetRequests" style="display:flex;align-items:center;gap:14px;padding:11px 0;border-top:1px solid #f2e8e4;">
+      <div style="flex:1;">
+        <div style="font-weight:600;font-size:14px;color:#3a2c30;">{{ r.utilisateurNomComplet }}</div>
+        <div style="font-size:12.5px;color:#a99a9d;">{{ r.username }} · demandé le {{ r.createdAt | date:'dd/MM/yyyy HH:mm' }}</div>
+      </div>
+      <button class="gn-btn-p" style="padding:8px 14px;font-size:12.5px;" [disabled]="resolvingId === r.id" (click)="resoudreDemande(r)">
+        <i class="ti ti-loader-2 gn-spin" *ngIf="resolvingId === r.id"></i><span>Réinitialiser</span>
+      </button>
+    </div>
+  </div>
+
   <div class="gn-card" style="padding:22px;">
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:12px;">
       <div class="gn-serif" style="font-size:18px;color:#2e2024;">Personnel <span style="color:#a99a9d;font-size:14px;font-family:'DM Sans',sans-serif;">({{ filtered.length }})</span></div>
@@ -91,6 +107,17 @@
     <button class="gn-btn-p" style="padding:9px 16px;font-size:13.5px;" [disabled]="saving" (click)="save()">
       <i class="ti ti-loader-2 gn-spin" *ngIf="saving"></i><span>{{ editingId ? 'Modifier' : 'Créer' }}</span>
     </button>
+  </ng-template>
+</p-dialog>
+
+<p-dialog [(visible)]="showResolvedDialog" header="Mot de passe réinitialisé" [modal]="true" [style]="{width:'420px'}" [draggable]="false">
+  <p style="color:#6d585d;font-size:13.5px;margin:0 0 14px;">Communique ce mot de passe temporaire à <strong>{{ resolvedUsername }}</strong> par un canal sûr (il ne sera plus affiché ensuite).</p>
+  <div class="gn-card" style="padding:14px 16px;background:#faf4f1;box-shadow:none;">
+    <div class="gn-slabel" style="color:#a99a9d;">Nouveau mot de passe</div>
+    <div class="gn-serif" style="font-size:22px;letter-spacing:.04em;margin-top:6px;color:#8c2f4d;">{{ resolvedPassword }}</div>
+  </div>
+  <ng-template pTemplate="footer">
+    <button class="gn-btn-p" style="padding:9px 16px;font-size:13.5px;" (click)="showResolvedDialog=false">Fermer</button>
   </ng-template>
 </p-dialog>
 

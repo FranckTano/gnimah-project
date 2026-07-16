@@ -92,6 +92,7 @@ public class KpiService {
                 .reservationsNoShow(noShow)
                 .tauxConversion(Math.round(tauxConversion * 10.0) / 10.0)
                 .caParJour(buildCaParJour(debut, fin))
+                .reservationsParJour(buildReservationsParJour(debut, fin))
                 .sejoursParType(buildSejoursParType())
                 .performanceAgents(buildPerformanceAgents(debut, fin))
                 .occupationParChambre(buildOccupationParChambre())
@@ -108,6 +109,22 @@ public class KpiService {
             Map<String, Object> entry = new HashMap<>();
             entry.put("date", current.toLocalDate().toString());
             entry.put("ca", ca);
+            result.add(entry);
+            current = nextDay;
+        }
+        return result;
+    }
+
+    private List<Map<String, Object>> buildReservationsParJour(LocalDateTime debut, LocalDateTime fin) {
+        List<Map<String, Object>> result = new ArrayList<>();
+        LocalDateTime current = debut.toLocalDate().atStartOfDay();
+        LocalDateTime end = fin.toLocalDate().atStartOfDay();
+        while (!current.isAfter(end)) {
+            LocalDateTime nextDay = current.plusDays(1);
+            long count = reservationRepository.countReservationsPeriode(current, nextDay);
+            Map<String, Object> entry = new HashMap<>();
+            entry.put("date", current.toLocalDate().toString());
+            entry.put("count", count);
             result.add(entry);
             current = nextDay;
         }

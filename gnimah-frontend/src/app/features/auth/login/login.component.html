@@ -14,7 +14,7 @@
       <p class="gn-hero-text">Fini les registres papier. Enregistrez, facturez et pilotez la Résidence Hôtel GNIMAH en temps réel, du comptoir de réception à la direction.</p>
     </div>
     <div class="gn-hero-stats">
-      <div><div class="gn-serif gn-stat-val">24</div><div class="gn-slabel gn-stat-lbl">Chambres</div></div>
+      <div><div class="gn-serif gn-stat-val">{{ hotelInfo?.totalChambres ?? '—' }}</div><div class="gn-slabel gn-stat-lbl">Chambres</div></div>
       <div class="gn-hero-sep"></div>
       <div><div class="gn-serif gn-stat-val">100%</div><div class="gn-slabel gn-stat-lbl">Dématérialisé</div></div>
       <div class="gn-hero-sep"></div>
@@ -38,12 +38,11 @@
         <label class="gn-flabel">Mot de passe</label>
         <div class="gn-field-icon">
           <i class="ti ti-lock"></i>
-          <input class="gn-input" type="password" formControlName="password" placeholder="Mot de passe" autocomplete="current-password" />
+          <p-password formControlName="password" placeholder="Mot de passe" [toggleMask]="true" [feedback]="false" inputStyleClass="gn-input" autocomplete="current-password" />
         </div>
 
         <div class="gn-remember-row">
-          <label class="gn-remember"><input type="checkbox" /> Se souvenir</label>
-          <a href="javascript:void(0)" class="gn-forgot">Mot de passe oublié ?</a>
+          <a href="javascript:void(0)" class="gn-forgot" (click)="openForgotDialog()">Mot de passe oublié ?</a>
         </div>
 
         <button type="submit" class="gn-btn-p gn-submit" [disabled]="form.invalid || loading">
@@ -54,3 +53,17 @@
     </div>
   </div>
 </div>
+
+<p-dialog [(visible)]="showForgotDialog" header="Mot de passe oublié" [modal]="true" [style]="{width:'420px'}" [draggable]="false">
+  <p style="color:#6d585d;font-size:13.5px;margin:0 0 16px;">Indiquez votre identifiant. Un administrateur validera la demande et vous communiquera un nouveau mot de passe.</p>
+  <form [formGroup]="forgotForm">
+    <label class="gn-flabel">Identifiant</label>
+    <input class="gn-input" formControlName="username" placeholder="Nom d'utilisateur" style="margin-top:6px;" />
+  </form>
+  <ng-template pTemplate="footer">
+    <button class="gn-btn-o" style="padding:9px 16px;font-size:13.5px;" (click)="showForgotDialog=false">Annuler</button>
+    <button class="gn-btn-p" style="padding:9px 16px;font-size:13.5px;" [disabled]="forgotForm.invalid || forgotSending" (click)="submitForgot()">
+      <i class="ti ti-loader-2 gn-spin" *ngIf="forgotSending"></i><span>Envoyer la demande</span>
+    </button>
+  </ng-template>
+</p-dialog>

@@ -60,6 +60,8 @@ export class ChambreListComponent implements OnInit {
 
   etatLabels: Record<string, string> = ETAT_CHAMBRE_LABELS;
 
+  newPhotoUrl = '';
+
   constructor(
     private chambreService: ChambreService,
     private messageService: MessageService,
@@ -77,6 +79,7 @@ export class ChambreListComponent implements OnInit {
   initForm(): void {
     this.form = this.fb.group({
       numero: ['', Validators.required],
+      nom: [''],
       type: ['STANDARD', Validators.required],
       capacite: [2, [Validators.required, Validators.min(1)]],
       tarifPassage: [0, [Validators.required, Validators.min(0)]],
@@ -86,8 +89,27 @@ export class ChambreListComponent implements OnInit {
       vue: [''],
       description: [''],
       equipements: [''],
-      observations: ['']
+      observations: [''],
+      photos: ['']
     });
+  }
+
+  get photoList(): string[] {
+    const raw = this.form.get('photos')?.value || '';
+    return raw.split(',').map((u: string) => u.trim()).filter((u: string) => !!u);
+  }
+
+  addPhoto(): void {
+    const url = this.newPhotoUrl.trim();
+    if (!url) return;
+    const list = [...this.photoList, url];
+    this.form.get('photos')!.setValue(list.join(','));
+    this.newPhotoUrl = '';
+  }
+
+  removePhoto(url: string): void {
+    const list = this.photoList.filter(u => u !== url);
+    this.form.get('photos')!.setValue(list.join(','));
   }
 
   loadChambres(): void {
@@ -108,7 +130,7 @@ export class ChambreListComponent implements OnInit {
   get filtered(): ChambreResponse[] {
     const q = this.search.trim().toLowerCase();
     return this.chambres.filter(c => {
-      if (q && !c.numero.toLowerCase().includes(q) && !(c.equipements || '').toLowerCase().includes(q)) return false;
+      if (q && !c.numero.toLowerCase().includes(q) && !(c.nom || '').toLowerCase().includes(q) && !(c.equipements || '').toLowerCase().includes(q)) return false;
       if (this.filtreType && c.type !== this.filtreType) return false;
       if (this.filtreEtage !== '' && c.etage !== this.filtreEtage) return false;
       if (this.filtreEtat && c.etat !== this.filtreEtat) return false;
@@ -126,15 +148,18 @@ export class ChambreListComponent implements OnInit {
   openNew(): void {
     this.editingId = null;
     this.dialogTitle = 'Nouvelle chambre';
-    this.form.reset({ type: 'STANDARD', etat: 'LIBRE', capacite: 2, tarifPassage: 0, tarifNuitee: 0, etage: 0, vue: '' });
+    this.newPhotoUrl = '';
+    this.form.reset({ nom: '', type: 'STANDARD', etat: 'LIBRE', capacite: 2, tarifPassage: 0, tarifNuitee: 0, etage: 0, vue: '', photos: '' });
     this.dialogVisible = true;
   }
 
   openEdit(chambre: ChambreResponse): void {
     this.editingId = chambre.id;
     this.dialogTitle = `Modifier la chambre ${chambre.numero}`;
+    this.newPhotoUrl = '';
     this.form.patchValue({
       numero: chambre.numero,
+      nom: chambre.nom || '',
       type: chambre.type,
       capacite: chambre.capacite,
       tarifPassage: chambre.tarifPassage,
@@ -144,7 +169,8 @@ export class ChambreListComponent implements OnInit {
       vue: chambre.vue || '',
       description: chambre.description,
       equipements: chambre.equipements,
-      observations: chambre.observations
+      observations: chambre.observations,
+      photos: chambre.photos || ''
     });
     this.dialogVisible = true;
   }

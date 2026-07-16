@@ -40,7 +40,9 @@
       </div>
       <div class="gn-card" style="padding:22px;">
         <div class="gn-serif" style="font-size:18px;color:#2e2024;margin-bottom:10px;">État des chambres</div>
-        <div style="height:180px;"><p-chart type="doughnut" [data]="chartOccupation" [style]="{height:'100%'}"></p-chart></div>
+        <div style="display:flex;justify-content:center;">
+          <div style="height:180px;width:180px;"><p-chart type="doughnut" [data]="chartOccupation" [options]="doughnutOptions" [style]="{height:'100%',width:'100%'}"></p-chart></div>
+        </div>
         <div style="margin-top:14px;font-size:13px;">
           <div style="display:flex;justify-content:space-between;padding:5px 0;"><span>Total chambres</span><strong>{{ kpi.totalChambres }}</strong></div>
           <div style="display:flex;justify-content:space-between;padding:5px 0;" class="c-green"><span>Libres</span><strong>{{ kpi.chambresLibres }}</strong></div>

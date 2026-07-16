@@ -1,22 +1,34 @@
 export interface TacheEntretienResponse {
   id: number;
-  chambreNumero: string;
-  chambreId: number;
+  titre: string;
+  chambreId: number | null;
+  chambreNumero: string | null;
+  salle: string | null;
+  evenementId: number | null;
+  evenementTitre: string | null;
   type: string;
   description: string;
   statut: string;
+  priorite: string;
+  agentId: number | null;
   assigneA: string | null;
+  responsableId: number | null;
+  responsableNom: string | null;
+  dateLimite: string | null;
   dateCreation: string;
   dateFin: string | null;
-  priorite: string;
 }
 
 export interface TacheEntretienRequest {
-  chambreId: number;
+  titre: string;
   type: string;
   description: string;
-  assigneA?: string;
+  chambreId?: number | null;
+  salle?: string | null;
+  evenementId?: number | null;
+  agentId: number;
   priorite?: string;
+  dateLimite?: string | null;
 }
 
 export const statutTacheLabel: Record<string, string> = {

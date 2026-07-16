@@ -138,6 +138,21 @@ export class DashboardComponent implements OnInit {
     });
   }
 
+  get reservationChartBars(): ChartBar[] {
+    const data = this.kpi?.reservationsParJour || [];
+    if (data.length === 0) return [];
+    const max = Math.max(...data.map(d => d.count), 1);
+    const chartH = 150;
+    return data.map((d, i) => {
+      const h = Math.max(4, Math.round((d.count / max) * chartH));
+      const x = 24 + i * (536 / Math.max(data.length, 1));
+      const w = Math.min(34, 480 / Math.max(data.length, 1));
+      const y = 185 - h;
+      const dayLabel = this.formatWeekday(d.date);
+      return { x, w, y, h, day: dayLabel, dayX: x + w / 2, label: `${d.count}`, labelX: x + w / 2, labelY: y - 7 };
+    });
+  }
+
   private formatWeekday(dateStr: string): string {
     const d = new Date(dateStr);
     if (isNaN(d.getTime())) return '';

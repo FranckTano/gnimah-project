@@ -20,6 +20,7 @@ export class KpiComponent implements OnInit {
   chartCA: any = null;
   chartOccupation: any = null;
   chartOptions: any;
+  doughnutOptions: any;
 
   constructor(
     private kpiService: KpiService,
@@ -37,6 +38,12 @@ export class KpiComponent implements OnInit {
         y: { beginAtZero: true, grid: { color: '#f2e8e4' }, ticks: { color: '#a99a9d' } },
         x: { grid: { display: false }, ticks: { color: '#a99a9d' } }
       }
+    };
+    this.doughnutOptions = {
+      responsive: true,
+      maintainAspectRatio: false,
+      cutout: '68%',
+      plugins: { legend: { display: false } }
     };
     this.utilisateurService.findAll().subscribe(users => {
       users.forEach(u => this.agentNames[u.id] = `${u.prenom} ${u.nom}`.trim());

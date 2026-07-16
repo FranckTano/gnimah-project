@@ -49,7 +49,29 @@
         <i class="ti ti-search"></i>
         <input class="gn-input" placeholder="Rechercher client, reçu, chambre…" />
       </div>
-      <button class="gn-icobtn gn-bell"><i class="ti ti-bell"></i><span class="gn-bell-dot"></span></button>
+      <button class="gn-icobtn gn-bell" (click)="toggleNotifPanel()">
+        <i class="ti ti-bell"></i>
+        <span class="gn-bell-dot" *ngIf="unreadCount > 0"></span>
+      </button>
+      <div class="gn-notif-backdrop" *ngIf="showNotifPanel" (click)="showNotifPanel=false"></div>
+      <div class="gn-notif-panel gn-card" *ngIf="showNotifPanel">
+        <div class="gn-notif-header">
+          <div class="gn-serif" style="font-size:16px;color:#2e2024;">Notifications</div>
+          <a href="javascript:void(0)" class="gn-notif-markall" *ngIf="unreadCount > 0" (click)="marquerToutesLues()">Tout marquer comme lu</a>
+        </div>
+        <div class="gn-notif-list">
+          <div *ngFor="let n of notifications" class="gn-notif-item" [class.unread]="!n.lu" (click)="onNotifClick(n)">
+            <div class="gn-tile" [ngClass]="n.lu ? 'gray' : 'wine'" style="width:34px;height:34px;font-size:16px;flex:none;"><i class="ti" [ngClass]="notifIcons[n.type] || 'ti-bell'"></i></div>
+            <div style="flex:1;min-width:0;">
+              <div style="font-weight:600;font-size:13.5px;color:#3a2c30;">{{ n.titre }}</div>
+              <div style="font-size:12.5px;color:#8a7a7e;margin-top:2px;">{{ n.message }}</div>
+              <div style="font-size:11px;color:#a99a9d;margin-top:3px;">{{ n.createdAt | date:'dd/MM HH:mm' }}</div>
+            </div>
+            <span class="gn-dot c-wine" *ngIf="!n.lu" style="flex:none;"></span>
+          </div>
+          <div *ngIf="!notifications.length" class="gn-empty" style="text-align:center;padding:20px 0;">Aucune notification.</div>
+        </div>
+      </div>
       <div class="gn-hideSm gn-dateinfo">
         <div class="gn-date">{{ today | date:'EEEE d MMMM yyyy':'':'fr' }}</div>
         <div class="gn-city">Abidjan</div>

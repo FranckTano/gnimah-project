@@ -7,6 +7,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
+import org.springframework.core.annotation.Order;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
@@ -14,6 +15,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 
 @Component
+@Order(1)
 @RequiredArgsConstructor
 @Slf4j
 public class DataInitializer implements ApplicationRunner {
@@ -43,6 +45,12 @@ public class DataInitializer implements ApplicationRunner {
                 .role(Role.DIRECTEUR).actif(true).build(),
 
             Utilisateur.builder()
+                .nom("GNIMAH").prenom("Responsable")
+                .username("responsable").email("responsable@gnimah.com")
+                .password(passwordEncoder.encode("Responsable@2026"))
+                .role(Role.RESPONSABLE).actif(true).build(),
+
+            Utilisateur.builder()
                 .nom("Réception").prenom("Agent")
                 .username("agent").email("agent@gnimah.com")
                 .password(passwordEncoder.encode("Agent@2026"))
@@ -50,6 +58,6 @@ public class DataInitializer implements ApplicationRunner {
         );
 
         utilisateurRepository.saveAll(defaults);
-        log.info("✅ Utilisateurs créés : admin / directeur / agent");
+        log.info("✅ Utilisateurs créés : admin / directeur / responsable / agent");
     }
 }

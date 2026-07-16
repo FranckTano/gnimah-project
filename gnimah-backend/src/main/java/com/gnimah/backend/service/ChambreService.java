@@ -21,6 +21,7 @@ import java.util.stream.Collectors;
 public class ChambreService {
 
     private final ChambreRepository chambreRepository;
+    private final NotificationService notificationService;
 
     @Transactional
     public ChambreResponse create(ChambreRequest request) {
@@ -29,6 +30,7 @@ public class ChambreService {
         }
         Chambre chambre = Chambre.builder()
                 .numero(request.getNumero())
+                .nom(request.getNom())
                 .type(TypeChambre.valueOf(request.getType()))
                 .capacite(request.getCapacite())
                 .tarifPassage(request.getTarifPassage())
@@ -48,6 +50,7 @@ public class ChambreService {
     public ChambreResponse update(Long id, ChambreRequest request) {
         Chambre chambre = findById(id);
         chambre.setNumero(request.getNumero());
+        chambre.setNom(request.getNom());
         chambre.setType(TypeChambre.valueOf(request.getType()));
         chambre.setCapacite(request.getCapacite());
         chambre.setTarifPassage(request.getTarifPassage());
@@ -65,8 +68,14 @@ public class ChambreService {
     @Transactional
     public ChambreResponse updateEtat(Long id, String etat) {
         Chambre chambre = findById(id);
-        chambre.setEtat(EtatChambre.valueOf(etat));
-        return toResponse(chambreRepository.save(chambre));
+        EtatChambre nouvelEtat = EtatChambre.valueOf(etat);
+        chambre.setEtat(nouvelEtat);
+        ChambreResponse response = toResponse(chambreRepository.save(chambre));
+        if (nouvelEtat == EtatChambre.EN_MAINTENANCE || nouvelEtat == EtatChambre.HORS_SERVICE) {
+            notificationService.creer("MAINTENANCE", "Maintenance requise",
+                    "Chambre " + chambre.getNumero() + " passée en " + nouvelEtat.name().toLowerCase().replace('_', ' '), "/chambres");
+        }
+        return response;
     }
 
     /** Soft delete / restore — rooms are referenced by historical séjours & réservations, so they're deactivated, never hard-deleted. */
@@ -116,6 +125,7 @@ public class ChambreService {
         return ChambreResponse.builder()
                 .id(c.getId())
                 .numero(c.getNumero())
+                .nom(c.getNom())
                 .type(c.getType().name())
                 .capacite(c.getCapacite())
                 .tarifPassage(c.getTarifPassage())

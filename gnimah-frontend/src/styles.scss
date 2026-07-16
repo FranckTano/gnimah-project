@@ -245,6 +245,11 @@ textarea.gn-input { font-family: inherit; }
 .p-dropdown, .p-select { border-radius: 12px; }
 .p-calendar, .p-datepicker-input { .p-inputtext { border-radius: 12px; } }
 
+/* p-password used on the login screen inside a .gn-field-icon wrapper (lock icon prefix) */
+.gn-field-icon .p-password { display: block; width: 100%; }
+.gn-field-icon .p-password .p-password-input,
+.gn-field-icon .p-password-input.gn-input { width: 100%; padding-left: 42px; }
+
 /* Currency formatter */
 .currency { font-family: 'Courier New', monospace; font-weight: 600; }
 .currency-positive { color: var(--gn-green); }

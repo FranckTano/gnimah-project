@@ -65,7 +65,6 @@ import { LoginComponent } from './features/auth/login/login.component';
 import { LayoutComponent } from './shared/components/layout/layout.component';
 import { DashboardComponent } from './features/dashboard/dashboard.component';
 import { ClientListComponent } from './features/clients/list/client-list.component';
-import { ClientFormComponent } from './features/clients/form/client-form.component';
 import { ChambrePlanComponent } from './features/chambres/plan/chambre-plan.component';
 import { ChambreListComponent } from './features/chambres/list/chambre-list.component';
 import { SejourListComponent } from './features/sejours/list/sejour-list.component';
@@ -85,7 +84,6 @@ import { UtilisateursComponent } from './features/administration/utilisateurs/ut
     LayoutComponent,
     DashboardComponent,
     ClientListComponent,
-    ClientFormComponent,
     ChambrePlanComponent,
     ChambreListComponent,
     SejourListComponent,
@@ -141,7 +139,7 @@ import { UtilisateursComponent } from './features/administration/utilisateurs/ut
     ConfirmationService,
     { provide: HTTP_INTERCEPTORS, useClass: AuthInterceptor, multi: true },
     { provide: HTTP_INTERCEPTORS, useClass: ErrorInterceptor, multi: true },
-    providePrimeNG({ theme: { preset: GnimahPreset } })
+    providePrimeNG({ theme: { preset: GnimahPreset, options: { darkModeSelector: false } } })
   ],
   bootstrap: [AppComponent]
 })

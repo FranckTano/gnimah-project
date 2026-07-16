@@ -23,6 +23,7 @@ export interface KpiResponse {
   reservationsNoShow: number;
   tauxConversion: number;
   caParJour: { date: string; ca: number }[];
+  reservationsParJour: { date: string; count: number }[];
   sejoursParType: { type: string; count: number }[];
   performanceAgents: { agentId: number; nbSejours: number; ca: number }[];
   occupationParChambre: any[];

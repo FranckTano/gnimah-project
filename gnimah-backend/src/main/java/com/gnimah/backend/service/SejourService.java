@@ -36,6 +36,7 @@ public class SejourService {
     private final ChambreService chambreService;
     private final UtilisateurRepository utilisateurRepository;
     private final AuditService auditService;
+    private final NotificationService notificationService;
 
     @Transactional
     public SejourResponse checkIn(SejourRequest request) {
@@ -108,6 +109,8 @@ public class SejourService {
 
         Utilisateur agent = getAgentConnecte();
         auditService.log(agent, "CHECK_OUT", "Sejour", sejour.getId(), "Check-out chambre " + chambre.getNumero());
+        notificationService.creer("FIN_SEJOUR", "Séjour terminé",
+                "Chambre " + chambre.getNumero() + " libérée par " + sejour.getClient().getNomComplet() + " — à nettoyer", "/entretien");
 
         return toResponse(sejourRepository.save(sejour));
     }

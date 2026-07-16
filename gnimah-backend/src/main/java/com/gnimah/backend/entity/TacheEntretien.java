@@ -19,9 +19,20 @@ public class TacheEntretien {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Column(length = 200)
+    private String titre;
+
+    /** Cible de la tâche : au plus une des trois (chambre / salle / événement), ou aucune. */
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "chambre_id", nullable = false)
+    @JoinColumn(name = "chambre_id")
     private Chambre chambre;
+
+    @Column(length = 150)
+    private String salle;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "evenement_id")
+    private Evenement evenement;
 
     @Column(name = "type_tache", nullable = false, length = 50)
     private String typeTache = "NETTOYAGE";

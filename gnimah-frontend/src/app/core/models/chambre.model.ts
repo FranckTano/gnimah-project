@@ -5,6 +5,7 @@ export type VueChambre = 'MER' | 'JARDIN' | 'PISCINE' | 'RUE' | 'COUR';
 
 export interface ChambreRequest {
   numero: string;
+  nom?: string;
   type: TypeChambre;
   capacite: number;
   tarifPassage: number;
@@ -21,6 +22,7 @@ export interface ChambreRequest {
 export interface ChambreResponse {
   id: number;
   numero: string;
+  nom: string | null;
   type: TypeChambre;
   capacite: number;
   tarifPassage: number;

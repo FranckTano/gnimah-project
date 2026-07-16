@@ -34,6 +34,7 @@ public class ReservationService {
     private final ClientService clientService;
     private final ChambreService chambreService;
     private final UtilisateurRepository utilisateurRepository;
+    private final NotificationService notificationService;
 
     @Transactional
     public ReservationResponse create(ReservationRequest request) {
@@ -73,14 +74,23 @@ public class ReservationService {
                 .notes(request.getNotes())
                 .build();
 
-        return toResponse(reservationRepository.save(reservation));
+        Reservation saved = reservationRepository.save(reservation);
+        notificationService.creer("NOUVELLE_RESERVATION", "Nouvelle réservation",
+                client.getNomComplet() + " — arrivée le " + request.getDateArrivee().toLocalDate(), "/reservations");
+        return toResponse(saved);
     }
 
     @Transactional
     public ReservationResponse updateStatut(Long id, String statut) {
         Reservation reservation = findById(id);
-        reservation.setStatut(StatutReservation.valueOf(statut));
-        return toResponse(reservationRepository.save(reservation));
+        StatutReservation nouveauStatut = StatutReservation.valueOf(statut);
+        reservation.setStatut(nouveauStatut);
+        Reservation saved = reservationRepository.save(reservation);
+        if (nouveauStatut == StatutReservation.CONFIRMEE) {
+            notificationService.creer("ARRIVEE_PREVUE", "Arrivée confirmée",
+                    reservation.getClient().getNomComplet() + " — le " + reservation.getDateArrivee().toLocalDate(), "/reservations");
+        }
+        return toResponse(saved);
     }
 
     @Transactional(readOnly = true)

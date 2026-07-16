@@ -39,10 +39,8 @@
 .gn-field-icon i { position: absolute; left: 14px; top: 50%; transform: translateY(-50%); color: #b3a2a6; font-size: 18px; }
 .gn-field-icon .gn-input { padding-left: 42px; }
 
-.gn-remember-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 22px; }
-.gn-remember { display: flex; align-items: center; gap: 8px; font-size: 13.5px; color: #6d585d; cursor: pointer; }
-.gn-remember input { accent-color: #8c2f4d; width: 15px; height: 15px; }
-.gn-forgot { font-size: 13px; color: #8c2f4d; text-decoration: none; }
+.gn-remember-row { display: flex; align-items: center; justify-content: flex-end; margin-bottom: 22px; }
+.gn-forgot { font-size: 13px; color: #8c2f4d; text-decoration: none; cursor: pointer; }
 .gn-forgot:hover { color: #6f2440; }
 
 .gn-submit { width: 100%; padding: 14px; font-size: 15px; }

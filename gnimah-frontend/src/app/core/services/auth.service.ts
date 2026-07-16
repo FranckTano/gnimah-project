@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { BehaviorSubject, Observable, tap } from 'rxjs';
 import { Router } from '@angular/router';
-import { CurrentUser, LoginRequest, LoginResponse } from '../models/auth.model';
+import { CurrentUser, ForgotPasswordRequest, ForgotPasswordResponse, LoginRequest, LoginResponse } from '../models/auth.model';
 import { environment } from '../../../environments/environment';
 
 @Injectable({ providedIn: 'root' })
@@ -30,6 +30,10 @@ export class AuthService {
         this.currentUserSubject.next(user);
       })
     );
+  }
+
+  forgotPassword(request: ForgotPasswordRequest): Observable<ForgotPasswordResponse> {
+    return this.http.post<ForgotPasswordResponse>(`${this.API}/forgot-password`, request);
   }
 
   logout(): void {
@@ -63,8 +67,17 @@ export class AuthService {
     return this.currentUser?.role === 'AGENT';
   }
 
+  isResponsable(): boolean {
+    return this.currentUser?.role === 'RESPONSABLE';
+  }
+
   hasDirecteurAccess(): boolean {
     return this.isDirecteur() || this.isAdmin();
+  }
+
+  /** Responsable, Directeur et Admin peuvent créer/assigner des tâches d'entretien — pas l'Agent. */
+  hasTaskManagementAccess(): boolean {
+    return this.isResponsable() || this.hasDirecteurAccess();
   }
 
   private loadUser(): CurrentUser | null {

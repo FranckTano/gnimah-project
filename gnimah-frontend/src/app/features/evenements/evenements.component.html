@@ -40,51 +40,49 @@
 </div>
 
 <!-- Dialog -->
-<p-dialog [(visible)]="showDialog" [header]="editingId ? 'Modifier l\'événement' : 'Nouvel événement'" [modal]="true" [style]="{width:'550px'}">
+<p-dialog [(visible)]="showDialog" [header]="editingId ? 'Modifier l\'événement' : 'Nouvel événement'" [modal]="true" [style]="{width:'560px'}" [draggable]="false">
   <form [formGroup]="form">
-    <div class="p-fluid">
-      <div class="field mb-3">
-        <label class="font-bold">Titre <span class="text-red-500">*</span></label>
-        <input pInputText formControlName="titre" [class.ng-invalid]="isInvalid('titre')"/>
-        <small *ngIf="isInvalid('titre')" class="p-error">Titre requis</small>
+    <div>
+      <label class="gn-flabel">Titre *</label>
+      <input class="gn-input" formControlName="titre" style="margin-top:6px;" [class.gn-invalid]="isInvalid('titre')" />
+    </div>
+    <div style="margin-top:12px;">
+      <label class="gn-flabel">Lieu *</label>
+      <input class="gn-input" formControlName="lieu" style="margin-top:6px;" [class.gn-invalid]="isInvalid('lieu')" />
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:12px;">
+      <div>
+        <label class="gn-flabel">Date début *</label>
+        <input class="gn-input" type="date" formControlName="dateDebutJour" style="margin-top:6px;" [class.gn-invalid]="isInvalid('dateDebutJour')" />
       </div>
-      <div class="field mb-3">
-        <label class="font-bold">Lieu <span class="text-red-500">*</span></label>
-        <input pInputText formControlName="lieu" [class.ng-invalid]="isInvalid('lieu')"/>
-        <small *ngIf="isInvalid('lieu')" class="p-error">Lieu requis</small>
+      <div>
+        <label class="gn-flabel">Heure début *</label>
+        <input class="gn-input" type="time" formControlName="dateDebutHeure" style="margin-top:6px;" [class.gn-invalid]="isInvalid('dateDebutHeure')" />
       </div>
-      <div class="grid">
-        <div class="col-6">
-          <div class="field">
-            <label class="font-bold">Date début <span class="text-red-500">*</span></label>
-            <p-datepicker formControlName="dateDebut" [showTime]="true" dateFormat="dd/mm/yy" [class.ng-invalid]="isInvalid('dateDebut')"></p-datepicker>
-          </div>
-        </div>
-        <div class="col-6">
-          <div class="field">
-            <label class="font-bold">Date fin <span class="text-red-500">*</span></label>
-            <p-datepicker formControlName="dateFin" [showTime]="true" dateFormat="dd/mm/yy" [class.ng-invalid]="isInvalid('dateFin')"></p-datepicker>
-          </div>
-        </div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:12px;">
+      <div>
+        <label class="gn-flabel">Date fin *</label>
+        <input class="gn-input" type="date" formControlName="dateFinJour" style="margin-top:6px;" [class.gn-invalid]="isInvalid('dateFinJour')" />
       </div>
-      <div class="grid">
-        <div class="col-6">
-          <div class="field">
-            <label class="font-bold">Nombre de participants</label>
-            <p-inputNumber formControlName="nombreParticipants" [min]="0"></p-inputNumber>
-          </div>
-        </div>
-        <div class="col-6">
-          <div class="field">
-            <label class="font-bold">Montant (XOF)</label>
-            <p-inputNumber formControlName="montant" [min]="0" suffix=" XOF"></p-inputNumber>
-          </div>
-        </div>
+      <div>
+        <label class="gn-flabel">Heure fin *</label>
+        <input class="gn-input" type="time" formControlName="dateFinHeure" style="margin-top:6px;" [class.gn-invalid]="isInvalid('dateFinHeure')" />
       </div>
-      <div class="field">
-        <label class="font-bold">Description</label>
-        <textarea pTextarea formControlName="description" rows="3"></textarea>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:12px;">
+      <div>
+        <label class="gn-flabel">Nombre de participants</label>
+        <input class="gn-input" type="number" min="0" formControlName="nombreParticipants" style="margin-top:6px;" />
       </div>
+      <div>
+        <label class="gn-flabel">Montant (XOF)</label>
+        <input class="gn-input" type="number" min="0" formControlName="montant" style="margin-top:6px;" />
+      </div>
+    </div>
+    <div style="margin-top:12px;">
+      <label class="gn-flabel">Description</label>
+      <textarea class="gn-input" formControlName="description" rows="3" style="margin-top:6px;resize:vertical;"></textarea>
     </div>
   </form>
   <ng-template pTemplate="footer">

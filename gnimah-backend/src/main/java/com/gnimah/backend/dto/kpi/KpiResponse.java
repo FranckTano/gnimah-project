@@ -43,6 +43,7 @@ public class KpiResponse {
 
     // Tendances
     private List<Map<String, Object>> caParJour;
+    private List<Map<String, Object>> reservationsParJour;
     private List<Map<String, Object>> sejoursParType;
     private List<Map<String, Object>> performanceAgents;
     private List<Map<String, Object>> occupationParChambre;

@@ -1,5 +1,19 @@
+<!-- SKELETON DE CHARGEMENT -->
+<div class="gn-route" *ngIf="loading">
+  <div class="gn-kpi6">
+    <p-skeleton *ngFor="let i of [1,2,3,4,5,6]" height="76px" borderRadius="22px"></p-skeleton>
+  </div>
+  <div class="gn-kpi" style="margin-top:18px;">
+    <p-skeleton *ngFor="let i of [1,2,3,4]" height="90px" borderRadius="22px"></p-skeleton>
+  </div>
+  <div class="gn-dash2" style="margin-top:18px;">
+    <p-skeleton height="280px" borderRadius="22px"></p-skeleton>
+    <p-skeleton height="280px" borderRadius="22px"></p-skeleton>
+  </div>
+</div>
+
 <!-- DASHBOARD DIRECTEUR -->
-<div class="gn-route" *ngIf="isDirecteur">
+<div class="gn-route" *ngIf="!loading && isDirecteur">
   <div class="gn-slabel" style="color:#a99a9d;margin-bottom:10px;">Vue d'ensemble des chambres</div>
   <div class="gn-kpi6">
     <div class="gn-card" style="padding:16px;"><div style="font-size:12px;color:#8a7a7e;">Total chambres</div><div class="gn-serif" style="font-size:24px;margin-top:6px;color:#2e2024;">{{ totalChambres }}</div></div>
@@ -78,6 +92,20 @@
     </div>
   </div>
 
+  <div class="gn-card" style="padding:22px;margin-top:18px;">
+    <div class="gn-chartheader">
+      <div class="gn-serif" style="font-size:18px;color:#2e2024;">Réservations · 7 derniers jours</div>
+    </div>
+    <svg *ngIf="reservationChartBars.length" viewBox="0 0 560 220" preserveAspectRatio="none" style="width:100%;height:230px;margin-top:12px;">
+      <ng-container *ngFor="let b of reservationChartBars">
+        <rect [attr.x]="b.x" [attr.y]="b.y" [attr.width]="b.w" [attr.height]="b.h" rx="5" fill="#5f7191"></rect>
+        <text [attr.x]="b.labelX" [attr.y]="b.labelY" text-anchor="middle" font-family="Newsreader,serif" font-size="14" fill="#7a6a6e">{{ b.label }}</text>
+        <text [attr.x]="b.dayX" y="210" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="12" fill="#a99a9d">{{ b.day }}</text>
+      </ng-container>
+    </svg>
+    <div *ngIf="!reservationChartBars.length" class="gn-empty">Pas encore de données sur la période.</div>
+  </div>
+
   <div class="gn-dash3" style="margin-top:18px;">
     <div class="gn-card" style="padding:22px;">
       <div class="gn-serif" style="font-size:18px;color:#2e2024;margin-bottom:16px;">Indicateurs hôteliers</div>
@@ -109,7 +137,7 @@
 </div>
 
 <!-- ACCUEIL AGENT -->
-<div class="gn-route" *ngIf="!isDirecteur">
+<div class="gn-route" *ngIf="!loading && !isDirecteur">
   <div class="gn-kpi">
     <div class="gn-card" style="padding:20px;">
       <div style="font-size:13.5px;color:#8a7a7e;font-weight:500;">Arrivées du jour</div>
