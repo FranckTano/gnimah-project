@@ -1,11 +1,17 @@
 server:
-  port: 8080
+  # Render (et la plupart des PaaS) injectent PORT et exigent que l'appli écoute dessus.
+  port: ${PORT:8080}
   servlet:
     context-path: /api
 
 spring:
   application:
     name: gnimah-backend
+  # Fichier local, non versionné (.gitignore) : surcharge JWT_SECRET etc. pour un lancement direct
+  # depuis l'IDE sans passer par docker-compose. "optional:" = aucune erreur si le fichier est absent
+  # (cas normal en prod/CI/Docker, où JWT_SECRET vient d'une vraie variable d'environnement).
+  config:
+    import: optional:classpath:application-local.yml
 
   datasource:
     url: jdbc:postgresql://localhost:5432/gnimah_db
@@ -54,11 +60,15 @@ spring:
 
 app:
   jwt:
-    secret: ${JWT_SECRET:gnimah-hotel-super-secret-key-2026-abidjan-cote-ivoire-production}
+    # Aucune valeur par défaut : un secret codé en dur dans un fichier versionné serait visible
+    # de quiconque a accès au dépôt et permettrait de forger des tokens valides (y compris ADMIN).
+    # JWT_SECRET doit être défini explicitement (variable d'environnement) dans tous les environnements,
+    # y compris en local — voir docker-compose.yml ou la documentation de déploiement.
+    secret: ${JWT_SECRET}
     expiration: 86400000
     refresh-expiration: 604800000
   cors:
-    allowed-origins: http://localhost:4200,http://localhost:3000
+    allowed-origins: ${CORS_ALLOWED_ORIGINS:http://localhost:4200,http://localhost:3000}
   pdf:
     output-dir: ${PDF_OUTPUT_DIR:./pdfs}
   hotel:

@@ -32,7 +32,9 @@ services:
       SPRING_DATASOURCE_USERNAME: postgres
       SPRING_DATASOURCE_PASSWORD: postgres
       JWT_SECRET: gnimah-hotel-super-secret-key-2026-abidjan-production-secure
-      SPRING_JPA_HIBERNATE_DDL_AUTO: create
+      # "create" recréait le schéma (donc perdait toutes les données) à chaque redémarrage du conteneur,
+      # en plus d'entrer en conflit avec Flyway qui gère déjà le schéma (voir application.yml: ddl-auto: none).
+      SPRING_JPA_HIBERNATE_DDL_AUTO: none
     depends_on:
       postgres:
         condition: service_healthy

@@ -96,7 +96,7 @@ export class UtilisateursComponent implements OnInit {
   openNew(): void {
     this.editingId = null;
     this.form.reset({ role: 'AGENT', actif: true });
-    this.form.get('password')!.setValidators([Validators.required, Validators.minLength(6)]);
+    this.form.get('password')!.setValidators([Validators.required, Validators.minLength(8)]);
     this.form.get('password')!.updateValueAndValidity();
     this.showDialog = true;
   }

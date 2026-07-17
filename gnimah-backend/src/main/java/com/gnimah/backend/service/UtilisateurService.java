@@ -19,6 +19,8 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class UtilisateurService {
 
+    private static final int MOT_DE_PASSE_LONGUEUR_MIN = 8;
+
     private final UtilisateurRepository utilisateurRepository;
     private final PasswordEncoder passwordEncoder;
 
@@ -40,6 +42,7 @@ public class UtilisateurService {
         if (request.getPassword() == null || request.getPassword().isBlank()) {
             throw new BusinessException("Le mot de passe est requis à la création");
         }
+        validatePasswordStrength(request.getPassword());
         Utilisateur utilisateur = Utilisateur.builder()
                 .nom(request.getNom())
                 .prenom(request.getPrenom())
@@ -63,9 +66,17 @@ public class UtilisateurService {
         utilisateur.setRole(Role.valueOf(request.getRole()));
         utilisateur.setActif(request.isActif());
         if (request.getPassword() != null && !request.getPassword().isBlank()) {
+            validatePasswordStrength(request.getPassword());
             utilisateur.setPassword(passwordEncoder.encode(request.getPassword()));
         }
         return toResponse(utilisateurRepository.save(utilisateur));
+    }
+
+    /** Le formulaire côté client impose déjà 6+ caractères, mais rien n'empêche un appel direct à l'API — la règle doit aussi vivre côté serveur. */
+    private void validatePasswordStrength(String password) {
+        if (password.length() < MOT_DE_PASSE_LONGUEUR_MIN) {
+            throw new BusinessException("Le mot de passe doit contenir au moins " + MOT_DE_PASSE_LONGUEUR_MIN + " caractères");
+        }
     }
 
     @Transactional

@@ -1,0 +1,23 @@
+services:
+  - type: web
+    name: gnimah-backend
+    runtime: docker
+    dockerfilePath: ./gnimah-backend/Dockerfile
+    dockerContext: ./gnimah-backend
+    plan: free
+    healthCheckPath: /api/actuator/health
+    envVars:
+      # Généré automatiquement par Render — jamais le secret codé en dur utilisé en local.
+      - key: JWT_SECRET
+        generateValue: true
+      # À renseigner manuellement dans le dashboard Render avec les valeurs Supabase
+      # (voir le guide de déploiement) — sync: false = Render ne les stocke pas dans ce fichier versionné.
+      - key: SPRING_DATASOURCE_URL
+        sync: false
+      - key: SPRING_DATASOURCE_USERNAME
+        sync: false
+      - key: SPRING_DATASOURCE_PASSWORD
+        sync: false
+      # URL(s) Vercel autorisée(s) en CORS — à mettre à jour une fois le frontend déployé.
+      - key: CORS_ALLOWED_ORIGINS
+        sync: false

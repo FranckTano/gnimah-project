@@ -1,0 +1,7 @@
+# Profil "test" (@ActiveProfiles("test")) : se superpose à application.yml, ne le remplace pas.
+# Fournit uniquement ce qui n'a pas de valeur par défaut exploitable en test (le secret JWT,
+# volontairement sans défaut dans application.yml pour empêcher un déploiement en production
+# avec un secret codé en dur — voir la note dans application.yml).
+app:
+  jwt:
+    secret: test-only-jwt-secret-never-used-outside-automated-tests-0000000000

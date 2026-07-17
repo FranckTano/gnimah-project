@@ -1,4 +1,5 @@
 import { TestBed } from '@angular/core/testing';
+import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import { RouterModule } from '@angular/router';
 import { AppComponent } from './app.component';
 
@@ -11,6 +12,9 @@ describe('AppComponent', () => {
       declarations: [
         AppComponent
       ],
+      // p-toast / p-confirmDialog viennent de PrimeNG ; on ne teste pas leur rendu ici,
+      // seulement que le composant racine s'instancie et s'affiche sans erreur.
+      schemas: [CUSTOM_ELEMENTS_SCHEMA]
     }).compileComponents();
   });
 
@@ -20,16 +24,8 @@ describe('AppComponent', () => {
     expect(app).toBeTruthy();
   });
 
-  it(`should have as title 'gnimah-frontend'`, () => {
+  it('renders without throwing', () => {
     const fixture = TestBed.createComponent(AppComponent);
-    const app = fixture.componentInstance;
-    expect(app.title).toEqual('gnimah-frontend');
-  });
-
-  it('should render title', () => {
-    const fixture = TestBed.createComponent(AppComponent);
-    fixture.detectChanges();
-    const compiled = fixture.nativeElement as HTMLElement;
-    expect(compiled.querySelector('h1')?.textContent).toContain('Hello, gnimah-frontend');
+    expect(() => fixture.detectChanges()).not.toThrow();
   });
 });

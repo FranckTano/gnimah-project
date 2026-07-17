@@ -51,15 +51,24 @@ dependencies {
 
     // Lombok (pinned above the Spring Boot BOM's default — the older version
     // resolved by 3.3.5 doesn't support the JDK installed in this environment)
-    compileOnly 'org.projectlombok:lombok:1.18.36'
-    annotationProcessor 'org.projectlombok:lombok:1.18.36'
+    compileOnly 'org.projectlombok:lombok:1.18.38'
+    annotationProcessor 'org.projectlombok:lombok:1.18.38'
 
     // OpenAPI / Swagger
     implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.6.0'
 
     // Tests
-    testImplementation 'org.springframework.boot:spring-boot-starter-test'
+    testImplementation('org.springframework.boot:spring-boot-starter-test') {
+        exclude group: 'org.mockito'
+    }
     testImplementation 'org.springframework.security:spring-security-test'
+
+    // Mockito/Byte Buddy pinnés au-dessus de ce que résout le BOM Spring Boot 3.3.5 (même raison que
+    // Lombok ci-dessus) : les versions du BOM ne savent pas générer de mocks sur le JDK installé ici.
+    testImplementation 'org.mockito:mockito-core:5.23.0'
+    testImplementation 'org.mockito:mockito-junit-jupiter:5.23.0'
+    testImplementation 'net.bytebuddy:byte-buddy:1.18.11'
+    testImplementation 'net.bytebuddy:byte-buddy-agent:1.18.11'
 }
 
 tasks.named('test') {

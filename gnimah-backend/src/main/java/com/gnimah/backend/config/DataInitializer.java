@@ -12,7 +12,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.List;
+import java.util.function.Supplier;
 
 @Component
 @Order(1)
@@ -26,38 +26,39 @@ public class DataInitializer implements ApplicationRunner {
     @Override
     @Transactional
     public void run(ApplicationArguments args) {
-        if (utilisateurRepository.existsByUsername("admin")) {
-            log.info("Utilisateurs déjà initialisés — skip.");
-            return;
-        }
-
-        List<Utilisateur> defaults = List.of(
-            Utilisateur.builder()
+        // Vérifié compte par compte (pas juste "admin existe ?") : sur une base déjà initialisée par une
+        // version antérieure du projet, un nouveau compte de démo ajouté plus tard (ex. "responsable")
+        // serait sinon silencieusement ignoré puisque "admin" existait déjà.
+        creerSiAbsent("admin", () -> Utilisateur.builder()
                 .nom("Administrateur").prenom("Système")
                 .username("admin").email("admin@gnimah.com")
                 .password(passwordEncoder.encode("Admin@2026"))
-                .role(Role.ADMIN).actif(true).build(),
+                .role(Role.ADMIN).actif(true).build());
 
-            Utilisateur.builder()
+        creerSiAbsent("directeur", () -> Utilisateur.builder()
                 .nom("GNIMAH").prenom("Directeur")
                 .username("directeur").email("directeur@gnimah.com")
                 .password(passwordEncoder.encode("Directeur@2026"))
-                .role(Role.DIRECTEUR).actif(true).build(),
+                .role(Role.DIRECTEUR).actif(true).build());
 
-            Utilisateur.builder()
+        creerSiAbsent("responsable", () -> Utilisateur.builder()
                 .nom("GNIMAH").prenom("Responsable")
                 .username("responsable").email("responsable@gnimah.com")
                 .password(passwordEncoder.encode("Responsable@2026"))
-                .role(Role.RESPONSABLE).actif(true).build(),
+                .role(Role.RESPONSABLE).actif(true).build());
 
-            Utilisateur.builder()
+        creerSiAbsent("agent", () -> Utilisateur.builder()
                 .nom("Réception").prenom("Agent")
                 .username("agent").email("agent@gnimah.com")
                 .password(passwordEncoder.encode("Agent@2026"))
-                .role(Role.AGENT).actif(true).build()
-        );
+                .role(Role.AGENT).actif(true).build());
+    }
 
-        utilisateurRepository.saveAll(defaults);
-        log.info("✅ Utilisateurs créés : admin / directeur / responsable / agent");
+    private void creerSiAbsent(String username, Supplier<Utilisateur> builder) {
+        if (utilisateurRepository.existsByUsername(username)) {
+            return;
+        }
+        utilisateurRepository.save(builder.get());
+        log.info("✅ Utilisateur créé : {}", username);
     }
 }

@@ -1,5 +1,6 @@
 package com.gnimah.backend.exception;
 
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.AccessDeniedException;
@@ -14,6 +15,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 @RestControllerAdvice
+@Slf4j
 public class GlobalExceptionHandler {
 
     @ExceptionHandler(ResourceNotFoundException.class)
@@ -57,7 +59,11 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ErrorResponse> handleGeneric(Exception ex) {
+        // Le détail (message, classe, stack trace) ne doit jamais atteindre le client : il peut révéler
+        // des informations internes (requêtes SQL, chemins de fichiers, config...) exploitables par un attaquant.
+        // Il est journalisé côté serveur pour le diagnostic ; le client ne reçoit qu'un message générique.
+        log.error("Erreur non gérée", ex);
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body(new ErrorResponse(500, "Erreur interne du serveur: " + ex.getMessage(), LocalDateTime.now()));
+                .body(new ErrorResponse(500, "Une erreur interne est survenue. Veuillez réessayer.", LocalDateTime.now()));
     }
 }

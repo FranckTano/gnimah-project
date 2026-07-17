@@ -8,6 +8,12 @@ gnimah-frontend/node_modules/
 gnimah-frontend/dist/
 gnimah-frontend/.angular/
 
+# Playwright (e2e) — état de session (tokens) et rapports, jamais versionnés
+gnimah-frontend/e2e/.auth/
+gnimah-frontend/test-results/
+gnimah-frontend/playwright-report/
+gnimah-frontend/blob-report/
+
 # IDE
 .idea/
 *.iml
