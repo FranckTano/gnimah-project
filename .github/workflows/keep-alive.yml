@@ -1,0 +1,24 @@
+name: Keep Render backend awake
+
+# Le plan gratuit Render endort le service après 15 min d'inactivité (~30-50s de
+# réveil au prochain appel). On ping /actuator/health toutes les 14 min pour
+# rester toujours sous ce seuil. Le pire écart réel dans une heure est de 14 min
+# (minutes 0,14,28,42,56 — l'écart 56→0 de l'heure suivante n'est que de 4 min).
+on:
+  schedule:
+    - cron: '*/14 * * * *'
+  workflow_dispatch: {}
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ping le endpoint santé du backend
+        run: |
+          # URL confirmée live (même valeur que le "destination" dans gnimah-frontend/vercel.json).
+          URL="https://gnimah-backend.onrender.com/api/actuator/health"
+          # --max-time large pour couvrir un éventuel réveil à froid (service
+          # jamais censé être froid en usage normal, mais couvre le 1er run).
+          # "|| true" : un ping raté ne doit pas déclencher l'email d'échec
+          # GitHub Actions pour un simple aléa réseau ponctuel.
+          curl -fsS --max-time 60 "$URL" || echo "Ping échoué (transitoire, sans gravité) — voir les logs Render si ça persiste."
