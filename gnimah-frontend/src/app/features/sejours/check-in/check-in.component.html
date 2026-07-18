@@ -16,7 +16,11 @@
     </div>
     <div style="margin-top:20px;margin-left:auto;max-width:300px;">
       <div style="display:flex;justify-content:space-between;padding:8px 0;font-size:14px;color:#6d585d;"><span>Montant total</span><span style="font-weight:600;">{{ formatCurrency(createdSejour.montantTotal) }}</span></div>
-      <div style="display:flex;justify-content:space-between;padding:8px 0;font-size:14px;color:#6d585d;border-bottom:1px solid #f2e8e4;"><span>Payé</span><span style="font-weight:600;">{{ formatCurrency(createdSejour.montantPaye) }}</span></div>
+      <div style="display:flex;justify-content:space-between;padding:8px 0;font-size:14px;color:#6d585d;"><span>Payé</span><span style="font-weight:600;">{{ formatCurrency(createdSejour.montantPaye) }}</span></div>
+      <div style="display:flex;justify-content:space-between;padding:8px 0;font-size:13px;color:#6d585d;border-bottom:1px solid #f2e8e4;">
+        <span>Mode de paiement</span>
+        <span style="font-weight:600;">{{ modePaiementLabel[paiementForm.get('modePaiement')?.value] || 'Espèces' }}</span>
+      </div>
       <div style="display:flex;justify-content:space-between;padding:12px 0 0;font-size:16px;font-weight:700;color:#2e2024;"><span>Reste à payer</span><span class="gn-serif" style="font-size:20px;color:#8c2f4d;">{{ formatCurrency(createdSejour.resteAPayer) }}</span></div>
     </div>
   </div>
@@ -146,6 +150,10 @@
     <form [formGroup]="paiementForm">
       <label style="font-size:12px;color:#bfa4aa;margin-top:16px;display:block;">Acompte / arrhes reçu</label>
       <input class="gn-input gn-railinput" type="number" formControlName="montantPaye" style="margin-top:6px;" />
+      <label style="font-size:12px;color:#bfa4aa;margin-top:12px;display:block;">Mode de paiement</label>
+      <select class="gn-input gn-railinput" formControlName="modePaiement" style="margin-top:6px;">
+        <option *ngFor="let m of modePaiementOptions" [value]="m.value">{{ m.label }}</option>
+      </select>
     </form>
     <div class="gn-railtotal">
       <span>Reste à payer</span>

@@ -305,3 +305,33 @@ textarea.gn-input { font-family: inherit; }
 .flex { display: flex; }
 .align-items-center { align-items: center; }
 .justify-content-between { justify-content: space-between; }
+
+/* ============================================================
+   MEDIA PRINT — Impression propre des reçus (sans nav ni Actions)
+   ============================================================ */
+@media print {
+  /* Masquer toute la navigation et l'interface */
+  .gn-side,
+  .gn-backdrop,
+  .gn-topbar,
+  .gn-notif-panel,
+  .gn-notif-backdrop,
+  .p-toast,
+  .p-toast-container { display: none !important; }
+
+  /* Supprimer les décalages du shell principal */
+  .gn-shell { display: block !important; }
+  .gn-main { margin-left: 0 !important; }
+  .gn-body { padding: 0 !important; background: #fff !important; }
+  body { background: #fff !important; }
+
+  /* Vue reçu : masquer le panneau Actions (2e colonne) */
+  .gn-rcpt { display: block !important; }
+  .gn-rcpt > div:last-child { display: none !important; }
+
+  /* Supprimer ombres et border-radius (plus propre à l'impression) */
+  .gn-card { box-shadow: none !important; border: 1px solid #e0d4d0 !important; }
+
+  /* Eviter les coupures de page dans le reçu */
+  .gn-rcpt > div:first-child { page-break-inside: avoid; }
+}

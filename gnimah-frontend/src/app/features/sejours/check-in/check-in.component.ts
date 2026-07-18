@@ -9,6 +9,7 @@ import { PageHeaderService } from '../../../core/services/page-header.service';
 import { ClientResponse, ClientRequest } from '../../../core/models/client.model';
 import { ChambreResponse } from '../../../core/models/chambre.model';
 import { SejourRequest, SejourResponse } from '../../../core/models/sejour.model';
+import { modePaiementOptions, modePaiementLabel } from '../../../core/models/paiement.model';
 
 @Component({
   selector: 'app-check-in',
@@ -44,6 +45,8 @@ export class CheckInComponent implements OnInit {
 
   // Paiement
   paiementForm!: FormGroup;
+  modePaiementOptions = modePaiementOptions;
+  modePaiementLabel = modePaiementLabel;
 
   // Result
   checkingIn = false;
@@ -89,7 +92,8 @@ export class CheckInComponent implements OnInit {
     });
 
     this.paiementForm = this.fb.group({
-      montantPaye: [0, [Validators.required, Validators.min(0)]]
+      montantPaye: [0, [Validators.required, Validators.min(0)]],
+      modePaiement: ['ESPECES', Validators.required]
     });
 
     const now = new Date();
@@ -193,6 +197,7 @@ export class CheckInComponent implements OnInit {
       heureEntree: formVal.heureEntree,
       heureSortie: formVal.heureSortie,
       montantPaye: this.paiementForm.get('montantPaye')?.value || 0,
+      modePaiement: this.paiementForm.get('modePaiement')?.value || 'ESPECES',
       notes: formVal.notes
     };
 

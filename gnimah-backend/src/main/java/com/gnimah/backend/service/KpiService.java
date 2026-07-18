@@ -93,9 +93,10 @@ public class KpiService {
                 .tauxConversion(Math.round(tauxConversion * 10.0) / 10.0)
                 .caParJour(buildCaParJour(debut, fin))
                 .reservationsParJour(buildReservationsParJour(debut, fin))
-                .sejoursParType(buildSejoursParType())
+                .sejoursParType(buildSejoursParType(debut, fin))
                 .performanceAgents(buildPerformanceAgents(debut, fin))
                 .occupationParChambre(buildOccupationParChambre())
+                .repartitionModePaiement(buildRepartitionModePaiement(debut, fin))
                 .build();
     }
 
@@ -131,16 +132,28 @@ public class KpiService {
         return result;
     }
 
-    private List<Map<String, Object>> buildSejoursParType() {
+    private List<Map<String, Object>> buildSejoursParType(LocalDateTime debut, LocalDateTime fin) {
+        List<Object[]> raw = sejourRepository.countByTypeLocationPeriode(debut, fin);
         List<Map<String, Object>> result = new ArrayList<>();
-        Map<String, Object> passage = new HashMap<>();
-        passage.put("type", "PASSAGE");
-        passage.put("count", 0);
-        Map<String, Object> sejour = new HashMap<>();
-        sejour.put("type", "SEJOUR");
-        sejour.put("count", 0);
-        result.add(passage);
-        result.add(sejour);
+        for (Object[] row : raw) {
+            Map<String, Object> entry = new HashMap<>();
+            entry.put("type", row[0] != null ? row[0].toString() : "INCONNU");
+            entry.put("count", row[1]);
+            result.add(entry);
+        }
+        return result;
+    }
+
+    private List<Map<String, Object>> buildRepartitionModePaiement(LocalDateTime debut, LocalDateTime fin) {
+        List<Object[]> raw = paiementRepository.findRepartitionModePaiement(debut, fin);
+        List<Map<String, Object>> result = new ArrayList<>();
+        for (Object[] row : raw) {
+            Map<String, Object> entry = new HashMap<>();
+            entry.put("mode", row[0] != null ? row[0].toString() : "AUTRE");
+            entry.put("count", row[1]);
+            entry.put("montant", row[2]);
+            result.add(entry);
+        }
         return result;
     }
 
@@ -158,6 +171,12 @@ public class KpiService {
     }
 
     private List<Map<String, Object>> buildOccupationParChambre() {
-        return new ArrayList<>();
+        return chambreRepository.findAll().stream().map(c -> {
+            Map<String, Object> entry = new HashMap<>();
+            entry.put("numero", c.getNumero());
+            entry.put("type", c.getType() != null ? c.getType().name() : "");
+            entry.put("etat", c.getEtat() != null ? c.getEtat().name() : "");
+            return entry;
+        }).collect(java.util.stream.Collectors.toList());
     }
 }

@@ -49,6 +49,9 @@ public interface SejourRepository extends JpaRepository<Sejour, Long> {
            "WHERE s.dateEntree BETWEEN :debut AND :fin GROUP BY s.agent.id")
     List<Object[]> findPerformanceAgents(@Param("debut") LocalDateTime debut, @Param("fin") LocalDateTime fin);
 
+    @Query("SELECT s.typeLocation, COUNT(s) FROM Sejour s WHERE s.dateEntree BETWEEN :debut AND :fin GROUP BY s.typeLocation")
+    List<Object[]> countByTypeLocationPeriode(@Param("debut") LocalDateTime debut, @Param("fin") LocalDateTime fin);
+
     @Query("SELECT MAX(CAST(SUBSTRING(s.numeroRecu, LENGTH(s.numeroRecu) - 3, 4) AS int)) FROM Sejour s " +
            "WHERE s.numeroRecu LIKE CONCAT(:prefix, '%')")
     Integer findMaxSequence(@Param("prefix") String prefix);

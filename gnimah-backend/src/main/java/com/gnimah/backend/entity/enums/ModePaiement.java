@@ -1,5 +1,14 @@
 package com.gnimah.backend.entity.enums;
 
 public enum ModePaiement {
-    ESPECES, MOBILE_MONEY, CARTE, VIREMENT
+    ESPECES,
+    CARTE_BANCAIRE,
+    WAVE,
+    ORANGE_MONEY,
+    MTN_MONEY,
+    MOOV_MONEY,
+    MOBILE_MONEY,
+    CHEQUE,
+    VIREMENT,
+    AUTRE
 }

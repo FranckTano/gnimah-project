@@ -92,7 +92,7 @@ public class PdfReceiptService {
             if (sejour.getDateSortie() != null) {
                 addRow(table, "Date de sortie", sejour.getDateSortie().format(DATE_FMT), regular, bold);
             }
-            addRow(table, "Mode de paiement", paiement.getMode().name().replace("_", " "), regular, bold);
+            addRow(table, "Mode de paiement", getModePaiementLabel(paiement.getMode()), regular, bold);
             if (paiement.getReferenceTransaction() != null && !paiement.getReferenceTransaction().isBlank()) {
                 addRow(table, "Référence transaction", paiement.getReferenceTransaction(), regular, bold);
             }
@@ -133,6 +133,22 @@ public class PdfReceiptService {
         }
 
         return baos.toByteArray();
+    }
+
+    private String getModePaiementLabel(com.gnimah.backend.entity.enums.ModePaiement mode) {
+        if (mode == null) return "Espèces";
+        return switch (mode) {
+            case ESPECES       -> "Espèces";
+            case CARTE_BANCAIRE -> "Carte bancaire";
+            case WAVE          -> "Wave";
+            case ORANGE_MONEY  -> "Orange Money";
+            case MTN_MONEY     -> "MTN Mobile Money";
+            case MOOV_MONEY    -> "Moov Money";
+            case MOBILE_MONEY  -> "Mobile Money";
+            case CHEQUE        -> "Chèque";
+            case VIREMENT      -> "Virement bancaire";
+            case AUTRE         -> "Autre";
+        };
     }
 
     private void addRow(Table table, String label, String value, PdfFont labelFont, PdfFont valueFont) {

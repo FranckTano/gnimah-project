@@ -4,13 +4,16 @@ import com.gnimah.backend.dto.sejour.SejourRequest;
 import com.gnimah.backend.dto.sejour.SejourResponse;
 import com.gnimah.backend.entity.Chambre;
 import com.gnimah.backend.entity.Client;
+import com.gnimah.backend.entity.Paiement;
 import com.gnimah.backend.entity.Sejour;
 import com.gnimah.backend.entity.Utilisateur;
 import com.gnimah.backend.entity.enums.EtatChambre;
+import com.gnimah.backend.entity.enums.ModePaiement;
 import com.gnimah.backend.entity.enums.TypeLocation;
 import com.gnimah.backend.exception.BusinessException;
 import com.gnimah.backend.exception.ResourceNotFoundException;
 import com.gnimah.backend.repository.ClientRepository;
+import com.gnimah.backend.repository.PaiementRepository;
 import com.gnimah.backend.repository.SejourRepository;
 import com.gnimah.backend.repository.UtilisateurRepository;
 import lombok.RequiredArgsConstructor;
@@ -35,6 +38,7 @@ public class SejourService {
     private final ClientRepository clientRepository;
     private final ChambreService chambreService;
     private final UtilisateurRepository utilisateurRepository;
+    private final PaiementRepository paiementRepository;
     private final AuditService auditService;
     private final NotificationService notificationService;
 
@@ -90,6 +94,23 @@ public class SejourService {
         clientRepository.save(client);
 
         Sejour saved = sejourRepository.save(sejour);
+
+        // Créer un enregistrement Paiement si un acompte a été reçu
+        if (montantPaye.compareTo(BigDecimal.ZERO) > 0) {
+            ModePaiement mode = ModePaiement.ESPECES;
+            if (request.getModePaiement() != null && !request.getModePaiement().isBlank()) {
+                try { mode = ModePaiement.valueOf(request.getModePaiement()); } catch (IllegalArgumentException ignored) {}
+            }
+            Paiement paiement = Paiement.builder()
+                    .sejour(saved)
+                    .montant(montantPaye)
+                    .mode(mode)
+                    .agent(agent)
+                    .datePaiement(LocalDateTime.now())
+                    .build();
+            paiementRepository.save(paiement);
+        }
+
         auditService.log(agent, "CHECK_IN", "Sejour", saved.getId(), "Check-in chambre " + chambre.getNumero() + " pour " + client.getNomComplet());
 
         return toResponse(saved);

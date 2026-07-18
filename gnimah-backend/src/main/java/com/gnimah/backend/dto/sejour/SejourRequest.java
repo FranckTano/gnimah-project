@@ -21,6 +21,7 @@ public class SejourRequest {
     private LocalTime heureEntree;
     private LocalTime heureSortie;
     private BigDecimal montantPaye;
+    private String modePaiement;
     private String notes;
     private Long reservationId;
 }

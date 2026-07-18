@@ -9,6 +9,7 @@ export interface SejourRequest {
   heureEntree?: string;
   heureSortie?: string;
   montantPaye?: number;
+  modePaiement?: string;
   notes?: string;
   reservationId?: number;
 }

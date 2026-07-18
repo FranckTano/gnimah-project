@@ -47,4 +47,5 @@ public class KpiResponse {
     private List<Map<String, Object>> sejoursParType;
     private List<Map<String, Object>> performanceAgents;
     private List<Map<String, Object>> occupationParChambre;
+    private List<Map<String, Object>> repartitionModePaiement;
 }
