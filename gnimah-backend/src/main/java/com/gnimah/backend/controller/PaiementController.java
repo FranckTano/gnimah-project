@@ -10,6 +10,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -41,5 +43,15 @@ public class PaiementController {
     @Operation(summary = "Paiements d'un séjour")
     public ResponseEntity<List<PaiementResponse>> findBySejour(@PathVariable Long sejourId) {
         return ResponseEntity.ok(paiementService.findBySejour(sejourId));
+    }
+
+    @GetMapping("/{id}/recu")
+    @Operation(summary = "Télécharger le reçu PDF d'un paiement")
+    public ResponseEntity<byte[]> telechargerRecu(@PathVariable Long id) {
+        byte[] pdf = paiementService.generateRecuPdf(id);
+        return ResponseEntity.ok()
+                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"recu-" + id + ".pdf\"")
+                .contentType(MediaType.APPLICATION_PDF)
+                .body(pdf);
     }
 }

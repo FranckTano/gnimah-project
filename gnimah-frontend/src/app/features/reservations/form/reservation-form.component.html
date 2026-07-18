@@ -7,7 +7,7 @@
         <option *ngFor="let c of clients" [ngValue]="c.id">{{ c.nomComplet }} — {{ c.telephone }}</option>
       </select>
 
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+      <div class="resv-grid-2">
         <div>
           <label class="gn-flabel">Chambre spécifique</label>
           <select class="gn-input" formControlName="chambreId" style="margin-top:6px;">
@@ -24,7 +24,7 @@
         </div>
       </div>
 
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:14px;">
+      <div class="resv-grid-2" style="margin-top:14px;">
         <div>
           <label class="gn-flabel">Date d'arrivée *</label>
           <input class="gn-input" type="date" formControlName="dateArrivee" [min]="today" style="margin-top:6px;" [class.gn-invalid]="isInvalid('dateArrivee')" />

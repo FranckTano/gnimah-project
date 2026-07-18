@@ -20,7 +20,7 @@
     <div *ngIf="loadingDetail" class="gn-empty">Chargement du détail…</div>
 
     <ng-container *ngIf="!loadingDetail">
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:24px;">
+      <div class="pmt-detail-grid">
         <div>
           <div class="gn-slabel" style="color:#b3a2a6;">Client</div>
           <div style="font-weight:700;font-size:15px;color:#2e2024;margin-top:8px;">{{ selectedPaiement.clientNom }}</div>

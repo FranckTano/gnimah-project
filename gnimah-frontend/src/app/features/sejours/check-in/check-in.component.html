@@ -33,7 +33,7 @@
 <!-- FORM -->
 <div class="gn-route gn-ck" *ngIf="!success">
   <div class="gn-card" style="padding:24px;">
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+    <div class="ck-grid-2">
       <button type="button" class="gn-ckmode" [class.gn-ckon]="isSejour" [class.gn-ckoff]="!isSejour" (click)="setMode('SEJOUR')">
         <div class="gn-ckmode-title"><i class="ti ti-moon"></i>Séjour</div>
         <div class="gn-ckmode-sub">À la nuitée</div>
@@ -70,7 +70,7 @@
     </div>
 
     <form [formGroup]="clientForm" *ngIf="!foundClient">
-      <div style="display:grid;grid-template-columns:110px 1fr 1fr;gap:12px;">
+      <div class="ck-grid-3">
         <div>
           <label class="gn-flabel">Civilité</label>
           <select class="gn-input" formControlName="civilite" style="margin-top:6px;">
@@ -86,7 +86,7 @@
           <input class="gn-input" formControlName="telephone" placeholder="+225 07 08 55 21" style="margin-top:6px;" [class.gn-invalid]="isClientFieldInvalid('telephone')" />
         </div>
       </div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:14px;">
+      <div class="ck-grid-2" style="margin-top:14px;">
         <div>
           <label class="gn-flabel">Type de pièce</label>
           <select class="gn-input" formControlName="typePiece" style="margin-top:6px;">
@@ -116,7 +116,7 @@
       <span *ngIf="!loadingChambres && !chambresLibres.length" class="gn-empty">Aucune chambre disponible</span>
     </div>
 
-    <form [formGroup]="sejourForm" style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:16px;">
+    <form [formGroup]="sejourForm" class="ck-grid-2" style="margin-top:16px;">
       <div>
         <label class="gn-flabel">Date d'entrée</label>
         <input class="gn-input" type="date" formControlName="dateEntree" style="margin-top:6px;" />

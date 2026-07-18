@@ -25,7 +25,12 @@
     color: #374151;
   }
 
-  input, p-dropdown {
+  input, p-dropdown, p-select {
     width: 100%;
   }
+}
+
+@media (max-width: 600px) {
+  .form-row { flex-direction: column; }
+  .form-field.flex-2 { flex: unset; }
 }

@@ -171,6 +171,31 @@ h1, h2, h3, h4 { margin: 0; font-weight: 600; }
   .gn-resv { grid-template-columns: repeat(2,1fr); }
 }
 
+/* ---- Mobile extra (< 480px) ---- */
+@media (max-width: 480px) {
+  .gn-kpi6 { grid-template-columns: 1fr 1fr; }
+  .gn-rooms { grid-template-columns: repeat(2,1fr); }
+
+  /* Dialogs — évitent de déborder sur petits écrans */
+  .p-dialog { max-width: calc(100vw - 12px) !important; min-width: 0 !important; }
+  .p-dialog .p-dialog-content { padding: 1rem !important; }
+  .p-dialog .p-dialog-header { padding: 1rem !important; }
+  .p-dialog .p-dialog-footer { padding: 0.75rem 1rem !important; }
+
+  /* Cards — coins moins arrondis sur mobile */
+  .gn-card { border-radius: 16px; }
+
+  /* Buttons full-width dans les headers de page */
+  .gn-btn-p.mob-full,
+  .gn-btn-o.mob-full { width: 100%; justify-content: center; }
+
+  /* Body padding réduit */
+  .gn-body { padding: 14px 12px 52px !important; }
+
+  /* Tableaux : forcer le wrapper en overflow */
+  .gn-tw { overflow-x: auto !important; }
+}
+
 /* ---- PrimeNG table restyled to the gn- look (used via styleClass="gn-ptable") ---- */
 .gn-ptable {
   background: transparent; border: none;

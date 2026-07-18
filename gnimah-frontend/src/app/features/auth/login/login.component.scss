@@ -51,3 +51,11 @@
   .gn-login { grid-template-columns: 1fr; }
   .gn-login-hero { padding: 38px 26px; }
 }
+
+@media (max-width: 520px) {
+  /* Sur très petit écran : masquer le hero, afficher uniquement le formulaire */
+  .gn-login-hero { display: none; }
+  .gn-login-formwrap { padding: 44px 20px 32px; align-items: flex-start; }
+  .gn-login-form { max-width: 100%; }
+  .gn-welcome { font-size: 26px; }
+}

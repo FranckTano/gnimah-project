@@ -4,7 +4,7 @@ import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
+import java.time.LocalDate;
 
 @Data
 public class ReservationRequest {
@@ -13,9 +13,9 @@ public class ReservationRequest {
     private Long chambreId;
     private String typeChambre;
     @NotNull
-    private LocalDateTime dateArrivee;
+    private LocalDate dateArrivee;
     @NotNull
-    private LocalDateTime dateDepart;
+    private LocalDate dateDepart;
     private BigDecimal acompte;
     private String notes;
 }

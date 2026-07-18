@@ -3,6 +3,7 @@ package com.gnimah.backend.exception;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.validation.FieldError;
@@ -55,6 +56,13 @@ public class GlobalExceptionHandler {
         response.put("errors", errors);
         response.put("timestamp", LocalDateTime.now().toString());
         return ResponseEntity.badRequest().body(response);
+    }
+
+    @ExceptionHandler(HttpMessageNotReadableException.class)
+    public ResponseEntity<ErrorResponse> handleBadRequest(HttpMessageNotReadableException ex) {
+        log.warn("Requête mal formée : {}", ex.getMessage());
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(new ErrorResponse(400, "Données de la requête invalides (format de date ou champ incorrect)", LocalDateTime.now()));
     }
 
     @ExceptionHandler(Exception.class)

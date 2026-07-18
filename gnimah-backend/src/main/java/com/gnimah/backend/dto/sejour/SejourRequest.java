@@ -4,7 +4,7 @@ import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
+import java.time.LocalDate;
 import java.time.LocalTime;
 
 @Data
@@ -16,8 +16,8 @@ public class SejourRequest {
     @NotNull(message = "Le type de location est requis")
     private String typeLocation;
     @NotNull(message = "La date d'entrée est requise")
-    private LocalDateTime dateEntree;
-    private LocalDateTime dateSortie;
+    private LocalDate dateEntree;
+    private LocalDate dateSortie;
     private LocalTime heureEntree;
     private LocalTime heureSortie;
     private BigDecimal montantPaye;

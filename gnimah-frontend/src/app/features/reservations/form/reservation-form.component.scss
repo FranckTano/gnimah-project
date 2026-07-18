@@ -1,1 +1,7 @@
 // Reservation form uses shared .gn-* classes from src/styles.scss
+
+.resv-grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+
+@media (max-width: 600px) {
+  .resv-grid-2 { grid-template-columns: 1fr; }
+}

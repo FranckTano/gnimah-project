@@ -34,3 +34,18 @@
   display: flex; justify-content: space-between; align-items: center; background: #3a2126; border-radius: 13px;
   padding: 13px 15px; margin-top: 12px; color: #bfa4aa; font-size: 13.5px;
 }
+
+/* ---- Grilles de formulaire responsives ---- */
+.ck-grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.ck-grid-3 { display: grid; grid-template-columns: 100px 1fr 1fr; gap: 12px; }
+
+@media (max-width: 600px) {
+  .ck-grid-2, .ck-grid-3 { grid-template-columns: 1fr; }
+
+  .gn-ckrail { padding: 18px; border-radius: 16px; }
+
+  .gn-searchrow { flex-direction: column; gap: 8px; }
+  .gn-searchrow button { width: 100%; padding: 12px; }
+
+  .gn-clientfound > div { flex-wrap: wrap; }
+}

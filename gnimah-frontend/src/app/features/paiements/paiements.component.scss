@@ -1,1 +1,11 @@
 // Paiements / reçus uses shared .gn-* classes from src/styles.scss
+
+.pmt-detail-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+}
+
+@media (max-width: 560px) {
+  .pmt-detail-grid { grid-template-columns: 1fr; gap: 16px; }
+}

@@ -21,9 +21,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
-import java.time.Duration;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -58,14 +58,18 @@ public class SejourService {
 
         Utilisateur agent = getAgentConnecte();
 
+        // Le frontend envoie des dates au format "yyyy-MM-dd" (LocalDate), on convertit en LocalDateTime
+        LocalDateTime dateEntreeDT = request.getDateEntree().atStartOfDay();
+        LocalDateTime dateSortieDT = request.getDateSortie() != null ? request.getDateSortie().atStartOfDay() : null;
+
         Sejour sejour = Sejour.builder()
                 .numeroRecu(numeroRecu)
                 .client(client)
                 .chambre(chambre)
                 .agent(agent)
                 .typeLocation(typeLocation)
-                .dateEntree(request.getDateEntree())
-                .dateSortie(request.getDateSortie())
+                .dateEntree(dateEntreeDT)
+                .dateSortie(dateSortieDT)
                 .heureEntree(request.getHeureEntree())
                 .heureSortie(request.getHeureSortie())
                 .montantTotal(montantTotal)
@@ -77,11 +81,8 @@ public class SejourService {
                 .build();
 
         if (typeLocation == TypeLocation.SEJOUR && request.getDateSortie() != null) {
-            long nbJours = Duration.between(request.getDateEntree(), request.getDateSortie()).toDays();
-            sejour.setNbJours((int) nbJours);
-        } else if (typeLocation == TypeLocation.PASSAGE && request.getDateSortie() != null) {
-            long nbHeures = Duration.between(request.getDateEntree(), request.getDateSortie()).toHours();
-            sejour.setNbHeures((int) nbHeures);
+            long nbJours = ChronoUnit.DAYS.between(request.getDateEntree(), request.getDateSortie());
+            sejour.setNbJours((int) Math.max(nbJours, 1));
         }
 
         chambre.setEtat(EtatChambre.OCCUPEE);
@@ -145,17 +146,13 @@ public class SejourService {
     private BigDecimal calculerMontant(TypeLocation type, SejourRequest request, Chambre chambre) {
         if (type == TypeLocation.SEJOUR) {
             if (request.getDateSortie() != null) {
-                long nbJours = Duration.between(request.getDateEntree(), request.getDateSortie()).toDays();
+                long nbJours = ChronoUnit.DAYS.between(request.getDateEntree(), request.getDateSortie());
                 if (nbJours <= 0) nbJours = 1;
                 return chambre.getTarifNuitee().multiply(BigDecimal.valueOf(nbJours));
             }
             return chambre.getTarifNuitee();
         } else {
-            if (request.getDateSortie() != null) {
-                long nbHeures = Duration.between(request.getDateEntree(), request.getDateSortie()).toHours();
-                if (nbHeures <= 0) nbHeures = 1;
-                return chambre.getTarifPassage().multiply(BigDecimal.valueOf(Math.ceil(nbHeures / 3.0)));
-            }
+            // PASSAGE : tarif forfaitaire à l'unité
             return chambre.getTarifPassage();
         }
     }

@@ -20,9 +20,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
-import java.time.Duration;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -41,18 +41,22 @@ public class ReservationService {
         Client client = clientService.findById(request.getClientId());
         Chambre chambre = null;
 
+        // Le frontend envoie des dates "yyyy-MM-dd" (LocalDate) — on convertit en LocalDateTime pour l'entité
+        LocalDateTime dateArriveDT = request.getDateArrivee().atStartOfDay();
+        LocalDateTime dateDepartDT = request.getDateDepart().atStartOfDay();
+
         if (request.getChambreId() != null) {
             chambre = chambreService.findById(request.getChambreId());
             List<Reservation> conflits = reservationRepository.findConflits(
-                    request.getChambreId(), request.getDateArrivee(), request.getDateDepart());
+                    request.getChambreId(), dateArriveDT, dateDepartDT);
             if (!conflits.isEmpty()) {
                 throw new BusinessException("La chambre est déjà réservée pour cette période");
             }
         }
 
-        long nbNuits = Duration.between(request.getDateArrivee(), request.getDateDepart()).toDays();
+        long nbNuits = ChronoUnit.DAYS.between(request.getDateArrivee(), request.getDateDepart());
         BigDecimal montantPrevu = chambre != null
-                ? chambre.getTarifNuitee().multiply(BigDecimal.valueOf(nbNuits))
+                ? chambre.getTarifNuitee().multiply(BigDecimal.valueOf(Math.max(nbNuits, 1)))
                 : BigDecimal.ZERO;
 
         String numero = "RES-" + LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMddHHmmss"));
@@ -65,9 +69,9 @@ public class ReservationService {
                 .chambre(chambre)
                 .typeChambre(request.getTypeChambre() != null ? TypeChambre.valueOf(request.getTypeChambre()) : null)
                 .agent(agent)
-                .dateArrivee(request.getDateArrivee())
-                .dateDepart(request.getDateDepart())
-                .nbNuits((int) nbNuits)
+                .dateArrivee(dateArriveDT)
+                .dateDepart(dateDepartDT)
+                .nbNuits((int) Math.max(nbNuits, 1))
                 .montantPrevu(montantPrevu)
                 .acompte(request.getAcompte() != null ? request.getAcompte() : BigDecimal.ZERO)
                 .statut(StatutReservation.EN_ATTENTE)
@@ -76,7 +80,7 @@ public class ReservationService {
 
         Reservation saved = reservationRepository.save(reservation);
         notificationService.creer("NOUVELLE_RESERVATION", "Nouvelle réservation",
-                client.getNomComplet() + " — arrivée le " + request.getDateArrivee().toLocalDate(), "/reservations");
+                client.getNomComplet() + " — arrivée le " + request.getDateArrivee(), "/reservations");
         return toResponse(saved);
     }
 

@@ -30,6 +30,7 @@ public class PaiementService {
     private final PaiementRepository paiementRepository;
     private final SejourRepository sejourRepository;
     private final UtilisateurRepository utilisateurRepository;
+    private final PdfReceiptService pdfReceiptService;
 
     @Transactional
     public PaiementResponse enregistrer(PaiementRequest request) {
@@ -64,6 +65,13 @@ public class PaiementService {
     public List<PaiementResponse> findBySejour(Long sejourId) {
         return paiementRepository.findBySejourId(sejourId).stream()
                 .map(this::toResponse).collect(Collectors.toList());
+    }
+
+    @Transactional(readOnly = true)
+    public byte[] generateRecuPdf(Long id) {
+        Paiement paiement = paiementRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Paiement", id));
+        return pdfReceiptService.generateReceipt(paiement);
     }
 
     private Utilisateur getAgentConnecte() {
