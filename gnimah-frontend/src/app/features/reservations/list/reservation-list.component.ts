@@ -18,6 +18,9 @@ export class ReservationListComponent implements OnInit {
   rows = 20;
   statutLabels: Record<string, string> = STATUT_RESERVATION_LABELS;
 
+  detailVisible = false;
+  selectedReservation: ReservationResponse | null = null;
+
   constructor(
     private reservationService: ReservationService,
     private messageService: MessageService,
@@ -84,6 +87,11 @@ export class ReservationListComponent implements OnInit {
         });
       }
     });
+  }
+
+  voirDetails(r: ReservationResponse): void {
+    this.selectedReservation = r;
+    this.detailVisible = true;
   }
 
   getStatutSeverity(s: string): string {

@@ -4,7 +4,7 @@
     <div class="gn-card" style="padding:18px;"><div style="display:flex;align-items:center;gap:8px;font-size:13px;color:#8a7a7e;"><span class="gn-dot c-gold"></span>En attente</div><div class="gn-serif" style="font-size:32px;color:#2e2024;margin-top:8px;">{{ statCount.enAttente }}</div></div>
     <div class="gn-card" style="padding:18px;"><div style="display:flex;align-items:center;gap:8px;font-size:13px;color:#8a7a7e;"><span class="gn-dot c-wine"></span>Arrivées</div><div class="gn-serif" style="font-size:32px;color:#2e2024;margin-top:8px;">{{ statCount.arrivees }}</div></div>
     <div class="gn-card" style="padding:18px;"><div style="display:flex;align-items:center;gap:8px;font-size:13px;color:#8a7a7e;"><span class="gn-dot c-gray"></span>Annulées</div><div class="gn-serif" style="font-size:32px;color:#2e2024;margin-top:8px;">{{ statCount.annulees }}</div></div>
-    <div class="gn-card" style="padding:18px;"><div style="display:flex;align-items:center;gap:8px;font-size:13px;color:#8a7a7e;"><span class="gn-dot c-red"></span>No-show</div><div class="gn-serif" style="font-size:32px;color:#2e2024;margin-top:8px;">{{ statCount.noShow }}</div></div>
+    <div class="gn-card" style="padding:18px;"><div style="display:flex;align-items:center;gap:8px;font-size:13px;color:#8a7a7e;"><span class="gn-dot c-red"></span>Non présenté</div><div class="gn-serif" style="font-size:32px;color:#2e2024;margin-top:8px;">{{ statCount.noShow }}</div></div>
   </div>
 
   <div class="gn-card" style="padding:22px;margin-top:18px;">
@@ -45,6 +45,7 @@
             <td><span class="gn-bdg" [ngClass]="statutTone(r.statut)">{{ statutLabels[r.statut] }}</span></td>
             <td>
               <div style="display:flex;gap:6px;">
+                <button class="gn-icobtn" style="width:32px;height:32px;font-size:14px;color:#8c2f4d;" title="Voir les détails" (click)="voirDetails(r)"><i class="ti ti-eye"></i></button>
                 <button *ngIf="r.statut === 'EN_ATTENTE'" class="gn-icobtn" style="width:32px;height:32px;font-size:14px;color:#2f9e6f;" title="Confirmer" (click)="confirmer(r)"><i class="ti ti-check"></i></button>
                 <button *ngIf="r.statut !== 'ANNULEE' && r.statut !== 'ARRIVEE'" class="gn-icobtn" style="width:32px;height:32px;font-size:14px;color:#d0455a;" title="Annuler" (click)="annuler(r)"><i class="ti ti-x"></i></button>
               </div>
@@ -60,3 +61,52 @@
 </div>
 
 <p-confirmDialog></p-confirmDialog>
+<p-toast></p-toast>
+
+<p-dialog [(visible)]="detailVisible" header="Détails de la réservation" [modal]="true" [style]="{width: '520px'}" [draggable]="false" [resizable]="false">
+  <div *ngIf="selectedReservation" style="padding:4px 0;">
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+      <div>
+        <div class="gn-slabel" style="color:#b3a2a6;">Client</div>
+        <div style="font-weight:600;font-size:14px;color:#2e2024;margin-top:4px;">{{ selectedReservation.clientNom }}</div>
+        <div style="font-size:12px;color:#a99a9d;">{{ selectedReservation.clientTelephone }}</div>
+      </div>
+      <div>
+        <div class="gn-slabel" style="color:#b3a2a6;">Chambre</div>
+        <div style="font-size:14px;color:#3a2c30;margin-top:4px;">{{ selectedReservation.chambreNumero || selectedReservation.typeChambre }}</div>
+      </div>
+      <div>
+        <div class="gn-slabel" style="color:#b3a2a6;">Arrivée</div>
+        <div style="font-size:14px;color:#3a2c30;margin-top:4px;">{{ selectedReservation.dateArrivee | date:'dd/MM/yyyy' }}</div>
+      </div>
+      <div>
+        <div class="gn-slabel" style="color:#b3a2a6;">Départ</div>
+        <div style="font-size:14px;color:#3a2c30;margin-top:4px;">{{ selectedReservation.dateDepart | date:'dd/MM/yyyy' }}</div>
+      </div>
+      <div>
+        <div class="gn-slabel" style="color:#b3a2a6;">Durée</div>
+        <div style="font-size:14px;color:#3a2c30;margin-top:4px;">{{ selectedReservation.nbNuits }} nuit(s)</div>
+      </div>
+      <div>
+        <div class="gn-slabel" style="color:#b3a2a6;">Statut</div>
+        <div style="margin-top:4px;"><span class="gn-bdg" [ngClass]="statutTone(selectedReservation.statut)">{{ statutLabels[selectedReservation.statut] }}</span></div>
+      </div>
+      <div>
+        <div class="gn-slabel" style="color:#b3a2a6;">Montant prévu</div>
+        <div style="font-weight:600;font-size:14px;color:#2e2024;margin-top:4px;">{{ formatMontant(selectedReservation.montantPrevu) }}</div>
+      </div>
+      <div>
+        <div class="gn-slabel" style="color:#b3a2a6;">Acompte versé</div>
+        <div style="font-size:14px;color:#3a2c30;margin-top:4px;">{{ formatMontant(selectedReservation.acompte) }}</div>
+      </div>
+    </div>
+    <div style="margin-top:18px;">
+      <div class="gn-slabel" style="color:#b3a2a6;">Notes</div>
+      <div *ngIf="selectedReservation.notes" style="font-size:13.5px;color:#3a2c30;margin-top:6px;padding:12px;background:#fdf7f5;border-radius:8px;line-height:1.6;">{{ selectedReservation.notes }}</div>
+      <div *ngIf="!selectedReservation.notes" style="font-size:13px;color:#c9b0b6;margin-top:6px;font-style:italic;">Aucune note</div>
+    </div>
+  </div>
+  <ng-template pTemplate="footer">
+    <button class="gn-btn-o" style="padding:9px 16px;font-size:13.5px;" (click)="detailVisible = false">Fermer</button>
+  </ng-template>
+</p-dialog>

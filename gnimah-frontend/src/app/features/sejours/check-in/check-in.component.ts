@@ -64,7 +64,7 @@ export class CheckInComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
-    this.pageHeaderService.set("Enregistrement d'un séjour", "Check-in client · émission du reçu");
+    this.pageHeaderService.set("Enregistrement d'un séjour", "Enregistrement d'arrivée · émission du reçu");
     this.initForms();
     this.loadChambresLibres();
   }
@@ -206,11 +206,11 @@ export class CheckInComponent implements OnInit {
         this.createdSejour = sejour;
         this.success = true;
         this.checkingIn = false;
-        this.messageService.add({ severity: 'success', summary: 'Check-in réussi', detail: `N° Reçu : ${sejour.numeroRecu}` });
+        this.messageService.add({ severity: 'success', summary: 'Séjour enregistré', detail: `N° Reçu : ${sejour.numeroRecu}` });
       },
       error: () => {
         this.checkingIn = false;
-        this.messageService.add({ severity: 'error', summary: 'Erreur', detail: 'Check-in impossible' });
+        this.messageService.add({ severity: 'error', summary: 'Erreur', detail: 'Enregistrement impossible' });
       }
     });
   }

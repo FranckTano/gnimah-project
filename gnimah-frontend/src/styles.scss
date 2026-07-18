@@ -310,6 +310,9 @@ textarea.gn-input { font-family: inherit; }
    MEDIA PRINT — Impression propre des reçus (sans nav ni Actions)
    ============================================================ */
 @media print {
+  /* Supprimer les en-têtes/pieds de page du navigateur (URL, date, n° de page) */
+  @page { margin: 1cm 1cm 0.3cm 1cm; size: A4; }
+
   /* Masquer toute la navigation et l'interface */
   .gn-side,
   .gn-backdrop,

@@ -34,5 +34,5 @@ export const STATUT_RESERVATION_LABELS: Record<StatutReservation, string> = {
   CONFIRMEE: 'Confirmée',
   ARRIVEE: 'Arrivée',
   ANNULEE: 'Annulée',
-  NO_SHOW: 'No-show'
+  NO_SHOW: 'Non présenté'
 };

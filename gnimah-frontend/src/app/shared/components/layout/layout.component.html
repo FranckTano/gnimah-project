@@ -18,7 +18,7 @@
           class="gn-navitem"
           [routerLink]="it.link"
           routerLinkActive="on"
-          [routerLinkActiveOptions]="{ exact: false }"
+          [routerLinkActiveOptions]="{ exact: it.exact ?? false }"
           (click)="closeDrawer()"
         >
           <i class="ti" [ngClass]="it.icon"></i><span>{{ it.label }}</span>

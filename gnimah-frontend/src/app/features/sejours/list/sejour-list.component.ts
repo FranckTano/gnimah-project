@@ -49,8 +49,8 @@ export class SejourListComponent implements OnInit {
 
   confirmCheckOut(sejour: SejourResponse): void {
     this.confirmationService.confirm({
-      message: `Effectuer le check-out de ${sejour.clientNom} (Chambre ${sejour.chambreNumero}) ?`,
-      header: 'Confirmation Check-Out',
+      message: `Enregistrer le départ de ${sejour.clientNom} (Chambre ${sejour.chambreNumero}) ?`,
+      header: 'Confirmation de départ',
       icon: 'pi pi-sign-out',
       accept: () => this.doCheckOut(sejour.id)
     });
@@ -61,7 +61,7 @@ export class SejourListComponent implements OnInit {
     this.checkOutLoading = true;
     this.sejourService.checkOut(id).subscribe({
       next: () => {
-        this.messageService.add({ severity: 'success', summary: 'Check-Out', detail: 'Check-out effectué avec succès' });
+        this.messageService.add({ severity: 'success', summary: 'Départ enregistré', detail: 'La chambre a été libérée' });
         this.checkOutLoading = false;
         this.selectedSejourId = null;
         this.load();
@@ -69,7 +69,7 @@ export class SejourListComponent implements OnInit {
       error: () => {
         this.checkOutLoading = false;
         this.selectedSejourId = null;
-        this.messageService.add({ severity: 'error', summary: 'Erreur', detail: 'Échec du check-out' });
+        this.messageService.add({ severity: 'error', summary: 'Erreur', detail: 'Enregistrement du départ impossible' });
       }
     });
   }

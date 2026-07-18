@@ -198,7 +198,7 @@ export class DashboardComponent implements OnInit {
   get agentTodos(): Todo[] {
     const todos: Todo[] = [];
     this.chambresANettoyer.slice(0, 3).forEach(c => {
-      todos.push({ icon: 'ti-brush', label: `Chambre ${c.numero} à nettoyer`, tag: 'Housekeeping', bg: '#fdf4e3', cls: 'c-gold' });
+      todos.push({ icon: 'ti-brush', label: `Chambre ${c.numero} à nettoyer`, tag: 'Entretien', bg: '#fdf4e3', cls: 'c-gold' });
     });
     this.sejoursEnCours.filter(s => s.resteAPayer > 0).slice(0, 3).forEach(s => {
       todos.push({ icon: 'ti-cash', label: `Reste à payer — ${s.clientNom} (${this.formatCurrency(s.resteAPayer)})`, tag: 'Caisse', bg: '#fbeef1', cls: 'c-wine' });

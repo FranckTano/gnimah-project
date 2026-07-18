@@ -67,7 +67,7 @@ export class EntretienComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
-    this.pageHeaderService.set('Housekeeping', "Suivi de l'entretien des chambres");
+    this.pageHeaderService.set('Entretien', "Suivi de l'entretien des chambres");
     this.form = this.fb.group({
       titre: ['', Validators.required],
       type: ['NETTOYAGE', Validators.required],

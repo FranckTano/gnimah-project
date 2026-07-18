@@ -11,6 +11,7 @@ interface NavItem {
   label: string;
   icon: string;
   link: string;
+  exact?: boolean;
 }
 
 interface NavSection {
@@ -112,12 +113,12 @@ export class LayoutComponent implements OnInit, OnDestroy {
     }
 
     const operations: NavItem[] = [
-      { label: 'Check-in / Séjour', icon: 'ti-login-2', link: '/sejours/check-in' },
-      { label: 'Séjours en cours', icon: 'ti-bed', link: '/sejours' },
+      { label: 'Enregistrement', icon: 'ti-login-2', link: '/sejours/check-in' },
+      { label: 'Séjours en cours', icon: 'ti-bed', link: '/sejours', exact: true },
       { label: 'Réservations', icon: 'ti-calendar-check', link: '/reservations' },
-      { label: 'Plan des chambres', icon: 'ti-layout-grid', link: '/chambres' },
+      { label: 'Plan des chambres', icon: 'ti-layout-grid', link: '/chambres', exact: true },
       { label: 'Chambres', icon: 'ti-door', link: '/chambres/liste' },
-      { label: 'Housekeeping', icon: 'ti-spray', link: '/entretien' },
+      { label: 'Entretien', icon: 'ti-spray', link: '/entretien' },
       { label: 'Calendrier & événements', icon: 'ti-calendar-event', link: '/evenements' },
       { label: 'Fiches clients', icon: 'ti-users', link: '/clients' }
     ];

@@ -2,7 +2,7 @@
   <div class="gn-card" style="padding:22px;">
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
       <div class="gn-serif" style="font-size:18px;color:#2e2024;">Séjours</div>
-      <a routerLink="/sejours/check-in" class="gn-btn-p" style="padding:9px 16px;font-size:13px;text-decoration:none;"><i class="ti ti-plus"></i>Nouveau check-in</a>
+      <a routerLink="/sejours/check-in" class="gn-btn-p" style="padding:9px 16px;font-size:13px;text-decoration:none;"><i class="ti ti-plus"></i>Nouvelle arrivée</a>
     </div>
 
     <div class="gn-tw">
@@ -41,7 +41,7 @@
             <td>
               <button *ngIf="s.statut === 'EN_COURS'" class="gn-btn-o" style="padding:7px 14px;font-size:12.5px;" [disabled]="checkOutLoading && selectedSejourId === s.id" (click)="confirmCheckOut(s)">
                 <i class="ti ti-loader-2 gn-spin" *ngIf="checkOutLoading && selectedSejourId === s.id"></i>
-                <i class="ti ti-door-exit" *ngIf="!(checkOutLoading && selectedSejourId === s.id)"></i> Check-out
+                <i class="ti ti-door-exit" *ngIf="!(checkOutLoading && selectedSejourId === s.id)"></i> Départ
               </button>
             </td>
           </tr>
@@ -55,3 +55,4 @@
 </div>
 
 <p-confirmDialog></p-confirmDialog>
+<p-toast></p-toast>

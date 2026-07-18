@@ -58,7 +58,7 @@ public class ChambreController {
     }
 
     @GetMapping("/toutes")
-    @PreAuthorize("hasAnyRole('DIRECTEUR','ADMIN')")
+    @PreAuthorize("hasAnyRole('DIRECTEUR','ADMIN','RESPONSABLE')")
     @Operation(summary = "Lister toutes les chambres, y compris désactivées (écran de gestion)")
     public ResponseEntity<List<ChambreResponse>> findAllAdmin() {
         return ResponseEntity.ok(chambreService.findAllAdmin());

@@ -92,7 +92,7 @@ export class KpiComponent implements OnInit {
     }
 
     this.chartOccupation = {
-      labels: ['Libres', 'Occupées', 'À nettoyer', 'Maintenance'],
+      labels: ['Libres', 'Occupées', 'À nettoyer', 'En maintenance'],
       datasets: [{
         data: [
           data.chambresLibres,

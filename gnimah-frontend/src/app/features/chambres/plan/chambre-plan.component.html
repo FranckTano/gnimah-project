@@ -54,14 +54,10 @@
     <p-divider></p-divider>
 
     <div class="etat-change">
-      <label class="font-semibold mb-2 block">Changer l'état :</label>
-      <p-select
-        [(ngModel)]="newEtat"
-        [options]="etatOptions"
-        optionLabel="label"
-        optionValue="value"
-        styleClass="w-full"
-      ></p-select>
+      <label class="gn-flabel" style="margin-bottom:8px;display:block;">Changer l'état :</label>
+      <select class="gn-input" [(ngModel)]="newEtat" style="margin-top:4px;">
+        <option *ngFor="let o of etatOptions" [value]="o.value">{{ o.label }}</option>
+      </select>
     </div>
   </div>
 
