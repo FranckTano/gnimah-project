@@ -58,10 +58,10 @@
         <div class="gn-serif" style="font-size:18px;color:#2e2024;margin-bottom:16px;">Indicateurs hôteliers</div>
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;">
           <div><div class="gn-slabel" style="color:#b3a2a6;">Taux d'occupation</div><div class="gn-serif" style="font-size:22px;color:#8c2f4d;margin-top:4px;">{{ formatPct(kpi.tauxOccupation) }}</div></div>
-          <div><div class="gn-slabel" style="color:#b3a2a6;">ADR</div><div class="gn-serif" style="font-size:22px;color:#8c2f4d;margin-top:4px;">{{ formatMontant(kpi.adr) }}</div></div>
-          <div><div class="gn-slabel" style="color:#b3a2a6;">RevPAR</div><div class="gn-serif" style="font-size:22px;color:#8c2f4d;margin-top:4px;">{{ formatMontant(kpi.revPar) }}</div></div>
-          <div><div class="gn-slabel" style="color:#b3a2a6;">TRevPAR</div><div class="gn-serif" style="font-size:22px;color:#8c2f4d;margin-top:4px;">{{ formatMontant(kpi.tRevPar) }}</div></div>
-          <div><div class="gn-slabel" style="color:#b3a2a6;">ALOS</div><div class="gn-serif" style="font-size:22px;color:#8c2f4d;margin-top:4px;">{{ kpi.alos.toFixed(1) }} nuits</div></div>
+          <div><div class="gn-slabel" style="color:#b3a2a6;">Tarif moyen/ch.</div><div class="gn-serif" style="font-size:22px;color:#8c2f4d;margin-top:4px;">{{ formatMontant(kpi.adr) }}</div></div>
+          <div><div class="gn-slabel" style="color:#b3a2a6;">Revenu/chambre</div><div class="gn-serif" style="font-size:22px;color:#8c2f4d;margin-top:4px;">{{ formatMontant(kpi.revPar) }}</div></div>
+          <div><div class="gn-slabel" style="color:#b3a2a6;">Rev. total/ch.</div><div class="gn-serif" style="font-size:22px;color:#8c2f4d;margin-top:4px;">{{ formatMontant(kpi.tRevPar) }}</div></div>
+          <div><div class="gn-slabel" style="color:#b3a2a6;">Durée moy. séjour</div><div class="gn-serif" style="font-size:22px;color:#8c2f4d;margin-top:4px;">{{ kpi.alos.toFixed(1) }} nuits</div></div>
           <div><div class="gn-slabel" style="color:#b3a2a6;">Taux de conversion</div><div class="gn-serif" style="font-size:22px;color:#8c2f4d;margin-top:4px;">{{ formatPct(kpi.tauxConversion) }}</div></div>
         </div>
       </div>

@@ -77,9 +77,11 @@ export class ReservationListComponent implements OnInit {
 
   annuler(r: ReservationResponse): void {
     this.confirmationService.confirm({
-      message: `Annuler la réservation de ${r.clientNom} ?`,
-      header: 'Annulation',
+      message: `Annuler la réservation de ${r.clientNom} ? Cette action est irréversible.`,
+      header: 'Annulation de réservation',
       icon: 'pi pi-times',
+      acceptLabel: 'Oui, annuler',
+      rejectLabel: 'Non',
       accept: () => {
         this.reservationService.annuler(r.id).subscribe({
           next: () => { this.messageService.add({ severity: 'warn', summary: 'Annulée', detail: 'Réservation annulée' }); this.load(); },

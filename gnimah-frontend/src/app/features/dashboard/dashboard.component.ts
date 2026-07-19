@@ -167,10 +167,10 @@ export class DashboardComponent implements OnInit {
   get indicators(): IndicatorRow[] {
     if (!this.kpi) return [];
     return [
-      { l: 'ADR', s: 'Average Daily Rate', v: this.formatCurrency(this.kpi.adr), w: this.pct(this.kpi.adr, 40000) },
-      { l: 'RevPAR', s: 'Revenue per Available Room', v: this.formatCurrency(this.kpi.revPar), w: this.pct(this.kpi.revPar, 30000) },
-      { l: 'TRevPAR', s: 'Revenu total / chambre dispo.', v: this.formatCurrency(this.kpi.tRevPar), w: this.pct(this.kpi.tRevPar, 30000) },
-      { l: 'ALOS', s: 'Durée moyenne de séjour', v: `${(this.kpi.alos || 0).toFixed(1)} nuit`, w: this.pct(this.kpi.alos, 5) }
+      { l: 'Tarif moyen/ch.', s: 'Prix moyen facturé par chambre occupée', v: this.formatCurrency(this.kpi.adr), w: this.pct(this.kpi.adr, 40000) },
+      { l: 'Revenu/chambre', s: 'Revenu moyen par chambre disponible', v: this.formatCurrency(this.kpi.revPar), w: this.pct(this.kpi.revPar, 30000) },
+      { l: 'Rev. total/ch.', s: 'Revenu total (tous services) par chambre dispo.', v: this.formatCurrency(this.kpi.tRevPar), w: this.pct(this.kpi.tRevPar, 30000) },
+      { l: 'Durée moy. séjour', s: 'Nombre moyen de nuits par séjour', v: `${(this.kpi.alos || 0).toFixed(1)} nuit`, w: this.pct(this.kpi.alos, 5) }
     ];
   }
 

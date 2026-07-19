@@ -35,6 +35,7 @@ export class EntretienComponent implements OnInit {
   loading = false;
   showDialog = false;
   saving = false;
+  loadingTaskId: number | null = null;
   form!: FormGroup;
   cible: Cible = 'AUCUNE';
 
@@ -165,9 +166,16 @@ export class EntretienComponent implements OnInit {
   }
 
   changerStatut(t: TacheEntretienResponse, statut: string): void {
+    this.loadingTaskId = t.id;
     this.entretienService.updateStatut(t.id, statut).subscribe({
-      next: () => { this.load(); },
-      error: () => this.messageService.add({ severity: 'error', summary: 'Erreur', detail: 'Changement de statut impossible' })
+      next: () => {
+        this.loadingTaskId = null;
+        this.load();
+      },
+      error: () => {
+        this.loadingTaskId = null;
+        this.messageService.add({ severity: 'error', summary: 'Erreur', detail: 'Changement de statut impossible' });
+      }
     });
   }
 

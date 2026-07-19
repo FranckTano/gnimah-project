@@ -48,10 +48,23 @@ export class SejourListComponent implements OnInit {
   }
 
   confirmCheckOut(sejour: SejourResponse): void {
+    if (sejour.resteAPayer > 0) {
+      this.confirmationService.confirm({
+        message: `Attention — ce client a un solde impayé de ${this.formatMontant(sejour.resteAPayer)}.\nVoulez-vous quand même enregistrer son départ sans paiement intégral ?`,
+        header: 'Solde impayé',
+        icon: 'pi pi-exclamation-triangle',
+        acceptLabel: 'Forcer le départ',
+        rejectLabel: 'Annuler',
+        accept: () => this.doCheckOut(sejour.id)
+      });
+      return;
+    }
     this.confirmationService.confirm({
       message: `Enregistrer le départ de ${sejour.clientNom} (Chambre ${sejour.chambreNumero}) ?`,
       header: 'Confirmation de départ',
       icon: 'pi pi-sign-out',
+      acceptLabel: 'Oui',
+      rejectLabel: 'Non',
       accept: () => this.doCheckOut(sejour.id)
     });
   }

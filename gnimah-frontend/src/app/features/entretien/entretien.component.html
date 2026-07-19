@@ -35,8 +35,14 @@
           </span>
         </div>
         <div style="display:flex;gap:8px;margin-top:12px;" *ngIf="t.statut !== 'TERMINE'">
-          <button *ngIf="t.statut === 'A_FAIRE'" class="gn-btn-o" style="flex:1;padding:8px;font-size:12.5px;" (click)="changerStatut(t, 'EN_COURS')"><i class="ti ti-player-play"></i>Démarrer</button>
-          <button *ngIf="t.statut === 'EN_COURS'" class="gn-btn-p" style="flex:1;padding:8px;font-size:12.5px;" (click)="changerStatut(t, 'TERMINE')"><i class="ti ti-check"></i>Terminer</button>
+          <button *ngIf="t.statut === 'A_FAIRE'" class="gn-btn-o" style="flex:1;padding:8px;font-size:12.5px;" [disabled]="loadingTaskId === t.id" (click)="changerStatut(t, 'EN_COURS')">
+            <i class="ti ti-loader-2 gn-spin" *ngIf="loadingTaskId === t.id"></i>
+            <i class="ti ti-player-play" *ngIf="loadingTaskId !== t.id"></i>Démarrer
+          </button>
+          <button *ngIf="t.statut === 'EN_COURS'" class="gn-btn-p" style="flex:1;padding:8px;font-size:12.5px;" [disabled]="loadingTaskId === t.id" (click)="changerStatut(t, 'TERMINE')">
+            <i class="ti ti-loader-2 gn-spin" *ngIf="loadingTaskId === t.id"></i>
+            <i class="ti ti-check" *ngIf="loadingTaskId !== t.id"></i>Terminer
+          </button>
         </div>
       </div>
 

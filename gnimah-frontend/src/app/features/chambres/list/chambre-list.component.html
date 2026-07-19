@@ -128,16 +128,20 @@
       <textarea class="gn-input" formControlName="observations" rows="2" placeholder="Notes réservées au personnel (état du mobilier, historique de panne…)" style="margin-top:6px;resize:vertical;"></textarea>
     </div>
     <div style="margin-top:12px;">
-      <label class="gn-flabel">Photos (URLs)</label>
-      <div style="display:flex;gap:8px;margin-top:6px;">
-        <input class="gn-input" [(ngModel)]="newPhotoUrl" [ngModelOptions]="{standalone: true}" placeholder="https://…" (keydown.enter)="$event.preventDefault(); addPhoto()" />
-        <button type="button" class="gn-btn-o" style="padding:0 16px;" (click)="addPhoto()"><i class="ti ti-plus"></i></button>
+      <label class="gn-flabel">Photos</label>
+      <div style="display:flex;align-items:center;gap:10px;margin-top:8px;">
+        <label style="display:inline-flex;align-items:center;gap:8px;padding:8px 14px;font-size:13px;border:1.5px solid #e0ceca;border-radius:10px;cursor:pointer;color:#3a2c30;background:#fff;transition:border-color .15s;" [style.opacity]="uploadingPhoto ? .6 : 1">
+          <i class="ti" [class.ti-camera-plus]="!uploadingPhoto" [class.ti-loader-2]="uploadingPhoto" [class.gn-spin]="uploadingPhoto"></i>
+          {{ uploadingPhoto ? 'Chargement…' : 'Ajouter une photo' }}
+          <input type="file" accept="image/jpeg,image/png,image/webp" style="display:none;" [disabled]="uploadingPhoto" (change)="onPhotoFileChange($event)" />
+        </label>
+        <span style="font-size:12px;color:#a99a9d;">JPG, PNG, WebP · max 5 Mo</span>
       </div>
-      <div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:10px;" *ngIf="photoList.length">
-        <div *ngFor="let url of photoList" class="gn-chip on" style="display:inline-flex;align-items:center;gap:8px;cursor:default;padding:6px 8px 6px 6px;">
-          <img [src]="url" alt="" style="width:26px;height:26px;border-radius:7px;object-fit:cover;" onerror="this.style.display='none'" />
-          <span style="max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:400;">{{ url }}</span>
-          <i class="ti ti-x" style="cursor:pointer;" (click)="removePhoto(url)"></i>
+      <div style="display:flex;flex-wrap:wrap;gap:10px;margin-top:12px;" *ngIf="photoList.length">
+        <div *ngFor="let url of photoList" style="position:relative;width:80px;height:80px;flex:none;">
+          <img [src]="url" alt="Photo chambre" style="width:80px;height:80px;border-radius:10px;object-fit:cover;border:1px solid #f0e4e0;" />
+          <button type="button" (click)="removePhoto(url)"
+            style="position:absolute;top:-7px;right:-7px;width:22px;height:22px;border-radius:50%;background:#d0455a;color:#fff;border:none;cursor:pointer;font-size:11px;display:flex;align-items:center;justify-content:center;line-height:1;">✕</button>
         </div>
       </div>
       <div *ngIf="!photoList.length" class="gn-empty" style="padding:4px 0 0;">Aucune photo ajoutée.</div>

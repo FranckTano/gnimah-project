@@ -61,6 +61,7 @@ export class ChambreListComponent implements OnInit {
   etatLabels: Record<string, string> = ETAT_CHAMBRE_LABELS;
 
   newPhotoUrl = '';
+  uploadingPhoto = false;
 
   constructor(
     private chambreService: ChambreService,
@@ -110,6 +111,42 @@ export class ChambreListComponent implements OnInit {
   removePhoto(url: string): void {
     const list = this.photoList.filter(u => u !== url);
     this.form.get('photos')!.setValue(list.join(','));
+  }
+
+  onPhotoFileChange(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    if (!input.files?.length) return;
+    const file = input.files[0];
+    if (!file.type.startsWith('image/')) {
+      this.messageService.add({ severity: 'warn', summary: 'Fichier invalide', detail: 'Sélectionnez une image (JPG, PNG, WebP)' });
+      return;
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      this.messageService.add({ severity: 'warn', summary: 'Fichier trop lourd', detail: 'La photo ne doit pas dépasser 5 Mo' });
+      return;
+    }
+    this.uploadingPhoto = true;
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const img = new Image();
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        const MAX = 900;
+        let w = img.width, h = img.height;
+        if (w > MAX) { h = Math.round(h * MAX / w); w = MAX; }
+        if (h > MAX) { w = Math.round(w * MAX / h); h = MAX; }
+        canvas.width = w; canvas.height = h;
+        canvas.getContext('2d')!.drawImage(img, 0, 0, w, h);
+        const base64 = canvas.toDataURL('image/jpeg', 0.82);
+        const current = this.form.get('photos')?.value || '';
+        const list = current ? current + ',' + base64 : base64;
+        this.form.get('photos')!.setValue(list);
+        this.uploadingPhoto = false;
+        input.value = '';
+      };
+      img.src = e.target!.result as string;
+    };
+    reader.readAsDataURL(file);
   }
 
   loadChambres(): void {
@@ -208,10 +245,12 @@ export class ChambreListComponent implements OnInit {
   toggleActif(chambre: ChambreResponse): void {
     this.confirmationService.confirm({
       message: chambre.actif
-        ? `Désactiver la chambre ${chambre.numero} ? Elle disparaîtra du plan des chambres et des sélections de check-in.`
-        : `Réactiver la chambre ${chambre.numero} ?`,
+        ? `Désactiver la chambre ${chambre.numero} ? Elle disparaîtra du plan des chambres et ne sera plus proposée à l'enregistrement.`
+        : `Réactiver la chambre ${chambre.numero} ? Elle redeviendra disponible.`,
       header: chambre.actif ? 'Désactiver la chambre' : 'Réactiver la chambre',
       icon: 'pi pi-exclamation-triangle',
+      acceptLabel: 'Confirmer',
+      rejectLabel: 'Annuler',
       accept: () => {
         this.chambreService.toggleActif(chambre.id).subscribe({
           next: () => {
