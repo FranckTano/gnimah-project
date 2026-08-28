@@ -37,9 +37,22 @@ public class MediaResidenceService {
         return repository.findAllByOrderByPositionAscIdAsc().stream().map(this::versDto).toList();
     }
 
-    /** Le frontend s'en sert pour n'afficher l'envoi de fichier que s'il est possible. */
+    /** Vrai si le serveur peut signer l'envoi lui-même (voie préférée). */
     public boolean hebergementDisponible() {
         return cloudinary.estConfigure();
+    }
+
+    /** Valeurs publiques dont le navigateur a besoin pour téléverser lui-même. */
+    public String cloudName() {
+        return cloudinary.cloudName();
+    }
+
+    public String dossier() {
+        return cloudinary.dossier();
+    }
+
+    public String uploadPreset() {
+        return cloudinary.uploadPreset();
     }
 
     /** Envoi d'un fichier : il part sur Cloudinary, seules les métadonnées restent ici. */
@@ -53,6 +66,40 @@ public class MediaResidenceService {
                 .url(distant.url())
                 .urlVignette(distant.urlVignette())
                 .publicId(distant.publicId())
+                .position(repository.prochainePosition())
+                .actif(true)
+                .misEnAvant(false)
+                .build();
+        return versDto(repository.save(media));
+    }
+
+    /**
+     * Enregistre une image que le navigateur vient de téléverser directement sur
+     * Cloudinary (préréglage non signé), quand le serveur n'a pas d'identifiants
+     * pour le faire lui-même.
+     *
+     * Le {@code publicId} est conservé pour que la suppression efface aussi le
+     * fichier distant. Il est validé : sans cela, un client pourrait faire
+     * enregistrer — puis supprimer — n'importe quel objet du compte Cloudinary,
+     * y compris les photos de la vitrine.
+     */
+    @Transactional
+    public MediaResidenceResponse enregistrerTeleversement(MediaResidenceRequest request) {
+        if (vide(request.getUrl()) || vide(request.getPublicId())) {
+            throw new BusinessException("Envoi incomplet : l'image n'a pas pu être enregistrée.");
+        }
+        cloudinary.validerRessourceDistante(request.getUrl(), request.getPublicId());
+
+        if (repository.existsByPublicId(request.getPublicId())) {
+            throw new BusinessException("Cette image figure déjà dans la galerie.");
+        }
+
+        MediaResidence media = MediaResidence.builder()
+                .titre(request.getTitre())
+                .categorie(categorieOuDefaut(request.getCategorie()))
+                .url(request.getUrl().trim())
+                .urlVignette(vide(request.getUrlVignette()) ? null : request.getUrlVignette().trim())
+                .publicId(request.getPublicId().trim())
                 .position(repository.prochainePosition())
                 .actif(true)
                 .misEnAvant(false)

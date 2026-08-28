@@ -12,13 +12,15 @@
       </button>
     </div>
 
-    <ng-container *ngIf="hebergementDisponible">
-      <!-- Zone de dépôt -->
+    <ng-container *ngIf="!envoiIndisponible">
+      <!-- Zone de dépôt : ouvre la galerie du téléphone ou l'explorateur de
+           fichiers. La photo part sur Cloudinary et son lien est enregistré. -->
       <label class="m-drop" *ngIf="!apercu">
-        <input type="file" accept="image/*" (change)="onFichier($event)" hidden />
+        <input type="file" accept="image/jpeg,image/png,image/webp,image/avif,image/*"
+               (change)="onFichier($event)" hidden />
         <i class="ti ti-photo-plus m-drop-i"></i>
-        <span class="m-drop-t">Choisir une image</span>
-        <span class="m-drop-s">JPG, PNG ou WebP · 10 Mo maximum</span>
+        <span class="m-drop-t">Choisir une photo</span>
+        <span class="m-drop-s">Depuis votre galerie ou vos fichiers · JPG, PNG ou WebP · 10 Mo maximum</span>
       </label>
 
       <!-- Aperçu + métadonnées -->
@@ -46,15 +48,15 @@
       </div>
     </ng-container>
 
-    <!-- Serveur sans hébergement configuré -->
-    <div class="m-notice" *ngIf="!hebergementDisponible">
+    <!-- Ni clés serveur, ni préréglage : aucune voie d'envoi. -->
+    <div class="m-notice" *ngIf="envoiIndisponible">
       <i class="ti ti-cloud-off"></i>
       <div>
-        <strong>L'envoi de fichier n'est pas disponible sur ce serveur.</strong>
-        Vous pouvez tout de même référencer une image déjà en ligne avec le bouton
-        « Depuis une adresse web ». Pour activer l'envoi direct, renseignez les
-        variables <code>CLOUDINARY_CLOUD_NAME</code>, <code>CLOUDINARY_API_KEY</code>
-        et <code>CLOUDINARY_API_SECRET</code> sur le serveur.
+        <strong>L'envoi de photos n'est pas configuré.</strong>
+        Renseignez <code>CLOUDINARY_CLOUD_NAME</code> et <code>CLOUDINARY_UPLOAD_PRESET</code>
+        sur le serveur — ou la clé et le secret d'API pour un envoi signé.
+        En attendant, le bouton « Depuis une adresse web » permet de référencer
+        une image déjà en ligne.
       </div>
     </div>
   </div>
@@ -176,5 +178,3 @@
   </ng-template>
 </p-dialog>
 
-<p-confirmDialog></p-confirmDialog>
-<p-toast></p-toast>

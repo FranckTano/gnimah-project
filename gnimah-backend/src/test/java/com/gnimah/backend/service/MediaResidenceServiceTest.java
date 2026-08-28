@@ -165,6 +165,78 @@ class MediaResidenceServiceTest {
     }
 
     @Test
+    void enregistrerTeleversement_conserveLIdentifiantPourPouvoirEffacerPlusTard() {
+        when(repository.existsByPublicId(any())).thenReturn(false);
+        when(repository.prochainePosition()).thenReturn(3);
+        when(repository.save(any())).thenAnswer(inv -> {
+            MediaResidence m = inv.getArgument(0);
+            m.setId(5L);
+            return m;
+        });
+
+        MediaResidenceRequest req = new MediaResidenceRequest();
+        req.setTitre("Terrasse");
+        req.setCategorie("Extérieur");
+        req.setUrl("https://res.cloudinary.com/x/image/upload/f_auto/gnimah/galerie/1-terrasse");
+        req.setPublicId("gnimah/galerie/1-terrasse");
+
+        MediaResidenceResponse res = service.enregistrerTeleversement(req);
+
+        verify(cloudinary).validerRessourceDistante(req.getUrl(), req.getPublicId());
+        assertThat(res.isHeberge()).isTrue();
+        assertThat(res.getPublicId()).isEqualTo("gnimah/galerie/1-terrasse");
+        assertThat(res.getPosition()).isEqualTo(3);
+    }
+
+    @Test
+    void enregistrerTeleversement_refuseUneRessourceNonValidee() {
+        // Le service ne doit rien écrire si la validation d'origine échoue :
+        // sinon un client pourrait faire adopter puis supprimer n'importe quel
+        // fichier du compte Cloudinary.
+        doThrow(new BusinessException("Image refusée : elle ne provient pas du dossier de la galerie."))
+                .when(cloudinary).validerRessourceDistante(any(), any());
+
+        MediaResidenceRequest req = new MediaResidenceRequest();
+        req.setTitre("Intrus");
+        req.setCategorie("Chambres");
+        req.setUrl("https://res.cloudinary.com/x/image/upload/gnimah/photos/facade-patio");
+        req.setPublicId("gnimah/photos/facade-patio");
+
+        assertThatThrownBy(() -> service.enregistrerTeleversement(req))
+                .isInstanceOf(BusinessException.class)
+                .hasMessageContaining("galerie");
+        verify(repository, never()).save(any());
+    }
+
+    @Test
+    void enregistrerTeleversement_refuseUnEnvoiIncomplet() {
+        MediaResidenceRequest req = new MediaResidenceRequest();
+        req.setTitre("Sans identifiant");
+        req.setCategorie("Chambres");
+        req.setUrl("https://res.cloudinary.com/x/image/upload/gnimah/galerie/a");
+
+        assertThatThrownBy(() -> service.enregistrerTeleversement(req))
+                .isInstanceOf(BusinessException.class);
+        verify(repository, never()).save(any());
+    }
+
+    @Test
+    void enregistrerTeleversement_refuseUnDoublon() {
+        when(repository.existsByPublicId("gnimah/galerie/1-terrasse")).thenReturn(true);
+
+        MediaResidenceRequest req = new MediaResidenceRequest();
+        req.setTitre("Terrasse");
+        req.setCategorie("Extérieur");
+        req.setUrl("https://res.cloudinary.com/x/image/upload/gnimah/galerie/1-terrasse");
+        req.setPublicId("gnimah/galerie/1-terrasse");
+
+        assertThatThrownBy(() -> service.enregistrerTeleversement(req))
+                .isInstanceOf(BusinessException.class)
+                .hasMessageContaining("déjà");
+        verify(repository, never()).save(any());
+    }
+
+    @Test
     void galerieVisible_neRemonteQueLesVisuelsActifs() {
         when(repository.findByActifTrueOrderByPositionAscIdAsc())
                 .thenReturn(List.of(media(1, "A", 0), media(2, "B", 1)));

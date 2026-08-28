@@ -88,7 +88,16 @@ app:
     # mais l'envoi de fichier depuis l'application est désactivé.
     # Le secret donne un accès complet au compte : il ne doit exister que comme
     # variable d'environnement du serveur, jamais dans le dépôt ni dans le frontend.
-    cloud-name: ${CLOUDINARY_CLOUD_NAME:}
+    # Le nom du compte et le préréglage ne sont pas des secrets : le premier
+    # figure dans chaque URL d'image, le second est prévu par Cloudinary pour
+    # être public (c'est le principe d'un préréglage « non signé »). Ils ont donc
+    # une valeur par défaut, pour que l'envoi de photos fonctionne sans aucune
+    # configuration de serveur.
+    cloud-name: ${CLOUDINARY_CLOUD_NAME:dehzeeo6p}
+    upload-preset: ${CLOUDINARY_UPLOAD_PRESET:gnimah_media}
+    # La clé et le secret, eux, n'ont aucune valeur par défaut. Renseignés, le
+    # serveur signe lui-même les envois — voie préférée, car le préréglage non
+    # signé peut être utilisé par quiconque lit le code du frontend.
     api-key: ${CLOUDINARY_API_KEY:}
     api-secret: ${CLOUDINARY_API_SECRET:}
     folder: ${CLOUDINARY_FOLDER:gnimah/galerie}

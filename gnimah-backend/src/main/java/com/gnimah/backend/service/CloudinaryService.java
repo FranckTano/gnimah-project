@@ -58,12 +58,64 @@ public class CloudinaryService {
     @Value("${app.cloudinary.folder:gnimah/galerie}")
     private String dossier;
 
+    /** Préréglage « non signé », utilisé par le navigateur. N'est pas un secret. */
+    @Value("${app.cloudinary.upload-preset:}")
+    private String uploadPreset;
+
     private final RestTemplate restTemplate = new RestTemplate();
     private final ObjectMapper mapper = new ObjectMapper();
 
-    /** Vrai si les trois identifiants sont présents. */
+    /** Vrai si les trois identifiants sont présents : le serveur peut signer un envoi. */
     public boolean estConfigure() {
         return !cloudName.isBlank() && !apiKey.isBlank() && !apiSecret.isBlank();
+    }
+
+    /** Nom du compte, exposé au frontend : ce n'est pas un secret. */
+    public String cloudName() {
+        return cloudName;
+    }
+
+    public String dossier() {
+        return dossier;
+    }
+
+    public String uploadPreset() {
+        return uploadPreset;
+    }
+
+    /**
+     * Vérifie qu'une ressource téléversée par le navigateur appartient bien à
+     * notre compte et à notre dossier.
+     *
+     * Sans ce garde-fou, un client pourrait faire enregistrer l'identifiant de
+     * n'importe quel objet du compte Cloudinary — puis le faire supprimer en
+     * retirant la ligne de la galerie, emportant par exemple les photos de la
+     * vitrine.
+     */
+    public void validerRessourceDistante(String url, String publicId) {
+        String id = publicId == null ? "" : publicId.trim();
+        String adresse = url == null ? "" : url.trim();
+
+        if (!id.startsWith(dossier + "/")) {
+            throw new BusinessException("Image refusée : elle ne provient pas du dossier de la galerie.");
+        }
+        // `..` empêcherait le préfixe de garantir quoi que ce soit.
+        if (id.contains("..")) {
+            throw new BusinessException("Identifiant d'image invalide.");
+        }
+        if (!cloudName.isBlank()) {
+            String attendu = "https://res.cloudinary.com/" + cloudName + "/";
+            if (!adresse.startsWith(attendu)) {
+                throw new BusinessException("Image refusée : elle n'est pas hébergée sur le compte de la résidence.");
+            }
+        } else if (!adresse.startsWith("https://res.cloudinary.com/")) {
+            throw new BusinessException("Image refusée : adresse d'hébergement inattendue.");
+        }
+        // L'URL doit désigner l'objet annoncé, sinon on enregistrerait une image
+        // et en supprimerait une autre.
+        if (!adresse.contains("/" + id)) {
+            throw new BusinessException("Image refusée : l'adresse ne correspond pas au fichier envoyé.");
+        }
     }
 
     public record FichierDistant(String url, String urlVignette, String publicId) {}

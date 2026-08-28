@@ -4,7 +4,7 @@ import { ConfirmationService, MessageService } from 'primeng/api';
 import { PageHeaderService } from '../../../core/services/page-header.service';
 import { MediaApiService } from '../../../core/services/media-api.service';
 import { MediaService } from '../../../core/services/media.service';
-import { CATEGORIES_PHOTO, MediaResidenceResponse } from '../../../core/models/media.model';
+import { CapacitesMedia, CATEGORIES_PHOTO, MediaResidenceResponse } from '../../../core/models/media.model';
 
 /**
  * Administration de la galerie « La Résidence ».
@@ -24,8 +24,18 @@ export class MediasComponent implements OnInit {
   loading = false;
   categories = CATEGORIES_PHOTO;
 
-  /** Faux si le serveur n'a pas d'identifiants Cloudinary : on masque l'envoi. */
-  hebergementDisponible = true;
+  /**
+   * Voie de téléversement. Tant qu'elle n'est pas connue, on garde le
+   * sélecteur de fichier affiché : l'envoi est l'action attendue de cette page.
+   */
+  capacites: CapacitesMedia | null = null;
+
+  /** Vrai si aucune des deux voies n'est utilisable : on l'explique alors. */
+  get envoiIndisponible(): boolean {
+    if (!this.capacites) return false;
+    return !this.capacites.hebergementDisponible
+      && (!this.capacites.cloudName || !this.capacites.uploadPreset);
+  }
 
   // ---- Envoi de fichier ----------------------------------------------------
   fichier: File | null = null;
@@ -69,8 +79,12 @@ export class MediasComponent implements OnInit {
     });
 
     this.api.capacites().subscribe({
-      next: (c) => { this.hebergementDisponible = c.hebergementDisponible; },
-      error: () => { this.hebergementDisponible = false; }
+      next: (c) => { this.capacites = c; },
+      // Sans réponse, on ne connaît aucune voie : l'écran l'explique plutôt que
+      // de laisser croire à un envoi possible.
+      error: () => {
+        this.capacites = { hebergementDisponible: false, cloudName: '', uploadPreset: '', dossier: '' };
+      }
     });
     this.charger();
   }
@@ -131,9 +145,9 @@ export class MediasComponent implements OnInit {
   }
 
   envoyer(): void {
-    if (!this.fichier || this.envoiEnCours) return;
+    if (!this.fichier || this.envoiEnCours || !this.capacites) return;
     this.envoiEnCours = true;
-    this.api.televerser(this.fichier, this.titreEnvoi.trim(), this.categorieEnvoi).subscribe({
+    this.api.televerser(this.fichier, this.titreEnvoi.trim(), this.categorieEnvoi, this.capacites).subscribe({
       next: () => {
         this.envoiEnCours = false;
         this.annulerEnvoi();
@@ -192,6 +206,25 @@ export class MediasComponent implements OnInit {
     });
   }
 
+  /**
+   * Décrit exactement ce que la suppression va faire.
+   *
+   * Effacer le fichier chez l'hébergeur exige une clé d'API : sans elle le
+   * serveur ne peut que retirer la ligne. Le dire évite de laisser croire que
+   * l'espace est libéré alors que le fichier reste et consomme du quota.
+   */
+  private messageSuppression(m: MediaResidenceResponse): string {
+    if (!m.heberge) {
+      return `« ${m.titre} » sera retiré de la galerie. L'image d'origine, hébergée ailleurs, n'est pas affectée.`;
+    }
+    if (this.capacites?.hebergementDisponible) {
+      return `« ${m.titre} » sera retiré de la galerie et le fichier sera définitivement effacé de l'hébergement. Cette action est irréversible.`;
+    }
+    return `« ${m.titre} » sera retiré de la galerie. Le fichier restera toutefois sur l'hébergement `
+      + `Cloudinary : son effacement automatique demande la clé d'API du serveur. `
+      + `Vous pouvez le supprimer depuis la console Cloudinary.`;
+  }
+
   deplacer(m: MediaResidenceResponse, sens: -1 | 1): void {
     this.api.deplacer(m.id, sens).subscribe({
       next: (liste) => { this.medias = liste; this.media.appliquer(liste); },
@@ -202,9 +235,7 @@ export class MediasComponent implements OnInit {
   supprimer(m: MediaResidenceResponse): void {
     this.confirmationService.confirm({
       header: 'Supprimer ce visuel ?',
-      message: m.heberge
-        ? `« ${m.titre} » sera retiré de la galerie et le fichier sera définitivement effacé de l'hébergement. Cette action est irréversible.`
-        : `« ${m.titre} » sera retiré de la galerie. L'image d'origine, hébergée ailleurs, n'est pas affectée.`,
+      message: this.messageSuppression(m),
       acceptLabel: 'Supprimer', rejectLabel: 'Annuler',
       acceptButtonStyleClass: 'p-button-danger',
       accept: () => {

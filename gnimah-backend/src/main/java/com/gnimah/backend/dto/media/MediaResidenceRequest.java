@@ -29,4 +29,10 @@ public class MediaResidenceRequest {
     private Boolean actif;
 
     private Boolean misEnAvant;
+
+    /**
+     * Identifiant Cloudinary, renseigné uniquement quand le navigateur a
+     * téléversé le fichier lui-même. Validé côté serveur avant enregistrement.
+     */
+    private String publicId;
 }

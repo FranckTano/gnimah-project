@@ -42,12 +42,37 @@ public class MediaResidenceController {
         return ResponseEntity.ok(service.findAll());
     }
 
-    /** Le frontend masque l'envoi de fichier si le serveur n'a pas d'hébergement. */
+    /**
+     * Dit au frontend par quelle voie téléverser.
+     *
+     * Si le serveur détient les identifiants Cloudinary, il signe l'envoi
+     * lui-même — c'est la voie préférée, le secret ne quitte pas le serveur.
+     * Sinon le navigateur téléverse directement via un préréglage non signé,
+     * dont le nom n'est pas un secret. Dans les deux cas l'administrateur choisit
+     * simplement un fichier ; la différence lui est invisible.
+     */
     @GetMapping("/capacites")
     @PreAuthorize("hasAnyRole('ADMIN','DIRECTEUR')")
-    @Operation(summary = "Indique si l'envoi de fichier est disponible")
-    public ResponseEntity<Map<String, Boolean>> capacites() {
-        return ResponseEntity.ok(Map.of("hebergementDisponible", service.hebergementDisponible()));
+    @Operation(summary = "Voie de téléversement disponible")
+    public ResponseEntity<Map<String, Object>> capacites() {
+        return ResponseEntity.ok(Map.of(
+                "hebergementDisponible", service.hebergementDisponible(),
+                "cloudName", service.cloudName(),
+                "uploadPreset", service.uploadPreset(),
+                "dossier", service.dossier()));
+    }
+
+    /**
+     * Enregistre une image que le navigateur vient de déposer sur Cloudinary.
+     * Le serveur vérifie qu'elle appartient bien au compte et au dossier de la
+     * galerie avant de la retenir.
+     */
+    @PostMapping("/televersement")
+    @PreAuthorize("hasAnyRole('ADMIN','DIRECTEUR')")
+    @Operation(summary = "Enregistrer une image téléversée par le navigateur")
+    public ResponseEntity<MediaResidenceResponse> enregistrerTeleversement(
+            @Valid @RequestBody MediaResidenceRequest request) {
+        return ResponseEntity.ok(service.enregistrerTeleversement(request));
     }
 
     @PostMapping(value = "/upload", consumes = "multipart/form-data")

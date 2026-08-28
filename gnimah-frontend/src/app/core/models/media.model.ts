@@ -29,4 +29,21 @@ export interface MediaResidenceRequest {
   position?: number;
   actif?: boolean;
   misEnAvant?: boolean;
+  /** Renseigné uniquement quand le navigateur a téléversé le fichier lui-même. */
+  publicId?: string;
+}
+
+/**
+ * Voie de téléversement annoncée par le serveur.
+ *
+ * `hebergementDisponible` : le serveur détient les clés Cloudinary et signe
+ * l'envoi lui-même. Sinon le navigateur téléverse directement avec le
+ * préréglage non signé — le nom du compte et celui du préréglage ne sont pas
+ * des secrets. Dans les deux cas l'administrateur choisit juste un fichier.
+ */
+export interface CapacitesMedia {
+  hebergementDisponible: boolean;
+  cloudName: string;
+  uploadPreset: string;
+  dossier: string;
 }
