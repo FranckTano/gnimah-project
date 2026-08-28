@@ -1,3 +1,8 @@
+/* Police d'icônes — servie par l'application, pas par un CDN externe :
+   une indisponibilité de celui-ci faisait disparaître toutes les icônes.
+   Sous-ensemble régénéré par scripts/build-icons.mjs avant chaque build. */
+@import "assets/icons/gnimah-icons.css";
+
 /* PrimeNG Icons */
 @import "primeicons/primeicons.css";
 

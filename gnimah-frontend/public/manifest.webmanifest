@@ -1,0 +1,15 @@
+{
+  "name": "Résidence Hôtel GNIMAH — Gestion",
+  "short_name": "GNIMAH",
+  "description": "Gestion administrative de la Résidence Hôtel GNIMAH",
+  "lang": "fr",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ece0d8",
+  "theme_color": "#8c2f4d",
+  "icons": [
+    { "src": "brand/favicon-180.png", "sizes": "180x180", "type": "image/png" },
+    { "src": "brand/favicon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "brand/favicon.svg", "sizes": "any", "type": "image/svg+xml" }
+  ]
+}

@@ -33,8 +33,9 @@
 }
 .gn-hero-brand { display: flex; align-items: center; gap: 14px; position: relative; }
 .gn-hero-logo {
-  width: 56px; height: 56px; border-radius: 16px; background: #9d3654; display: flex; align-items: center;
-  justify-content: center; font-size: 30px; color: #fff; box-shadow: 0 8px 20px rgba(0,0,0,.3);
+  width: 56px; height: 56px; border-radius: 16px; background: #8c2f4d; display: flex; align-items: center;
+  justify-content: center; box-shadow: 0 8px 20px rgba(0,0,0,.3); flex: none;
+  img { width: 46px; height: 46px; display: block; }
 }
 .gn-hero-name { font-size: 24px; letter-spacing: .14em; line-height: 1; }
 .gn-hero-sub { color: #c99aa5; margin-top: 5px; }
@@ -73,6 +74,39 @@
 .gn-field-icon { position: relative; margin: 7px 0 18px; }
 .gn-field-icon i { position: absolute; left: 14px; top: 50%; transform: translateY(-50%); color: #b3a2a6; font-size: 18px; }
 .gn-field-icon .gn-input { padding-left: 42px; }
+
+// ---- Signalement des erreurs -------------------------------------------------
+// Le champ en cause se teinte, et le message se pose juste dessous : le lecteur
+// n'a pas à chercher ailleurs ce qui ne va pas.
+.gn-field-err {
+  .gn-input { border-color: #d0455a; }
+  .gn-input:focus { border-color: #d0455a; box-shadow: 0 0 0 3px rgba(208,69,90,.16); }
+  > i { color: #d0455a; }
+}
+// Le champ mot de passe est rendu par PrimeNG : son `input` porte ses propres
+// styles encapsulés, hors de portée d'un sélecteur descendant classique.
+:host ::ng-deep .gn-field-err .p-password-input {
+  border-color: #d0455a;
+  &:focus { border-color: #d0455a; box-shadow: 0 0 0 3px rgba(208,69,90,.16); }
+}
+.gn-field-msg {
+  display: flex; align-items: flex-start; gap: 6px;
+  margin: -12px 0 16px; font-size: 12.5px; color: #c0394d; line-height: 1.45;
+  i { font-size: 15px; flex: none; margin-top: .5px; }
+}
+
+// Bandeau d'échec de connexion, entre les champs et le bouton.
+.gn-loginerr {
+  display: flex; gap: 11px; align-items: flex-start;
+  background: #fdeef1; border: 1px solid #f3cdd5; border-radius: 14px;
+  padding: 12px 14px; margin-bottom: 18px;
+  animation: gnErr .26s cubic-bezier(.22,1,.36,1);
+
+  > i { font-size: 20px; color: #c0394d; flex: none; margin-top: 1px; }
+  strong { display: block; font-size: 13.5px; color: #9d2437; line-height: 1.35; }
+  span { display: block; font-size: 12.5px; color: #a4616e; margin-top: 3px; line-height: 1.5; }
+}
+@keyframes gnErr { from { opacity: 0; transform: translateY(-4px); } to { opacity: 1; transform: none; } }
 
 .gn-remember-row { display: flex; align-items: center; justify-content: flex-end; margin-bottom: 22px; }
 .gn-forgot { font-size: 13px; color: #8c2f4d; text-decoration: none; cursor: pointer; }

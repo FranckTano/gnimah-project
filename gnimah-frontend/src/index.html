@@ -5,11 +5,20 @@
   <title>Résidence Hôtel GNIMAH — Gestion Administrative</title>
   <base href="/">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <link rel="icon" type="image/x-icon" href="favicon.ico">
+  <!-- Le SVG couvre les navigateurs modernes ; les PNG servent de repli là où
+       il est encore ignoré (Safari, écrans d'accueil mobiles). -->
+  <link rel="icon" type="image/svg+xml" href="brand/favicon.svg">
+  <link rel="icon" type="image/png" sizes="32x32" href="brand/favicon-32.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="brand/favicon-180.png">
+  <link rel="manifest" href="manifest.webmanifest">
+  <meta name="theme-color" content="#8c2f4d">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Newsreader:opsz,wght@6..72,300;6..72,400;6..72,500;6..72,600&family=DM+Sans:wght@400;500;600;700&display=swap">
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.31.0/dist/tabler-icons.min.css">
+  <!-- Les icônes venaient de cdn.jsdelivr.net. Ce CDN étant inaccessible sur
+       certains réseaux, toute l'interface se retrouvait sans icônes : boutons
+       vides, cloche invisible. Elles sont désormais servies par l'application
+       (voir styles.scss et scripts/build-icons.mjs). -->
 </head>
 <body>
   <app-root></app-root>

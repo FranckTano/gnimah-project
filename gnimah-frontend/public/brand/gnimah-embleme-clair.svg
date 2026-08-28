@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" role="img" aria-label="Emblème GNIMAH Hôtel">
+  <g color="#e8c65c">
+    <path d="M 40.14 68.54 A 21 21 0 0 1 37.07 33.45" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"/>
+    <ellipse cx="38.64" cy="71.37" rx="3.60" ry="1.66" transform="rotate(152.0 38.64 71.37)" fill="currentColor"/>
+    <ellipse cx="32.30" cy="66.50" rx="3.37" ry="1.55" transform="rotate(171.0 32.30 66.50)" fill="currentColor"/>
+    <ellipse cx="27.89" cy="59.84" rx="3.13" ry="1.44" transform="rotate(190.0 27.89 59.84)" fill="currentColor"/>
+    <ellipse cx="25.89" cy="52.11" rx="2.90" ry="1.33" transform="rotate(209.0 25.89 52.11)" fill="currentColor"/>
+    <ellipse cx="26.52" cy="44.15" rx="2.67" ry="1.23" transform="rotate(228.0 26.52 44.15)" fill="currentColor"/>
+    <ellipse cx="29.70" cy="36.82" rx="2.43" ry="1.12" transform="rotate(247.0 29.70 36.82)" fill="currentColor"/>
+    <ellipse cx="35.10" cy="30.93" rx="2.20" ry="1.01" transform="rotate(266.0 35.10 30.93)" fill="currentColor"/>
+    <path d="M 59.86 68.54 A 21 21 0 0 0 62.93 33.45" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"/>
+    <ellipse cx="61.36" cy="71.37" rx="3.60" ry="1.66" transform="rotate(28.0 61.36 71.37)" fill="currentColor"/>
+    <ellipse cx="67.70" cy="66.50" rx="3.37" ry="1.55" transform="rotate(9.0 67.70 66.50)" fill="currentColor"/>
+    <ellipse cx="72.11" cy="59.84" rx="3.13" ry="1.44" transform="rotate(-10.0 72.11 59.84)" fill="currentColor"/>
+    <ellipse cx="74.11" cy="52.11" rx="2.90" ry="1.33" transform="rotate(-29.0 74.11 52.11)" fill="currentColor"/>
+    <ellipse cx="73.48" cy="44.15" rx="2.67" ry="1.23" transform="rotate(-48.0 73.48 44.15)" fill="currentColor"/>
+    <ellipse cx="70.30" cy="36.82" rx="2.43" ry="1.12" transform="rotate(-67.0 70.30 36.82)" fill="currentColor"/>
+    <ellipse cx="64.90" cy="30.93" rx="2.20" ry="1.01" transform="rotate(-86.0 64.90 30.93)" fill="currentColor"/>
+    <circle cx="50" cy="50" r="13.6" fill="none" stroke="currentColor" stroke-width="2"/>
+    <text x="50" y="54.8" text-anchor="middle" fill="currentColor"
+          font-family="Newsreader, Georgia, 'Times New Roman', serif" font-size="14" font-weight="700"
+          letter-spacing="0.4">GH</text>
+  </g>
+</svg>

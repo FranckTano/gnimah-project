@@ -3,7 +3,10 @@
   "version": "0.0.0",
   "scripts": {
     "ng": "ng",
+    "icons": "node scripts/build-icons.mjs",
+    "prestart": "node scripts/build-icons.mjs",
     "start": "ng serve",
+    "prebuild": "node scripts/build-icons.mjs",
     "build": "ng build",
     "watch": "ng build --watch --configuration development",
     "test": "ng test",
@@ -20,6 +23,7 @@
     "@angular/platform-browser-dynamic": "^19.2.0",
     "@angular/router": "^19.2.0",
     "@primeng/themes": "^19.1.4",
+    "@tabler/icons-webfont": "^3.31.0",
     "chart.js": "^4.5.1",
     "primeicons": "^7.0.0",
     "primeng": "^19.1.4",
@@ -39,6 +43,7 @@
     "karma-coverage": "~2.2.0",
     "karma-jasmine": "~5.1.0",
     "karma-jasmine-html-reporter": "~2.1.0",
+    "subset-font": "^2.6.0",
     "typescript": "~5.7.2"
   }
 }

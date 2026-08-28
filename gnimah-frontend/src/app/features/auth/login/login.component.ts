@@ -75,17 +75,118 @@ export class LoginComponent implements OnInit, OnDestroy {
     if (this.rotation) clearInterval(this.rotation);
   }
 
+  /**
+   * Traduit la réponse du serveur en message actionnable.
+   *
+   * Le backend répond volontairement « Identifiants invalides » sans préciser
+   * si c'est l'identifiant ou le mot de passe : le distinguer confirmerait
+   * quels comptes existent. On garde ce principe, en le formulant clairement.
+   */
+  private messageErreur(err: any): { titre: string; detail: string; icone: string } {
+    const statut = err?.status;
+
+    if (statut === 0) {
+      return {
+        titre: 'Serveur injoignable',
+        detail: "Vérifiez votre connexion internet, puis réessayez.",
+        icone: 'ti-wifi-off'
+      };
+    }
+    if (statut === 401) {
+      return {
+        titre: 'Nom d’utilisateur ou mot de passe incorrect',
+        detail: "Vérifiez votre saisie. Attention aux majuscules et aux espaces.",
+        icone: 'ti-lock-exclamation'
+      };
+    }
+    if (statut === 403) {
+      return {
+        titre: 'Accès refusé',
+        detail: "Ce compte n'est pas autorisé à se connecter. Contactez un administrateur.",
+        icone: 'ti-shield-x'
+      };
+    }
+    if (statut === 429) {
+      // Le RateLimitFilter bloque après 10 tentatives sur 5 minutes.
+      return {
+        titre: 'Trop de tentatives',
+        detail: err?.error?.message || 'Patientez quelques minutes avant de réessayer.',
+        icone: 'ti-clock-exclamation'
+      };
+    }
+    if (statut === 400 && err?.error?.errors) {
+      // Le serveur renvoie ses erreurs par champ : on les pose sur les champs.
+      const champs = err.error.errors as Record<string, string>;
+      Object.entries(champs).forEach(([nom, message]) => {
+        this.form.get(nom)?.setErrors({ serveur: message });
+      });
+      return {
+        titre: 'Formulaire incomplet',
+        detail: 'Corrigez les champs signalés ci-dessus.',
+        icone: 'ti-alert-circle'
+      };
+    }
+    if (statut >= 500) {
+      return {
+        titre: 'Le serveur a rencontré un problème',
+        detail: 'Réessayez dans un instant. Si cela persiste, prévenez un administrateur.',
+        icone: 'ti-server-off'
+      };
+    }
+    return {
+      titre: 'Connexion impossible',
+      detail: err?.error?.message || 'Une erreur inattendue est survenue.',
+      icone: 'ti-alert-circle'
+    };
+  }
+
+  /** Toute frappe efface l'erreur : elle ne concerne plus la saisie en cours. */
+  effacerErreur(): void {
+    if (this.erreur || this.champsEnCause) {
+      this.erreur = null;
+      this.champsEnCause = false;
+    }
+  }
+
+  /** Message à afficher sous un champ, ou null s'il n'y a rien à signaler. */
+  erreurChamp(nom: 'username' | 'password'): string | null {
+    const c = this.form.get(nom);
+    if (!c || !c.errors || !(c.dirty || c.touched)) return null;
+    if (c.errors['serveur']) return c.errors['serveur'];
+    if (c.errors['required']) {
+      return nom === 'username' ? 'Saisissez votre identifiant.' : 'Saisissez votre mot de passe.';
+    }
+    return null;
+  }
+
+  /**
+   * Erreur d'authentification affichée sous le formulaire. Un bandeau à cet
+   * endroit se lit sans quitter les champs des yeux, là où une notification
+   * flottante disparaît avant d'être lue et laisse l'utilisateur sans indice.
+   */
+  erreur: { titre: string; detail: string; icone: string } | null = null;
+
+  /** Passe les deux champs en rouge : le serveur ne dit pas lequel est en cause. */
+  champsEnCause = false;
+
   onSubmit(): void {
+    // Marque les champs pour que leurs messages « obligatoire » apparaissent
+    // au lieu d'un formulaire qui ne réagit pas au clic.
+    this.form.markAllAsTouched();
     if (this.form.invalid) return;
+
     this.loading = true;
+    this.erreur = null;
+    this.champsEnCause = false;
+
     this.authService.login(this.form.value).subscribe({
       next: () => {
         this.router.navigate(['/dashboard']);
       },
       error: (err) => {
         this.loading = false;
-        const msg = err?.error?.message || 'Identifiants invalides';
-        this.messageService.add({ severity: 'error', summary: 'Erreur', detail: msg });
+        this.erreur = this.messageErreur(err);
+        this.champsEnCause = err?.status === 401;
       }
     });
   }

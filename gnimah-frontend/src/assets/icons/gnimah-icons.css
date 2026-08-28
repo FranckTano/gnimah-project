@@ -1,0 +1,106 @@
+/* Police d'icônes réduite — générée par scripts/build-icons.mjs, ne pas éditer.
+ * 84 icônes retenues sur 5936 disponibles.
+ * Servie par l'application : aucune dépendance à un CDN externe, dont
+ * l'indisponibilité ferait disparaître toutes les icônes de l'interface. */
+@font-face {
+  font-family: "tabler-icons";
+  font-style: normal;
+  font-weight: 400;
+  font-display: block;
+  src: url("./gnimah-icons.woff2") format("woff2");
+}
+.ti {
+  font-family: "tabler-icons" !important;
+  font-style: normal;
+  font-weight: normal !important;
+  font-variant: normal;
+  text-transform: none;
+  line-height: 1;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  display: inline-block;
+}
+.ti-alert-circle:before { content: "\ea05"; }
+.ti-alert-triangle:before { content: "\ea06"; }
+.ti-arrow-down:before { content: "\ea16"; }
+.ti-arrow-left:before { content: "\ea19"; }
+.ti-arrow-narrow-right:before { content: "\ea1c"; }
+.ti-arrow-up:before { content: "\ea25"; }
+.ti-ban:before { content: "\ea2e"; }
+.ti-bed:before { content: "\eb5c"; }
+.ti-bell:before { content: "\ea35"; }
+.ti-building:before { content: "\ea4f"; }
+.ti-building-arch:before { content: "\ea49"; }
+.ti-calendar-check:before { content: "\f824"; }
+.ti-calendar-event:before { content: "\ea52"; }
+.ti-calendar-off:before { content: "\ee1f"; }
+.ti-calendar-plus:before { content: "\ebba"; }
+.ti-calendar-x:before { content: "\f832"; }
+.ti-camera:before { content: "\ea54"; }
+.ti-camera-plus:before { content: "\ec3b"; }
+.ti-cash-off:before { content: "\f105"; }
+.ti-chart-area-line:before { content: "\ea57"; }
+.ti-chart-line:before { content: "\ea5c"; }
+.ti-check:before { content: "\ea5e"; }
+.ti-checks:before { content: "\ebaa"; }
+.ti-chevron-left:before { content: "\ea60"; }
+.ti-chevron-right:before { content: "\ea61"; }
+.ti-circle-check:before { content: "\ea67"; }
+.ti-clipboard-list:before { content: "\ea6d"; }
+.ti-clock:before { content: "\ea70"; }
+.ti-clock-exclamation:before { content: "\f847"; }
+.ti-cloud-off:before { content: "\ed3e"; }
+.ti-cloud-upload:before { content: "\ea75"; }
+.ti-door:before { content: "\ef4e"; }
+.ti-door-enter:before { content: "\ef4c"; }
+.ti-door-exit:before { content: "\ef4d"; }
+.ti-eye:before { content: "\ea9a"; }
+.ti-eye-off:before { content: "\ecf0"; }
+.ti-file-type-pdf:before { content: "\fb10"; }
+.ti-filter-x:before { content: "\fa04"; }
+.ti-heart-handshake:before { content: "\f0f3"; }
+.ti-layout-dashboard:before { content: "\f02c"; }
+.ti-layout-grid:before { content: "\edba"; }
+.ti-link:before { content: "\eade"; }
+.ti-loader-2:before { content: "\f226"; }
+.ti-lock:before { content: "\eae2"; }
+.ti-lock-exclamation:before { content: "\f92b"; }
+.ti-login-2:before { content: "\fc76"; }
+.ti-logout-2:before { content: "\fa7e"; }
+.ti-map-pin:before { content: "\eae8"; }
+.ti-maximize:before { content: "\eaea"; }
+.ti-menu-2:before { content: "\ec42"; }
+.ti-mood-empty:before { content: "\eeb5"; }
+.ti-moon:before { content: "\eaf8"; }
+.ti-pencil:before { content: "\eb04"; }
+.ti-photo:before { content: "\eb0a"; }
+.ti-photo-cog:before { content: "\f992"; }
+.ti-photo-off:before { content: "\ecf6"; }
+.ti-photo-plus:before { content: "\f363"; }
+.ti-plane-arrival:before { content: "\eb99"; }
+.ti-plane-departure:before { content: "\eb9a"; }
+.ti-player-play:before { content: "\ed46"; }
+.ti-player-play-filled:before { content: "\f691"; }
+.ti-plus:before { content: "\eb0b"; }
+.ti-printer:before { content: "\eb0e"; }
+.ti-receipt:before { content: "\edfd"; }
+.ti-receipt-2:before { content: "\edfa"; }
+.ti-refresh:before { content: "\eb13"; }
+.ti-rotate-clockwise:before { content: "\eb15"; }
+.ti-search:before { content: "\eb1c"; }
+.ti-server-off:before { content: "\f19e"; }
+.ti-shield-lock:before { content: "\ed58"; }
+.ti-shield-x:before { content: "\eb23"; }
+.ti-spray:before { content: "\f50b"; }
+.ti-star-filled:before { content: "\f6a6"; }
+.ti-table:before { content: "\eba1"; }
+.ti-tool:before { content: "\eb40"; }
+.ti-trash:before { content: "\eb41"; }
+.ti-user:before { content: "\eb4d"; }
+.ti-user-off:before { content: "\ecf9"; }
+.ti-user-plus:before { content: "\eb4b"; }
+.ti-user-x:before { content: "\eb4c"; }
+.ti-users:before { content: "\ebf2"; }
+.ti-wifi:before { content: "\eb52"; }
+.ti-wifi-off:before { content: "\ecfa"; }
+.ti-x:before { content: "\eb55"; }

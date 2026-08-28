@@ -18,7 +18,9 @@ test.describe('Connexion', () => {
     await page.locator('input[placeholder="Mot de passe"]').fill('mauvais-mot-de-passe');
     await page.getByRole('button', { name: 'Se connecter' }).click();
 
-    await expect(page.locator('.p-toast-message-error, .p-toast-message')).toBeVisible();
+    // Le message s'affiche sous le formulaire, là où le regard revient après la
+    // saisie — une notification flottante disparaissait avant d'être lue.
+    await expect(page.locator('.gn-loginerr')).toBeVisible();
     await expect(page).toHaveURL(/\/login/);
   });
 

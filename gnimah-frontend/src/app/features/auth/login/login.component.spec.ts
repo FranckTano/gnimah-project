@@ -77,15 +77,69 @@ describe('LoginComponent', () => {
     expect(routerSpy.navigate).toHaveBeenCalledWith(['/dashboard']);
   });
 
-  it('shows an error toast and stops loading when login fails', () => {
-    authServiceSpy.login.and.returnValue(throwError(() => ({ error: { message: 'Identifiants invalides' } })));
+  // L'échec de connexion s'affiche désormais sous le formulaire, et non plus dans
+  // une notification flottante : celle-ci disparaissait avant d'être lue.
+  it('affiche un message sous le formulaire et arrête le chargement quand la connexion échoue', () => {
+    authServiceSpy.login.and.returnValue(
+      throwError(() => ({ status: 401, error: { message: 'Identifiants invalides' } })));
     component.form.setValue({ username: 'agent', password: 'wrong' });
 
     component.onSubmit();
 
     expect(component.loading).toBeFalse();
-    expect(messageServiceSpy.add).toHaveBeenCalledWith(jasmine.objectContaining({ severity: 'error' }));
+    expect(component.erreur?.titre).toContain('incorrect');
+    // Les deux champs sont signalés : le serveur ne dit pas lequel est en cause.
+    expect(component.champsEnCause).toBeTrue();
     expect(routerSpy.navigate).not.toHaveBeenCalledWith(['/dashboard']);
+  });
+
+  it('distingue les causes d\'échec pour guider l\'utilisateur', () => {
+    const cas: { statut: number; attendu: string }[] = [
+      { statut: 0, attendu: 'injoignable' },
+      { statut: 403, attendu: 'refusé' },
+      { statut: 429, attendu: 'tentatives' },
+      { statut: 503, attendu: 'serveur' }
+    ];
+    for (const c of cas) {
+      component.form.setValue({ username: 'agent', password: 'x' });
+      authServiceSpy.login.and.returnValue(throwError(() => ({ status: c.statut, error: {} })));
+      component.onSubmit();
+      expect(component.erreur?.titre.toLowerCase()).toContain(c.attendu, `statut ${c.statut}`);
+    }
+  });
+
+  it('reporte les erreurs de validation du serveur sur les champs concernés', () => {
+    authServiceSpy.login.and.returnValue(throwError(() => ({
+      status: 400,
+      error: { errors: { username: "Le nom d'utilisateur est requis" } }
+    })));
+    component.form.setValue({ username: 'agent', password: 'x' });
+
+    component.onSubmit();
+
+    expect(component.erreurChamp('username')).toBe("Le nom d'utilisateur est requis");
+  });
+
+  it('efface le message dès que la saisie reprend', () => {
+    authServiceSpy.login.and.returnValue(throwError(() => ({ status: 401, error: {} })));
+    component.form.setValue({ username: 'agent', password: 'wrong' });
+    component.onSubmit();
+    expect(component.erreur).not.toBeNull();
+
+    component.effacerErreur();
+
+    expect(component.erreur).toBeNull();
+    expect(component.champsEnCause).toBeFalse();
+  });
+
+  it('signale les champs obligatoires plutôt que de rester inerte au clic', () => {
+    component.form.setValue({ username: '', password: '' });
+
+    component.onSubmit();
+
+    expect(authServiceSpy.login).not.toHaveBeenCalled();
+    expect(component.erreurChamp('username')).toContain('identifiant');
+    expect(component.erreurChamp('password')).toContain('mot de passe');
   });
 
   it('opens the forgot-password dialog with a reset form', () => {

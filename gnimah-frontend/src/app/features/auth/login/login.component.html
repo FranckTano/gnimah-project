@@ -10,7 +10,7 @@
     <div class="gn-hero-veil" aria-hidden="true"></div>
     <div class="gn-hero-glow"></div>
     <div class="gn-hero-brand">
-      <div class="gn-hero-logo gn-serif">G</div>
+      <div class="gn-hero-logo"><img src="brand/gnimah-embleme-clair.svg" alt="" aria-hidden="true" /></div>
       <div>
         <div class="gn-serif gn-hero-name">GNIMAH</div>
         <div class="gn-slabel gn-hero-sub">Résidence Hôtelière</div>
@@ -44,26 +44,50 @@
       <h2 class="gn-serif gn-welcome">Bienvenue</h2>
       <p class="gn-welcome-sub">Connectez-vous à votre espace de gestion.</p>
 
-      <form [formGroup]="form" (ngSubmit)="onSubmit()">
-        <label class="gn-flabel">Identifiant</label>
-        <div class="gn-field-icon">
+      <!-- `novalidate` : les bulles natives du navigateur sont en anglais et mal
+           placées ; la validation est portée par les messages ci-dessous. -->
+      <form [formGroup]="form" (ngSubmit)="onSubmit()" novalidate>
+        <label class="gn-flabel" for="champ-identifiant">Identifiant</label>
+        <div class="gn-field-icon" [class.gn-field-err]="erreurChamp('username') || champsEnCause">
           <i class="ti ti-user"></i>
-          <input class="gn-input" formControlName="username" placeholder="Nom d'utilisateur" autocomplete="username" />
+          <input id="champ-identifiant" class="gn-input" formControlName="username"
+                 placeholder="Nom d'utilisateur" autocomplete="username"
+                 (input)="effacerErreur()"
+                 [attr.aria-invalid]="(erreurChamp('username') || champsEnCause) ? 'true' : null"
+                 [attr.aria-describedby]="erreurChamp('username') ? 'err-identifiant' : null" />
+        </div>
+        <div class="gn-field-msg" id="err-identifiant" *ngIf="erreurChamp('username')">
+          <i class="ti ti-alert-circle"></i>{{ erreurChamp('username') }}
         </div>
 
-        <label class="gn-flabel">Mot de passe</label>
-        <div class="gn-field-icon">
+        <label class="gn-flabel" for="champ-motdepasse">Mot de passe</label>
+        <div class="gn-field-icon" [class.gn-field-err]="erreurChamp('password') || champsEnCause">
           <i class="ti ti-lock"></i>
-          <p-password formControlName="password" placeholder="Mot de passe" [toggleMask]="true" [feedback]="false" inputStyleClass="gn-input" autocomplete="current-password" />
+          <p-password inputId="champ-motdepasse" formControlName="password" placeholder="Mot de passe"
+                      [toggleMask]="true" [feedback]="false" inputStyleClass="gn-input"
+                      autocomplete="current-password" (input)="effacerErreur()" />
+        </div>
+        <div class="gn-field-msg" *ngIf="erreurChamp('password')">
+          <i class="ti ti-alert-circle"></i>{{ erreurChamp('password') }}
+        </div>
+
+        <!-- Bandeau d'échec : sous les champs, là où le regard revient après la
+             saisie. `role=alert` le fait annoncer par les lecteurs d'écran. -->
+        <div class="gn-loginerr" *ngIf="erreur" role="alert">
+          <i class="ti" [ngClass]="erreur.icone"></i>
+          <div>
+            <strong>{{ erreur.titre }}</strong>
+            <span>{{ erreur.detail }}</span>
+          </div>
         </div>
 
         <div class="gn-remember-row">
           <a href="javascript:void(0)" class="gn-forgot" (click)="openForgotDialog()">Mot de passe oublié ?</a>
         </div>
 
-        <button type="submit" class="gn-btn-p gn-submit" [disabled]="form.invalid || loading">
+        <button type="submit" class="gn-btn-p gn-submit" [disabled]="loading">
           <i class="ti ti-loader-2 gn-spin" *ngIf="loading"></i>
-          <span>Se connecter</span>
+          <span>{{ loading ? 'Connexion…' : 'Se connecter' }}</span>
         </button>
       </form>
     </div>
