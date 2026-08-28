@@ -3,13 +3,33 @@
 .gn-login { display: grid; grid-template-columns: 1.05fr .95fr; min-height: 100vh; }
 
 .gn-login-hero {
-  position: relative; overflow: hidden;
-  background: radial-gradient(120% 90% at 76% 22%, #7c2942 0%, #3c1b23 46%, #1c0e12 100%);
+  position: relative; overflow: hidden; background: #1c0e12;
   color: #efdce0; padding: 56px 60px; display: flex; flex-direction: column;
+}
+
+// Diaporama : les photos se croisent en fondu, sans jamais bouger la mise en page.
+.gn-hero-shots { position: absolute; inset: 0; }
+.gn-hero-shot {
+  position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover;
+  opacity: 0; transition: opacity 1.6s ease-in-out, transform 9s ease-out;
+  transform: scale(1.06);
+}
+.gn-hero-shot.on { opacity: 1; transform: scale(1); }
+
+// Voile bordeaux. Tout le texte du panneau est aligné à gauche : on assombrit
+// donc en priorité ce côté et on laisse la droite respirer, pour que la photo
+// reste visible sans jamais coûter en lisibilité — y compris sur les clichés
+// très clairs (chambres blanches) où un voile uniforme les effacerait.
+.gn-hero-veil {
+  position: absolute; inset: 0;
+  background:
+    linear-gradient(90deg, rgba(20,9,12,.88) 0%, rgba(23,10,14,.72) 38%, rgba(30,13,18,.38) 100%),
+    linear-gradient(180deg, rgba(22,10,14,.44) 0%, rgba(22,10,14,.18) 38%, rgba(18,8,11,.74) 100%),
+    radial-gradient(130% 100% at 80% 22%, rgba(124,41,66,.42) 0%, rgba(46,20,27,.30) 52%, rgba(18,8,11,.44) 100%);
 }
 .gn-hero-glow {
   position: absolute; width: 380px; height: 380px; border-radius: 50%; right: -90px; top: -60px;
-  background: radial-gradient(circle, rgba(199,106,132,.34), transparent 70%);
+  background: radial-gradient(circle, rgba(212,124,150,.30), transparent 70%);
 }
 .gn-hero-brand { display: flex; align-items: center; gap: 14px; position: relative; }
 .gn-hero-logo {
@@ -27,7 +47,22 @@
 .gn-hero-sep { width: 1px; background: rgba(199,106,132,.35); }
 .gn-stat-val { font-size: 30px; }
 .gn-stat-lbl { color: #bd8894; margin-top: 3px; }
-.gn-hero-addr { margin-top: 26px; font-size: 12.5px; color: #9c7079; position: relative; }
+.gn-hero-foot {
+  margin-top: 26px; position: relative; display: flex; align-items: center;
+  justify-content: space-between; gap: 16px; flex-wrap: wrap;
+}
+.gn-hero-addr { font-size: 12.5px; color: #c49aa4; }
+.gn-hero-caption {
+  display: inline-flex; align-items: center; gap: 8px; font-size: 11.5px; color: #cba3ad;
+  background: rgba(255,255,255,.07); border-radius: 100px; padding: 6px 13px;
+  i.ti-camera { font-size: 14px; opacity: .8; }
+}
+.gn-hero-dots { display: inline-flex; gap: 5px; margin-left: 4px; }
+.gn-hero-dot {
+  width: 5px; height: 5px; border-radius: 50%; background: rgba(233,205,212,.34);
+  transition: background .4s, width .4s;
+}
+.gn-hero-dot.on { background: #e6c2cb; width: 14px; border-radius: 3px; }
 
 .gn-login-formwrap { display: flex; align-items: center; justify-content: center; padding: 44px 34px; }
 .gn-login-form { width: 100%; max-width: 360px; }

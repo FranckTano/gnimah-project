@@ -111,6 +111,7 @@ export class LayoutComponent implements OnInit, OnDestroy {
     if (isDirecteur) {
       general.push({ label: 'Statistiques & KPI', icon: 'ti-chart-line', link: '/kpi' });
     }
+    general.push({ label: 'La Résidence', icon: 'ti-building-arch', link: '/residence' });
 
     const operations: NavItem[] = [
       { label: 'Enregistrement', icon: 'ti-login-2', link: '/sejours/check-in' },

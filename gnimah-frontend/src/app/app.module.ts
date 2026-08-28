@@ -63,6 +63,7 @@ import { DatePickerModule } from 'primeng/datepicker';
 // Feature components
 import { LoginComponent } from './features/auth/login/login.component';
 import { LayoutComponent } from './shared/components/layout/layout.component';
+import { PeriodeFiltreComponent } from './shared/components/periode-filtre/periode-filtre.component';
 import { DashboardComponent } from './features/dashboard/dashboard.component';
 import { ClientListComponent } from './features/clients/list/client-list.component';
 import { ChambrePlanComponent } from './features/chambres/plan/chambre-plan.component';
@@ -75,6 +76,7 @@ import { PaiementsComponent } from './features/paiements/paiements.component';
 import { EntretienComponent } from './features/entretien/entretien.component';
 import { EvenementsComponent } from './features/evenements/evenements.component';
 import { KpiComponent } from './features/kpi/kpi.component';
+import { ResidenceComponent } from './features/residence/residence.component';
 import { UtilisateursComponent } from './features/administration/utilisateurs/utilisateurs.component';
 
 @NgModule({
@@ -82,6 +84,7 @@ import { UtilisateursComponent } from './features/administration/utilisateurs/ut
     AppComponent,
     LoginComponent,
     LayoutComponent,
+    PeriodeFiltreComponent,
     DashboardComponent,
     ClientListComponent,
     ChambrePlanComponent,
@@ -94,6 +97,7 @@ import { UtilisateursComponent } from './features/administration/utilisateurs/ut
     EntretienComponent,
     EvenementsComponent,
     KpiComponent,
+    ResidenceComponent,
     UtilisateursComponent
   ],
   imports: [

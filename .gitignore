@@ -31,3 +31,9 @@ gnimah-backend/src/main/resources/application-local.yml
 
 # Logs
 *.log
+
+# Médias sources (originaux lourds : photos brutes + rush vidéo de 177 Mo).
+# Les versions optimisées et servies par l'app vivent dans
+# gnimah-frontend/public/media/ et sont, elles, versionnées.
+/images/
+/video/

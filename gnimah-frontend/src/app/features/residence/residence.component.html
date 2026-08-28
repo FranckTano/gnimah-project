@@ -1,0 +1,107 @@
+<div class="gn-route">
+
+  <!-- ============ VIDÉO DE PRÉSENTATION ============ -->
+  <section class="gn-card r-video">
+    <!-- Tant que le lecteur n'est pas lancé, on n'affiche que l'affiche : la vidéo
+         ne se télécharge qu'au clic (`preload="none"`). -->
+    <div class="r-video-poster" *ngIf="!videoLancee" (click)="lancerVideo()">
+      <img [src]="video.poster" alt="" aria-hidden="true" />
+      <div class="r-video-scrim"></div>
+      <div class="r-video-body">
+        <div class="gn-slabel r-video-kicker">Résidence Hôtel GNIMAH</div>
+        <h2 class="gn-serif r-video-title">{{ video.titre }}</h2>
+        <p class="r-video-text">
+          Un tour complet de l'établissement : chambres climatisées, salle de restauration,
+          espaces communs et équipements.
+        </p>
+        <button class="r-play" type="button" (click)="lancerVideo()" aria-label="Lire la vidéo de présentation">
+          <i class="ti ti-player-play-filled"></i>
+          <span>Lire la vidéo<em>{{ video.duree }}</em></span>
+        </button>
+      </div>
+    </div>
+
+    <video *ngIf="videoLancee" class="r-video-el" controls autoplay playsinline
+           preload="none" [poster]="video.poster" [src]="video.src">
+      Votre navigateur ne prend pas en charge la lecture vidéo.
+    </video>
+  </section>
+
+  <!-- ============ REPÈRES ============ -->
+  <div class="r-facts">
+    <div class="gn-card r-fact">
+      <div class="gn-tile wine"><i class="ti ti-door"></i></div>
+      <div>
+        <div class="gn-serif r-fact-v">{{ totalChambres ?? '—' }}</div>
+        <div class="r-fact-l">Chambres climatisées</div>
+      </div>
+    </div>
+    <div class="gn-card r-fact">
+      <div class="gn-tile brown"><i class="ti ti-photo"></i></div>
+      <div>
+        <div class="gn-serif r-fact-v">{{ photos.length }}</div>
+        <div class="r-fact-l">Photos de l'établissement</div>
+      </div>
+    </div>
+    <div class="gn-card r-fact">
+      <div class="gn-tile gold"><i class="ti ti-wifi"></i></div>
+      <div>
+        <div class="gn-serif r-fact-v">Wifi</div>
+        <div class="r-fact-l">Dans tout l'établissement</div>
+      </div>
+    </div>
+    <div class="gn-card r-fact">
+      <div class="gn-tile green"><i class="ti ti-map-pin"></i></div>
+      <div>
+        <div class="gn-serif r-fact-v">Abobo</div>
+        <div class="r-fact-l">Baoulé 1<sup>ère</sup> extension</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ ALBUM PHOTO ============ -->
+  <section class="gn-card r-gallery">
+    <div class="r-gal-head">
+      <div>
+        <div class="gn-serif r-gal-t">Album photo</div>
+        <div class="r-gal-s">Cliquez sur une photo pour l'agrandir</div>
+      </div>
+      <div class="r-chips">
+        <button *ngFor="let c of categories" class="gn-chip" [class.on]="categorieActive === c"
+                (click)="choisirCategorie(c)">
+          {{ c }}<span class="r-chip-n">{{ compte(c) }}</span>
+        </button>
+      </div>
+    </div>
+
+    <div class="r-grid">
+      <button *ngFor="let p of photosFiltrees; let i = index" class="r-thumb" type="button"
+              (click)="ouvrir(i)" [attr.aria-label]="'Agrandir : ' + p.titre">
+        <img [src]="p.thumb" [alt]="p.titre" loading="lazy" />
+        <span class="r-thumb-cap">
+          <span class="r-thumb-t">{{ p.titre }}</span>
+          <span class="r-thumb-c">{{ p.categorie }}</span>
+        </span>
+        <span class="r-thumb-zoom"><i class="ti ti-maximize"></i></span>
+      </button>
+    </div>
+  </section>
+</div>
+
+<!-- ============ VISIONNEUSE ============ -->
+<div class="r-lb" *ngIf="photoVisionneuse" (click)="fermer()" role="dialog" aria-modal="true">
+  <button class="r-lb-close" type="button" (click)="fermer()" aria-label="Fermer"><i class="ti ti-x"></i></button>
+  <button class="r-lb-nav r-lb-prev" type="button" (click)="naviguer(-1, $event)" aria-label="Photo précédente">
+    <i class="ti ti-chevron-left"></i>
+  </button>
+  <figure class="r-lb-fig" (click)="$event.stopPropagation()">
+    <img [src]="photoVisionneuse.src" [alt]="photoVisionneuse.titre" />
+    <figcaption>
+      <span class="r-lb-t">{{ photoVisionneuse.titre }}</span>
+      <span class="r-lb-c">{{ photoVisionneuse.categorie }} · {{ indexVisionneuse + 1 }} / {{ photosFiltrees.length }}</span>
+    </figcaption>
+  </figure>
+  <button class="r-lb-nav r-lb-next" type="button" (click)="naviguer(1, $event)" aria-label="Photo suivante">
+    <i class="ti ti-chevron-right"></i>
+  </button>
+</div>

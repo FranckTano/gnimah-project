@@ -40,6 +40,15 @@
   [draggable]="false"
 >
   <div *ngIf="selectedChambre" class="chambre-detail">
+    <figure class="cp-shot">
+      <img [src]="visuel(selectedChambre)" [alt]="'Chambre ' + selectedChambre.numero" />
+      <figcaption>
+        <span class="gn-bdg" [ngClass]="stateTone(selectedChambre.etat) === 'c-green' ? 'green' : stateTone(selectedChambre.etat) === 'c-wine' ? 'wine' : stateTone(selectedChambre.etat) === 'c-amber' ? 'amber' : stateTone(selectedChambre.etat) === 'c-slate' ? 'slate' : 'gray'">
+          {{ etatLabels[selectedChambre.etat] }}
+        </span>
+      </figcaption>
+    </figure>
+
     <div class="detail-grid">
       <div class="detail-item"><label>Numéro</label><span class="font-bold">{{ selectedChambre.numero }}</span></div>
       <div class="detail-item"><label>Type</label><span>{{ selectedChambre.type }}</span></div>

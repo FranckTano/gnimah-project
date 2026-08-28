@@ -15,6 +15,7 @@ import { PaiementsComponent } from './features/paiements/paiements.component';
 import { EntretienComponent } from './features/entretien/entretien.component';
 import { EvenementsComponent } from './features/evenements/evenements.component';
 import { KpiComponent } from './features/kpi/kpi.component';
+import { ResidenceComponent } from './features/residence/residence.component';
 import { UtilisateursComponent } from './features/administration/utilisateurs/utilisateurs.component';
 
 const routes: Routes = [
@@ -26,6 +27,7 @@ const routes: Routes = [
     children: [
       { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
       { path: 'dashboard', component: DashboardComponent },
+      { path: 'residence', component: ResidenceComponent },
       { path: 'clients', component: ClientListComponent },
       { path: 'chambres', component: ChambrePlanComponent },
       { path: 'chambres/liste', component: ChambreListComponent },

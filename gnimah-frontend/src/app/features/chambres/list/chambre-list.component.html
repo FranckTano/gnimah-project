@@ -38,8 +38,13 @@
         <tbody>
           <tr class="gn-rowh" *ngFor="let c of filtered" [style.opacity]="c.actif ? 1 : .5">
             <td>
-              <div class="gn-serif" style="font-size:18px;color:#33262a;">{{ c.nom || c.numero }}</div>
-              <div style="font-size:12px;color:#a99a9d;">{{ c.nom ? c.numero + ' · ' : '' }}{{ c.type }}</div>
+              <div class="cl-ident">
+                <img class="cl-thumb" [src]="visuel(c)" [alt]="'Chambre ' + c.numero" loading="lazy" />
+                <div>
+                  <div class="gn-serif" style="font-size:18px;color:#33262a;">{{ c.nom || c.numero }}</div>
+                  <div style="font-size:12px;color:#a99a9d;">{{ c.nom ? c.numero + ' · ' : '' }}{{ c.type }}</div>
+                </div>
+              </div>
             </td>
             <td style="font-size:13.5px;color:#6d585d;">{{ floorLabel(c.etage) }}</td>
             <td style="font-size:13.5px;color:#6d585d;">{{ c.capacite }} pers.<span *ngIf="c.vue"> · vue {{ c.vue | lowercase }}</span></td>

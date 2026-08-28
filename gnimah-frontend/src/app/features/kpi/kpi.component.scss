@@ -1,1 +1,160 @@
-// KPI page uses shared .gn-* classes from src/styles.scss
+// Page KPI — s'appuie sur les classes .gn-* globales et n'ajoute que ce qui
+// lui est propre. Habillage discret, données au premier plan.
+
+$surface: #fff;
+$grille: #f2e8e4;
+$encre: #2e2024;
+$encre2: #6d585d;
+$discret: #a99a9d;
+$wine: #8c2f4d;
+
+// ---------- Bandeau d'en-tête (sur .gn-band du système de design) ------------
+.k-hero { margin-bottom: 16px; min-height: 190px; }
+.k-hero-in { padding: 26px 28px; }
+// Chiffre phare de la page : un seul par vue.
+.k-hero-fig { font-size: 50px; font-weight: 500; color: #fff; line-height: 1.05; margin-top: 10px; }
+.k-hero-sub { color: #dcc2c8; font-size: 13.5px; margin-top: 7px; }
+.k-hero-days {
+  margin-left: 8px; padding: 2px 9px; border-radius: 100px;
+  background: rgba(255,255,255,.14); font-size: 11.5px; color: #f0dde2;
+}
+.k-hero-facts { display: flex; align-items: center; gap: 22px; padding: 12px 18px; }
+.k-hero-sep { width: 1px; align-self: stretch; background: rgba(226,180,193,.30); }
+.k-fact-l { color: #cd9dab; }
+.k-fact-v { font-size: 22px; color: #fff; margin-top: 4px; }
+
+// ---------- Barre de filtres -------------------------------------------------
+// La barre de filtres vit dans <app-periode-filtre>, partagée avec le tableau
+// de bord : rien à styler ici.
+.k-mini { padding: 7px 13px; font-size: 12.5px; }
+
+// Rechargement : on tient le rendu précédent en retrait, sans saut de page.
+.k-stage { transition: opacity .18s ease; }
+.k-stale { opacity: .55; pointer-events: none; }
+
+// ---------- Tuiles -----------------------------------------------------------
+.k-row { margin-top: 18px; }
+.k-tile { padding: 18px 20px; }
+.k-tile-l { font-size: 13px; color: $encre2; font-weight: 500; }
+.k-tile-v { font-size: 25px; font-weight: 500; margin-top: 8px; color: $encre; }
+.k-tile-h { font-size: 12px; color: $discret; margin-top: 8px; line-height: 1.45; }
+.k-pos { color: #12855f; }
+.k-neg { color: #b2333f; }
+.k-meter { margin-top: 12px; }
+
+// ---------- Panneaux ---------------------------------------------------------
+// Colonne flex : dans une grille à deux cartes, celle qui porte un graphique
+// laisse le tracé absorber la hauteur excédentaire au lieu de creuser un vide.
+.k-panel { padding: 22px; display: flex; flex-direction: column; }
+.k-panel-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+.k-panel-t { font-size: 18px; color: $encre; }
+.k-panel-s { font-size: 12.5px; color: $discret; margin-top: 3px; }
+
+.k-summary {
+  display: flex; gap: 30px; flex-wrap: wrap;
+  margin: 16px 0 4px; padding: 14px 0; border-top: 1px solid $grille; border-bottom: 1px solid $grille;
+}
+.k-sum-l { color: #b3a2a6; }
+.k-sum-v { font-size: 20px; color: $encre; margin-top: 4px; }
+// Seule l'initiale passe en capitale : « vendredi 14 août » → « Vendredi 14 août »
+// (`capitalize` majusculerait aussi « Août »).
+.k-sum-h { font-size: 11.5px; color: $discret; margin-top: 2px; &::first-letter { text-transform: uppercase; } }
+
+// Le conteneur absorbe la hauteur restante de la carte et inclut la bande des
+// abscisses : ni vide sous le tracé, ni scroll interne. Le remplissage du canvas
+// lui-même est assuré par `.gn-plot` (styles globaux).
+.k-plot { flex: 1 1 auto; min-height: 244px; margin-top: 12px; }
+.k-plot-sm { min-height: 208px; }
+
+// ---------- États vides ------------------------------------------------------
+.k-blank {
+  flex: 1 1 auto; text-align: center; padding: 40px 16px;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+}
+.k-blank-sm { padding: 30px 16px; }
+.k-blank-i { font-size: 30px; color: #d9c3c8; }
+.k-blank-t { font-size: 15.5px; font-weight: 600; color: #4d3f43; margin-top: 10px; }
+.k-blank-s { font-size: 12.5px; color: $discret; margin: 6px auto 14px; max-width: 340px; line-height: 1.5; }
+
+// ---------- Occupation & barre empilée ---------------------------------------
+.k-occ { display: flex; align-items: baseline; gap: 12px; margin: 18px 0 12px; }
+.k-occ-v { font-size: 40px; color: $wine; line-height: 1; }
+.k-occ-l { font-size: 12.5px; color: $encre2; line-height: 1.4; span { color: $discret; } }
+
+.k-stack { display: flex; gap: 2px; height: 16px; border-radius: 8px; overflow: hidden; background: $surface; }
+.k-stack-seg { min-width: 4px; }
+.k-stack-empty { flex: 1; background: #f0e6e3; }
+
+.k-legend { margin-top: 16px; }
+.k-legend-row {
+  display: flex; align-items: center; gap: 10px;
+  padding: 8px 0; border-top: 1px solid $grille; font-size: 13.5px;
+}
+.k-legend-row:first-child { border-top: none; }
+.k-legend-l { flex: 1; color: $encre2; }
+.k-legend-n { font-weight: 700; color: $encre; font-variant-numeric: tabular-nums; }
+.k-legend-total { border-top: 1px solid #e6d8d2; margin-top: 2px; }
+.k-swatch-ghost { background: #e6d8d2; }
+
+// ---------- Barres étiquetées (paiements, agents, entonnoir) ------------------
+.k-bars { margin-top: 16px; }
+.k-bar { padding: 11px 0; border-top: 1px solid $grille; }
+.k-bar:first-child { border-top: none; padding-top: 4px; }
+.k-bar-head { display: flex; align-items: center; gap: 9px; margin-bottom: 8px; }
+.k-bar-l { flex: 1; font-size: 13.5px; font-weight: 600; color: #3a2c30; min-width: 0; }
+.k-bar-tag {
+  margin-left: 7px; font-style: normal; font-size: 10.5px; font-weight: 600; letter-spacing: .06em;
+  text-transform: uppercase; color: $wine; background: #f9e7ec; padding: 2px 7px; border-radius: 100px;
+}
+.k-bar-v { font-size: 13.5px; font-weight: 700; color: $encre; white-space: nowrap; font-variant-numeric: tabular-nums; }
+.k-bar-s { font-size: 11.5px; color: $discret; margin-top: 6px; }
+
+// ---------- Indicateurs ------------------------------------------------------
+.k-ind { margin-top: 14px; }
+.k-ind-row { padding: 12px 0; border-top: 1px solid $grille; }
+.k-ind-row:first-child { border-top: none; }
+.k-ind-top { display: flex; align-items: baseline; justify-content: space-between; gap: 14px; }
+.k-ind-l { font-size: 13.5px; font-weight: 600; color: #3a2c30; }
+.k-ind-v { font-size: 19px; color: $wine; white-space: nowrap; }
+.k-ind-h { font-size: 12px; color: $discret; margin-top: 4px; line-height: 1.45; }
+
+// ---------- Entonnoir --------------------------------------------------------
+.k-funnel { margin-top: 18px; }
+.k-funnel-step { margin-bottom: 14px; }
+.k-funnel-head { display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 7px; }
+.k-funnel-l { font-size: 13.5px; color: $encre2; font-weight: 500; }
+.k-funnel-v { font-size: 19px; color: $encre; }
+.k-conv {
+  display: flex; align-items: center; gap: 8px; font-size: 12.5px; color: $encre2;
+  background: #faf3f0; border-radius: 12px; padding: 10px 13px;
+}
+.k-conv i { color: $wine; font-size: 17px; flex: none; }
+
+.k-mini-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 16px; }
+.k-mini-card { background: #faf5f3; border-radius: 14px; padding: 12px 14px; }
+.k-mini-l { display: flex; align-items: center; gap: 7px; font-size: 12.5px; color: $encre2; }
+.k-mini-v { font-size: 21px; color: $encre; margin-top: 5px; }
+// Couleurs d'état : toujours accompagnées de l'icône ET du libellé.
+.k-ic-warn { color: #c08a1c; } .k-ic-crit { color: #b2333f; } .k-ic-ok { color: #12855f; }
+
+// ---------- Vue tableau ------------------------------------------------------
+.k-tw { overflow-x: auto; margin-top: 14px; }
+.k-table { min-width: 420px; }
+.k-table td { padding: 11px 14px; font-size: 13.5px; }
+.k-table th { padding: 0 14px 12px; }
+.k-right { text-align: right; }
+.k-num { font-variant-numeric: tabular-nums; font-weight: 600; color: $encre; }
+.k-cap { color: $encre2; &::first-letter { text-transform: uppercase; } }
+
+// ---------- Adaptatif --------------------------------------------------------
+@media (max-width: 900px) {
+  .k-hero-fig { font-size: 38px; }
+  .k-hero-in { padding: 20px; }
+  .k-hero-facts { gap: 16px; }
+  .k-fact-v { font-size: 18px; }
+}
+@media (max-width: 560px) {
+  .k-hero-fig { font-size: 31px; }
+  .k-summary { gap: 18px; }
+  .k-mini-grid { grid-template-columns: 1fr; }
+}

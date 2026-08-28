@@ -45,7 +45,10 @@ test.describe("Restrictions d'accès selon le rôle (RBAC, bout en bout dans l'U
       await page.getByRole('link', { name: 'Statistiques & KPI' }).click();
 
       await expect(page).toHaveURL(/\/kpi/);
-      await expect(page.getByText("Chiffre d'affaires", { exact: true })).toBeVisible();
+      // On ancre sur des titres de section plutôt que sur un libellé de chiffre :
+      // les intitulés de mesure bougent au fil des refontes, la structure non.
+      await expect(page.getByText('Indicateurs hôteliers')).toBeVisible();
+      await expect(page.getByText("Évolution du chiffre d'affaires")).toBeVisible();
     });
 
     test('accéder directement à /administration/utilisateurs par URL est refusé', async ({ page }) => {

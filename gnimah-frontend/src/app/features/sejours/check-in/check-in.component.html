@@ -138,6 +138,10 @@
 
   <div class="gn-ckrail">
     <div class="gn-slabel" style="color:#a4737f;">Récapitulatif</div>
+    <figure class="ck-preview" *ngIf="apercuChambre">
+      <img [src]="apercuChambre" [alt]="'Chambre ' + selectedChambre?.numero" />
+      <figcaption>Chambre {{ selectedChambre?.numero }}</figcaption>
+    </figure>
     <div style="margin-top:16px;">
       <div class="gn-railrow"><span>Chambre</span><span>{{ selectedChambre ? (selectedChambre.numero + ' · ' + selectedChambre.type) : 'À sélectionner' }}</span></div>
       <div class="gn-railrow"><span>Type de location</span><span>{{ isSejour ? 'Séjour (nuitée)' : 'Passage (heure)' }}</span></div>

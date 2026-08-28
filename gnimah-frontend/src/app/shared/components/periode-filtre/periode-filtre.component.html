@@ -1,0 +1,18 @@
+<div class="gn-card pf">
+  <div class="pf-presets">
+    <button *ngFor="let p of presets" class="gn-seg" type="button"
+            [class.on]="presetActif === p.cle" (click)="appliquerPreset(p.cle)">{{ p.label }}</button>
+  </div>
+  <div class="pf-dates">
+    <label class="gn-flabel">Du</label>
+    <input class="gn-input pf-date" type="date" [(ngModel)]="debut" (ngModelChange)="onDateManuelle()" />
+    <label class="gn-flabel">au</label>
+    <input class="gn-input pf-date" type="date" [(ngModel)]="fin" (ngModelChange)="onDateManuelle()" />
+    <button class="gn-btn-p pf-btn" type="button" (click)="valider()" [disabled]="loading">
+      <i class="ti ti-loader-2 gn-spin" *ngIf="loading"></i><i class="ti ti-search" *ngIf="!loading"></i>Appliquer
+    </button>
+    <button class="gn-btn-o pf-btn" type="button" (click)="reinitialiser()" title="Revenir à la journée en cours">
+      <i class="ti ti-refresh"></i>Réinitialiser
+    </button>
+  </div>
+</div>

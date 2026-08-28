@@ -1,5 +1,13 @@
 <div class="gn-login">
   <div class="gn-login-hero">
+    <!-- Photos réelles de la résidence, en fondu enchaîné derrière le voile bordeaux -->
+    <div class="gn-hero-shots" aria-hidden="true">
+      <ng-container *ngFor="let p of photos; let i = index">
+        <img *ngIf="photoChargeable(i)" [src]="p.src" alt=""
+             class="gn-hero-shot" [class.on]="i === photoActive" />
+      </ng-container>
+    </div>
+    <div class="gn-hero-veil" aria-hidden="true"></div>
     <div class="gn-hero-glow"></div>
     <div class="gn-hero-brand">
       <div class="gn-hero-logo gn-serif">G</div>
@@ -20,7 +28,15 @@
       <div class="gn-hero-sep"></div>
       <div><div class="gn-serif gn-stat-val">FCFA</div><div class="gn-slabel gn-stat-lbl">Multi-paiement</div></div>
     </div>
-    <div class="gn-hero-addr">Abobo · Boulevard Belleville · Abidjan, Côte d'Ivoire</div>
+    <div class="gn-hero-foot">
+      <div class="gn-hero-addr">Abobo Baoulé 1<sup>ère</sup> extension · Abidjan, Côte d'Ivoire</div>
+      <div class="gn-hero-caption" *ngIf="photos.length">
+        <i class="ti ti-camera"></i>{{ photos[photoActive].titre }}
+        <span class="gn-hero-dots">
+          <i *ngFor="let p of photos; let i = index" class="gn-hero-dot" [class.on]="i === photoActive"></i>
+        </span>
+      </div>
+    </div>
   </div>
 
   <div class="gn-login-formwrap">

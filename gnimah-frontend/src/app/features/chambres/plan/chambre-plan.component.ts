@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { MessageService } from 'primeng/api';
 import { ChambreService } from '../../../core/services/chambre.service';
 import { PageHeaderService } from '../../../core/services/page-header.service';
+import { MediaService } from '../../../core/services/media.service';
 import {
   ChambreResponse,
   EtatChambre,
@@ -51,8 +52,15 @@ export class ChambrePlanComponent implements OnInit {
   constructor(
     private chambreService: ChambreService,
     private messageService: MessageService,
-    private pageHeaderService: PageHeaderService
+    private pageHeaderService: PageHeaderService,
+    private media: MediaService
   ) {}
+
+  /** Photo téléversée si elle existe, sinon un visuel réel de la résidence. */
+  visuel(c: ChambreResponse): string {
+    const televersee = (c.photos || '').split(',').map(u => u.trim()).find(u => !!u);
+    return televersee || this.media.photoChambre(c.type, c.numero).src;
+  }
 
   ngOnInit(): void {
     this.pageHeaderService.set('Plan des chambres', 'Disponibilité et état en temps réel');

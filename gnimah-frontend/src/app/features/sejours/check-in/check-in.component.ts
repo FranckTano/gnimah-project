@@ -6,6 +6,7 @@ import { ClientService } from '../../../core/services/client.service';
 import { ChambreService } from '../../../core/services/chambre.service';
 import { SejourService } from '../../../core/services/sejour.service';
 import { PageHeaderService } from '../../../core/services/page-header.service';
+import { MediaService } from '../../../core/services/media.service';
 import { ClientResponse, ClientRequest } from '../../../core/models/client.model';
 import { ChambreResponse } from '../../../core/models/chambre.model';
 import { SejourRequest, SejourResponse } from '../../../core/models/sejour.model';
@@ -60,8 +61,20 @@ export class CheckInComponent implements OnInit {
     private messageService: MessageService,
     private router: Router,
     private fb: FormBuilder,
-    private pageHeaderService: PageHeaderService
+    private pageHeaderService: PageHeaderService,
+    private media: MediaService
   ) {}
+
+  /**
+   * Aperçu de la chambre en cours d'attribution : l'agent voit ce qu'il donne au
+   * client. Photo téléversée si elle existe, sinon un visuel réel de la résidence.
+   */
+  get apercuChambre(): string | null {
+    if (!this.selectedChambre) return null;
+    const televersee = (this.selectedChambre.photos || '')
+      .split(',').map(u => u.trim()).find(u => !!u);
+    return televersee || this.media.photoChambre(this.selectedChambre.type, this.selectedChambre.numero).thumb;
+  }
 
   ngOnInit(): void {
     this.pageHeaderService.set("Enregistrement d'un séjour", "Enregistrement d'arrivée · émission du reçu");

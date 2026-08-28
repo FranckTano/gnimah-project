@@ -1,92 +1,306 @@
 <div class="gn-route">
-  <div class="gn-card" style="padding:18px 22px;display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin-bottom:18px;">
-    <label class="gn-flabel">Période</label>
-    <input class="gn-input" type="date" [(ngModel)]="dateDebut" style="max-width:170px;" />
-    <span style="color:#a99a9d;">→</span>
-    <input class="gn-input" type="date" [(ngModel)]="dateFin" style="max-width:170px;" />
-    <button class="gn-btn-p" style="padding:9px 16px;font-size:13px;" (click)="load()" [disabled]="loading">
-      <i class="ti ti-loader-2 gn-spin" *ngIf="loading"></i><i class="ti ti-search" *ngIf="!loading"></i>Filtrer
-    </button>
-    <button class="gn-btn-o" style="padding:9px 16px;font-size:13px;" (click)="resetFiltres()"><i class="ti ti-refresh"></i>Réinitialiser</button>
+
+  <!-- ============ BANDEAU : identité de la résidence + chiffre phare ============ -->
+  <section class="gn-band gn-card k-hero">
+    <img class="gn-band-img" [src]="photoBandeau" alt="" aria-hidden="true" />
+    <div class="gn-band-scrim"></div>
+    <div class="gn-band-in k-hero-in">
+      <div>
+        <div class="gn-slabel gn-band-kicker">Résidence Hôtel GNIMAH · Abobo Baoulé</div>
+        <div class="k-hero-fig gn-serif">{{ kpi ? formatMontant(kpi.chiffreAffaires) : '—' }}</div>
+        <div class="k-hero-sub">
+          Chiffre d'affaires — {{ libellePeriode }}
+          <span class="k-hero-days">{{ nbJoursPeriode }} jour{{ nbJoursPeriode > 1 ? 's' : '' }}</span>
+        </div>
+      </div>
+      <div class="gn-band-panel k-hero-facts" *ngIf="kpi">
+        <div>
+          <div class="gn-slabel k-fact-l">Encaissé</div>
+          <div class="gn-serif k-fact-v">{{ formatMontant(kpi.encaissements) }}</div>
+        </div>
+        <div class="k-hero-sep"></div>
+        <div>
+          <div class="gn-slabel k-fact-l">Occupation</div>
+          <div class="gn-serif k-fact-v">{{ formatPct(kpi.tauxOccupation) }}</div>
+        </div>
+        <div class="k-hero-sep"></div>
+        <div>
+          <div class="gn-slabel k-fact-l">Séjours</div>
+          <div class="gn-serif k-fact-v">{{ formatNombre(kpi.totalSejours) }}</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ FILTRES : une seule rangée, au-dessus de tout ============ -->
+  <app-periode-filtre [loading]="loading" (periode)="onPeriode($event)"></app-periode-filtre>
+
+  <!-- ============ SQUELETTE (premier chargement uniquement) ============ -->
+  <div *ngIf="premierChargement && loading">
+    <div class="gn-kpi">
+      <p-skeleton *ngFor="let i of [1,2,3,4]" height="104px" borderRadius="22px"></p-skeleton>
+    </div>
+    <div class="gn-dash2" style="margin-top:18px;">
+      <p-skeleton height="330px" borderRadius="22px"></p-skeleton>
+      <p-skeleton height="330px" borderRadius="22px"></p-skeleton>
+    </div>
   </div>
 
-  <ng-container *ngIf="kpi">
+  <!-- Pendant un rechargement, on garde le rendu précédent en retrait : pas de saut. -->
+  <div *ngIf="kpi" class="k-stage" [class.k-stale]="loading">
+
+    <!-- ============ ARGENT : 4 tuiles de synthèse ============ -->
     <div class="gn-kpi">
-      <div class="gn-card" style="padding:20px;">
-        <div style="font-size:13.5px;color:#8a7a7e;font-weight:500;">Chiffre d'affaires</div>
-        <div class="gn-serif" style="font-size:26px;font-weight:500;margin-top:10px;color:#2e2024;">{{ formatMontant(kpi.chiffreAffaires) }}</div>
+      <div class="gn-card k-tile">
+        <div class="k-tile-l">Encaissé</div>
+        <div class="gn-serif k-tile-v">{{ formatMontant(kpi.encaissements) }}</div>
+        <div class="gn-meter k-meter" [attr.aria-label]="'Part encaissée : ' + formatPct(partEncaissee)">
+          <div class="gn-meterfill" [style.width.%]="partEncaissee"></div>
+        </div>
+        <div class="k-tile-h">{{ formatPct(partEncaissee) }} du chiffre d'affaires déjà en caisse</div>
       </div>
-      <div class="gn-card" style="padding:20px;">
-        <div style="font-size:13.5px;color:#8a7a7e;font-weight:500;">Encaissements</div>
-        <div class="gn-serif c-green" style="font-size:26px;font-weight:500;margin-top:10px;">{{ formatMontant(kpi.encaissements) }}</div>
+
+      <div class="gn-card k-tile">
+        <div class="k-tile-l">Reste à payer</div>
+        <div class="gn-serif k-tile-v k-neg">{{ formatMontant(kpi.resteAPayer) }}</div>
+        <div class="k-tile-h">Montant facturé que les clients doivent encore régler.</div>
       </div>
-      <div class="gn-card" style="padding:20px;">
-        <div style="font-size:13.5px;color:#8a7a7e;font-weight:500;">Reste à payer</div>
-        <div class="gn-serif c-red" style="font-size:26px;font-weight:500;margin-top:10px;">{{ formatMontant(kpi.resteAPayer) }}</div>
+
+      <div class="gn-card k-tile">
+        <div class="k-tile-l">Dépenses</div>
+        <div class="gn-serif k-tile-v">{{ formatMontant(kpi.depensesTotales) }}</div>
+        <div class="k-tile-h">Total des sorties de caisse sur la période.</div>
       </div>
-      <div class="gn-card" style="padding:20px;">
-        <div style="font-size:13.5px;color:#8a7a7e;font-weight:500;">Panier moyen</div>
-        <div class="gn-serif" style="font-size:26px;font-weight:500;margin-top:10px;color:#2e2024;">{{ formatMontant(kpi.panierMoyen) }}</div>
+
+      <div class="gn-card k-tile">
+        <div class="k-tile-l">Marge</div>
+        <div class="gn-serif k-tile-v" [class.k-pos]="kpi.marge >= 0" [class.k-neg]="kpi.marge < 0">
+          {{ formatMontant(kpi.marge) }}
+        </div>
+        <div class="k-tile-h">Chiffre d'affaires moins les dépenses.</div>
       </div>
     </div>
 
-    <div class="gn-dash2" style="margin-top:18px;">
-      <div class="gn-card" style="padding:22px;">
-        <div class="gn-serif" style="font-size:18px;color:#2e2024;margin-bottom:10px;">Chiffre d'affaires par jour</div>
-        <div style="height:250px;">
-          <p-chart *ngIf="chartCA" type="line" [data]="chartCA" [options]="chartOptions" [style]="{height:'100%'}"></p-chart>
-          <div *ngIf="!chartCA" class="gn-empty" style="text-align:center;padding:3rem 0;">Aucune donnée de CA sur cette période.</div>
+    <!-- ============ TENDANCE CA + ÉTAT DU PARC ============ -->
+    <div class="gn-dash2 k-row">
+      <div class="gn-card k-panel">
+        <div class="k-panel-head">
+          <div>
+            <div class="gn-serif k-panel-t">Évolution du chiffre d'affaires</div>
+            <div class="k-panel-s">Un point par journée sur la période choisie</div>
+          </div>
+          <button class="gn-btn-o k-mini" (click)="afficherTableau = !afficherTableau">
+            <i class="ti" [ngClass]="afficherTableau ? 'ti-chart-area-line' : 'ti-table'"></i>
+            {{ afficherTableau ? 'Voir le graphique' : 'Voir le tableau' }}
+          </button>
+        </div>
+
+        <!-- Résumé lisible : ce que le graphique raconte, en trois nombres -->
+        <div class="k-summary" *ngIf="afficheCourbeCA">
+          <div>
+            <div class="gn-slabel k-sum-l">Total période</div>
+            <div class="gn-serif k-sum-v">{{ formatMontant(caTotal) }}</div>
+          </div>
+          <div>
+            <div class="gn-slabel k-sum-l">Moyenne / jour</div>
+            <div class="gn-serif k-sum-v">{{ formatMontant(caMoyenParJour) }}</div>
+          </div>
+          <div *ngIf="meilleureJournee">
+            <div class="gn-slabel k-sum-l">Meilleure journée</div>
+            <div class="gn-serif k-sum-v">{{ formatMontant(meilleureJournee.ca) }}</div>
+            <div class="k-sum-h">{{ labelJour(meilleureJournee.date) }}</div>
+          </div>
+        </div>
+
+        <!-- Graphique -->
+        <ng-container *ngIf="!afficherTableau">
+          <div class="gn-plot k-plot" *ngIf="afficheCourbeCA && !caToutNul">
+            <p-chart type="line" [data]="chartCA" [options]="optionsCA" [plugins]="pluginCurseur"></p-chart>
+          </div>
+
+          <!-- Période d'une seule journée : une courbe à un point ne dit rien -->
+          <div class="k-blank" *ngIf="!afficheCourbeCA">
+            <i class="ti ti-chart-area-line k-blank-i"></i>
+            <div class="k-blank-t">{{ formatMontant(caTotal) }} sur cette journée</div>
+            <div class="k-blank-s">Choisissez une période de plusieurs jours pour visualiser la tendance.</div>
+          </div>
+
+          <div class="k-blank" *ngIf="afficheCourbeCA && caToutNul">
+            <i class="ti ti-mood-empty k-blank-i"></i>
+            <div class="k-blank-t">Aucun chiffre d'affaires sur cette période</div>
+            <div class="k-blank-s">Aucun séjour facturé entre le {{ labelJour(periode.debut) }} et le {{ labelJour(periode.fin) }}.</div>
+          </div>
+        </ng-container>
+
+        <!-- Jumelle tableau : toute valeur reste lisible sans survol -->
+        <div class="k-tw" *ngIf="afficherTableau">
+          <table class="gn-table k-table">
+            <thead>
+              <tr>
+                <th class="gn-th">Journée</th>
+                <th class="gn-th k-right">Chiffre d'affaires</th>
+                <th class="gn-th k-right">Réservations</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let l of lignesTableau" class="gn-rowh">
+                <td class="k-cap">{{ l.date }}</td>
+                <td class="k-right k-num">{{ l.ca }}</td>
+                <td class="k-right k-num">{{ l.resa }}</td>
+              </tr>
+              <tr *ngIf="!lignesTableau.length"><td colspan="3" class="gn-empty">Aucune donnée sur la période.</td></tr>
+            </tbody>
+          </table>
         </div>
       </div>
-      <div class="gn-card" style="padding:22px;">
-        <div class="gn-serif" style="font-size:18px;color:#2e2024;margin-bottom:10px;">État des chambres</div>
-        <div style="display:flex;justify-content:center;">
-          <div style="height:180px;width:180px;"><p-chart type="doughnut" [data]="chartOccupation" [options]="doughnutOptions" [style]="{height:'100%',width:'100%'}"></p-chart></div>
+
+      <!-- État du parc : barre empilée + légende chiffrée -->
+      <div class="gn-card k-panel">
+        <div class="gn-serif k-panel-t">État du parc</div>
+        <div class="k-panel-s">Situation des {{ formatNombre(kpi.totalChambres) }} chambres à l'instant présent</div>
+
+        <div class="k-occ">
+          <div class="gn-serif k-occ-v">{{ formatPct(kpi.tauxOccupation) }}</div>
+          <div class="k-occ-l">d'occupation<br /><span>{{ kpi.chambresOccupees }} chambre{{ kpi.chambresOccupees > 1 ? 's' : '' }} louée{{ kpi.chambresOccupees > 1 ? 's' : '' }}</span></div>
         </div>
-        <div style="margin-top:14px;font-size:13px;">
-          <div style="display:flex;justify-content:space-between;padding:5px 0;"><span>Total chambres</span><strong>{{ kpi.totalChambres }}</strong></div>
-          <div style="display:flex;justify-content:space-between;padding:5px 0;" class="c-green"><span>Libres</span><strong>{{ kpi.chambresLibres }}</strong></div>
-          <div style="display:flex;justify-content:space-between;padding:5px 0;" class="c-wine"><span>Occupées</span><strong>{{ kpi.chambresOccupees }}</strong></div>
-          <div style="display:flex;justify-content:space-between;padding:5px 0;" class="c-amber"><span>À nettoyer</span><strong>{{ kpi.chambresANettoyer }}</strong></div>
-          <div style="display:flex;justify-content:space-between;padding:5px 0;" class="c-slate"><span>En maintenance</span><strong>{{ kpi.chambresEnMaintenance }}</strong></div>
+
+        <!-- L'écart de 2px en couleur de surface sépare les segments : aucun contour. -->
+        <div class="k-stack" role="img" [attr.aria-label]="'Répartition des chambres par état'">
+          <div class="k-stack-seg" *ngFor="let s of segmentsVisibles"
+               [style.flex-grow]="s.valeur" [style.background]="s.couleur"
+               [attr.title]="s.label + ' : ' + s.valeur"></div>
+          <div class="k-stack-seg k-stack-empty" *ngIf="!segmentsVisibles.length"></div>
+        </div>
+
+        <div class="k-legend">
+          <div class="k-legend-row" *ngFor="let s of segmentsEtat">
+            <span class="gn-swatch" [style.background]="s.couleur"></span>
+            <span class="k-legend-l">{{ s.label }}</span>
+            <span class="k-legend-n">{{ s.valeur }}</span>
+          </div>
+          <div class="k-legend-row k-legend-total">
+            <span class="gn-swatch k-swatch-ghost"></span>
+            <span class="k-legend-l">Total chambres</span>
+            <span class="k-legend-n">{{ kpi.totalChambres }}</span>
+          </div>
         </div>
       </div>
     </div>
 
-    <div class="gn-dash3" style="margin-top:18px;">
-      <div class="gn-card" style="padding:22px;">
-        <div class="gn-serif" style="font-size:18px;color:#2e2024;margin-bottom:16px;">Indicateurs hôteliers</div>
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;">
-          <div><div class="gn-slabel" style="color:#b3a2a6;">Taux d'occupation</div><div class="gn-serif" style="font-size:22px;color:#8c2f4d;margin-top:4px;">{{ formatPct(kpi.tauxOccupation) }}</div></div>
-          <div><div class="gn-slabel" style="color:#b3a2a6;">Tarif moyen/ch.</div><div class="gn-serif" style="font-size:22px;color:#8c2f4d;margin-top:4px;">{{ formatMontant(kpi.adr) }}</div></div>
-          <div><div class="gn-slabel" style="color:#b3a2a6;">Revenu/chambre</div><div class="gn-serif" style="font-size:22px;color:#8c2f4d;margin-top:4px;">{{ formatMontant(kpi.revPar) }}</div></div>
-          <div><div class="gn-slabel" style="color:#b3a2a6;">Rev. total/ch.</div><div class="gn-serif" style="font-size:22px;color:#8c2f4d;margin-top:4px;">{{ formatMontant(kpi.tRevPar) }}</div></div>
-          <div><div class="gn-slabel" style="color:#b3a2a6;">Durée moy. séjour</div><div class="gn-serif" style="font-size:22px;color:#8c2f4d;margin-top:4px;">{{ kpi.alos.toFixed(1) }} nuits</div></div>
-          <div><div class="gn-slabel" style="color:#b3a2a6;">Taux de conversion</div><div class="gn-serif" style="font-size:22px;color:#8c2f4d;margin-top:4px;">{{ formatPct(kpi.tauxConversion) }}</div></div>
+    <!-- ============ RÉSERVATIONS + MODES DE PAIEMENT ============ -->
+    <div class="gn-dash3 k-row">
+      <div class="gn-card k-panel">
+        <div class="gn-serif k-panel-t">Réservations reçues par jour</div>
+        <div class="k-panel-s">Volume de demandes enregistrées sur la période</div>
+        <div class="gn-plot k-plot k-plot-sm" *ngIf="afficheBarresResa">
+          <p-chart type="bar" [data]="chartReservations" [options]="optionsReservations" [plugins]="pluginCurseur"></p-chart>
+        </div>
+        <div class="k-blank k-blank-sm" *ngIf="!afficheBarresResa">
+          <i class="ti ti-calendar-off k-blank-i"></i>
+          <div class="k-blank-t">Aucune réservation sur la période</div>
         </div>
       </div>
-      <div class="gn-card" style="padding:22px;">
-        <div class="gn-serif" style="font-size:18px;color:#2e2024;margin-bottom:16px;">Séjours & réservations</div>
-        <div style="display:flex;justify-content:space-between;padding:9px 0;border-top:1px solid #f2e8e4;"><span style="color:#6d585d;font-size:13.5px;">Total séjours</span><strong>{{ kpi.totalSejours }}</strong></div>
-        <div style="display:flex;justify-content:space-between;padding:9px 0;border-top:1px solid #f2e8e4;"><span style="color:#6d585d;font-size:13.5px;">Nouveaux clients</span><strong>{{ kpi.nouveauxClients }}</strong></div>
-        <div style="display:flex;justify-content:space-between;padding:9px 0;border-top:1px solid #f2e8e4;"><span style="color:#6d585d;font-size:13.5px;">Clients fidèles</span><strong>{{ kpi.clientsFideles }}</strong></div>
-        <div style="display:flex;justify-content:space-between;padding:9px 0;border-top:1px solid #f2e8e4;"><span style="color:#6d585d;font-size:13.5px;">Réservations totales</span><strong>{{ kpi.reservationsTotal }}</strong></div>
-        <div style="display:flex;justify-content:space-between;padding:9px 0;border-top:1px solid #f2e8e4;" class="c-red"><span style="font-size:13.5px;">Annulées</span><strong>{{ kpi.reservationsAnnulees }}</strong></div>
-        <div style="display:flex;justify-content:space-between;padding:9px 0;border-top:1px solid #f2e8e4;" class="c-amber"><span style="font-size:13.5px;">Non présenté</span><strong>{{ kpi.reservationsNoShow }}</strong></div>
+
+      <div class="gn-card k-panel">
+        <div class="gn-serif k-panel-t">Encaissements par mode de paiement</div>
+        <div class="k-panel-s">Comment les clients ont réglé sur la période</div>
+        <div class="k-bars" *ngIf="modesPaiement.length">
+          <div class="k-bar" *ngFor="let m of modesPaiement">
+            <div class="k-bar-head">
+              <span class="gn-swatch" [style.background]="m.couleur"></span>
+              <span class="k-bar-l">{{ m.label }}</span>
+              <span class="k-bar-v">{{ m.valeur }}</span>
+            </div>
+            <div class="gn-bartrack">
+              <div class="gn-barfill" [style.width.%]="m.part" [style.background]="m.couleur"></div>
+            </div>
+            <div class="k-bar-s">{{ m.sous }}</div>
+          </div>
+        </div>
+        <div class="k-blank k-blank-sm" *ngIf="!modesPaiement.length">
+          <i class="ti ti-cash-off k-blank-i"></i>
+          <div class="k-blank-t">Aucun encaissement sur la période</div>
+        </div>
       </div>
     </div>
 
-    <div class="gn-card" style="padding:22px;margin-top:18px;" *ngIf="kpi.performanceAgents.length">
-      <div class="gn-serif" style="font-size:18px;color:#2e2024;margin-bottom:8px;">Performance par agent</div>
-      <div *ngFor="let a of kpi.performanceAgents" style="display:flex;align-items:center;gap:12px;padding:12px 0;border-top:1px solid #f2e8e4;">
-        <div class="gn-av deep" style="width:38px;height:38px;font-size:13px;">{{ agentInitials(a.agentId) }}</div>
-        <div style="flex:1;"><div style="font-weight:600;font-size:14px;color:#3a2c30;">{{ agentName(a.agentId) }}</div><div style="font-size:12px;color:#a99a9d;">{{ a.nbSejours }} séjour(s)</div></div>
-        <div class="gn-serif" style="font-size:16px;color:#8c2f4d;">{{ formatMontant(a.ca) }}</div>
+    <!-- ============ INDICATEURS + PARCOURS CLIENT ============ -->
+    <div class="gn-dash3 k-row">
+      <div class="gn-card k-panel">
+        <div class="gn-serif k-panel-t">Indicateurs hôteliers</div>
+        <div class="k-panel-s">Les repères du métier, expliqués en clair</div>
+        <div class="k-ind">
+          <div class="k-ind-row" *ngFor="let i of indicateurs">
+            <div class="k-ind-top">
+              <span class="k-ind-l">{{ i.label }}</span>
+              <span class="gn-serif k-ind-v">{{ i.valeur }}</span>
+            </div>
+            <div class="k-ind-h">{{ i.aide }}</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="gn-card k-panel">
+        <div class="gn-serif k-panel-t">De la réservation au séjour</div>
+        <div class="k-panel-s">Ce que deviennent les demandes reçues</div>
+
+        <div class="k-funnel">
+          <div class="k-funnel-step" *ngFor="let e of etapesEntonnoir">
+            <div class="k-funnel-head">
+              <span class="k-funnel-l">{{ e.label }}</span>
+              <span class="gn-serif k-funnel-v">{{ formatNombre(e.valeur) }}</span>
+            </div>
+            <div class="gn-bartrack">
+              <div class="gn-barfill" [style.width.%]="e.part" [style.background]="e.couleur"></div>
+            </div>
+          </div>
+          <div class="k-conv">
+            <i class="ti ti-arrow-narrow-right"></i>
+            <span>{{ formatPct(kpi.tauxConversion) }} des réservations sont devenues des séjours</span>
+          </div>
+        </div>
+
+        <div class="k-mini-grid">
+          <div class="k-mini-card">
+            <div class="k-mini-l"><i class="ti ti-calendar-x k-ic-warn"></i>Annulées</div>
+            <div class="gn-serif k-mini-v">{{ formatNombre(kpi.reservationsAnnulees) }}</div>
+          </div>
+          <div class="k-mini-card">
+            <div class="k-mini-l"><i class="ti ti-user-x k-ic-crit"></i>Non présentés</div>
+            <div class="gn-serif k-mini-v">{{ formatNombre(kpi.reservationsNoShow) }}</div>
+          </div>
+          <div class="k-mini-card">
+            <div class="k-mini-l"><i class="ti ti-user-plus k-ic-ok"></i>Nouveaux clients</div>
+            <div class="gn-serif k-mini-v">{{ formatNombre(kpi.nouveauxClients) }}</div>
+          </div>
+          <div class="k-mini-card">
+            <div class="k-mini-l"><i class="ti ti-heart-handshake k-ic-ok"></i>Clients fidèles</div>
+            <div class="gn-serif k-mini-v">{{ formatNombre(kpi.clientsFideles) }}</div>
+          </div>
+        </div>
       </div>
     </div>
-  </ng-container>
 
-  <div *ngIf="loading && !kpi" class="gn-empty" style="text-align:center;padding:3rem 0;">
-    <i class="ti ti-loader-2 gn-spin" style="font-size:2rem;color:#8c2f4d;"></i>
+    <!-- ============ PERFORMANCE PAR AGENT ============ -->
+    <div class="gn-card k-panel k-row" *ngIf="agents.length">
+      <div class="gn-serif k-panel-t">Performance par agent</div>
+      <div class="k-panel-s">Chiffre d'affaires enregistré par chaque agent sur la période</div>
+      <div class="k-bars">
+        <div class="k-bar" *ngFor="let a of agents; let first = first">
+          <div class="k-bar-head">
+            <span class="gn-av" [ngClass]="first ? 'deep' : 'gray'" style="width:30px;height:30px;font-size:11.5px;">
+              {{ a.label.split(' ')[0].charAt(0) }}{{ (a.label.split(' ')[1] || '').charAt(0) }}
+            </span>
+            <span class="k-bar-l">{{ a.label }}<em class="k-bar-tag" *ngIf="first">meilleur</em></span>
+            <span class="k-bar-v">{{ a.valeur }}</span>
+          </div>
+          <div class="gn-bartrack">
+            <div class="gn-barfill" [style.width.%]="a.part" [style.background]="a.couleur"></div>
+          </div>
+          <div class="k-bar-s">{{ a.sous }}</div>
+        </div>
+      </div>
+    </div>
+
   </div>
 </div>

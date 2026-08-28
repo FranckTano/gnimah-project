@@ -27,4 +27,17 @@ export interface KpiResponse {
   sejoursParType: { type: string; count: number }[];
   performanceAgents: { agentId: number; nbSejours: number; ca: number }[];
   occupationParChambre: any[];
+  /** Renvoyé par le backend depuis `buildRepartitionModePaiement`. */
+  repartitionModePaiement: { mode: string; count: number; montant: number }[];
 }
+
+/** Libellés francophones des modes de paiement renvoyés en enum par le backend. */
+export const MODE_PAIEMENT_LABELS: Record<string, string> = {
+  ESPECES: 'Espèces',
+  MOBILE_MONEY: 'Mobile Money',
+  CARTE_BANCAIRE: 'Carte bancaire',
+  CARTE: 'Carte bancaire',
+  VIREMENT: 'Virement',
+  CHEQUE: 'Chèque',
+  AUTRE: 'Autre'
+};

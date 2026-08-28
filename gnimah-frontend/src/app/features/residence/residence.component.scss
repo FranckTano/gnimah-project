@@ -1,0 +1,131 @@
+// « La Résidence » — vitrine vidéo + album photo.
+
+$wine: #8c2f4d;
+$encre: #2e2024;
+$encre2: #6d585d;
+$discret: #a99a9d;
+
+// ---------- Vidéo ------------------------------------------------------------
+.r-video { overflow: hidden; position: relative; }
+.r-video-poster { position: relative; cursor: pointer; min-height: 320px; display: flex; align-items: flex-end; }
+.r-video-poster img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+.r-video-scrim {
+  position: absolute; inset: 0;
+  background: linear-gradient(95deg, rgba(30,13,18,.93) 0%, rgba(48,20,29,.80) 46%, rgba(70,30,40,.30) 100%);
+  transition: background .3s;
+}
+.r-video-poster:hover .r-video-scrim {
+  background: linear-gradient(95deg, rgba(30,13,18,.90) 0%, rgba(48,20,29,.74) 46%, rgba(70,30,40,.22) 100%);
+}
+.r-video-body { position: relative; padding: 34px 36px; max-width: 560px; }
+.r-video-kicker { color: #d7a4b2; }
+.r-video-title { font-size: 32px; font-weight: 400; color: #fff; margin: 12px 0 0; line-height: 1.15; }
+.r-video-text { color: #d9bec5; font-size: 14px; line-height: 1.6; margin: 12px 0 22px; }
+
+.r-play {
+  display: inline-flex; align-items: center; gap: 13px; cursor: pointer;
+  background: linear-gradient(180deg, #9a3453, #7f2542); border: none; border-radius: 100px;
+  color: #fff; padding: 12px 24px 12px 15px; font-family: inherit; font-size: 14.5px; font-weight: 600;
+  box-shadow: 0 10px 28px rgba(0,0,0,.36); transition: filter .15s, transform .12s;
+  i { font-size: 21px; }
+  span { display: flex; flex-direction: column; align-items: flex-start; line-height: 1.15; }
+  em { font-style: normal; font-size: 11px; font-weight: 500; color: #e5bcc7; margin-top: 2px; }
+}
+.r-play:hover { filter: brightness(1.08); }
+.r-play:active { transform: scale(.98); }
+
+.r-video-el { display: block; width: 100%; max-height: 74vh; background: #14090c; }
+
+// ---------- Repères ----------------------------------------------------------
+.r-facts { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin-top: 16px; }
+.r-fact { padding: 16px 18px; display: flex; align-items: center; gap: 13px; }
+.r-fact-v { font-size: 23px; color: $encre; line-height: 1.1; }
+.r-fact-l { font-size: 12px; color: $discret; margin-top: 3px; }
+
+// ---------- Album ------------------------------------------------------------
+.r-gallery { padding: 22px; margin-top: 16px; }
+.r-gal-head {
+  display: flex; align-items: flex-start; justify-content: space-between;
+  gap: 16px; flex-wrap: wrap; margin-bottom: 18px;
+}
+.r-gal-t { font-size: 18px; color: $encre; }
+.r-gal-s { font-size: 12.5px; color: $discret; margin-top: 3px; }
+.r-chips { display: flex; gap: 7px; flex-wrap: wrap; }
+.r-chip-n {
+  margin-left: 7px; font-size: 11px; opacity: .7; font-variant-numeric: tabular-nums;
+}
+
+.r-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; }
+.r-thumb {
+  position: relative; display: block; padding: 0; border: none; cursor: pointer;
+  border-radius: 16px; overflow: hidden; background: #f2e8e4; aspect-ratio: 3 / 2;
+  transition: transform .18s cubic-bezier(.22,1,.36,1), box-shadow .18s;
+  box-shadow: 0 1px 3px rgba(60,25,30,.06);
+}
+.r-thumb img { width: 100%; height: 100%; object-fit: cover; display: block; transition: transform .5s cubic-bezier(.22,1,.36,1); }
+.r-thumb:hover { transform: translateY(-3px); box-shadow: 0 14px 30px rgba(60,25,30,.18); }
+.r-thumb:hover img { transform: scale(1.06); }
+.r-thumb:focus-visible { outline: 2px solid $wine; outline-offset: 3px; }
+
+.r-thumb-cap {
+  position: absolute; left: 0; right: 0; bottom: 0; padding: 26px 13px 11px; text-align: left;
+  background: linear-gradient(180deg, transparent, rgba(26,11,15,.86));
+  display: flex; flex-direction: column; gap: 2px;
+}
+.r-thumb-t { font-size: 13px; font-weight: 600; color: #fff; line-height: 1.25; }
+.r-thumb-c { font-size: 10.5px; letter-spacing: .1em; text-transform: uppercase; color: #d9adb9; }
+.r-thumb-zoom {
+  position: absolute; top: 10px; right: 10px; width: 30px; height: 30px; border-radius: 10px;
+  background: rgba(20,9,12,.55); backdrop-filter: blur(4px); color: #fff;
+  display: flex; align-items: center; justify-content: center; font-size: 15px;
+  opacity: 0; transform: scale(.85); transition: opacity .18s, transform .18s;
+}
+.r-thumb:hover .r-thumb-zoom { opacity: 1; transform: scale(1); }
+
+// ---------- Visionneuse ------------------------------------------------------
+.r-lb {
+  position: fixed; inset: 0; z-index: 200; background: rgba(16,7,10,.92);
+  display: flex; align-items: center; justify-content: center; padding: 40px 72px;
+  animation: rFade .22s ease;
+}
+@keyframes rFade { from { opacity: 0; } to { opacity: 1; } }
+
+.r-lb-fig { margin: 0; max-width: 100%; max-height: 100%; display: flex; flex-direction: column; align-items: center; gap: 14px; }
+.r-lb-fig img {
+  max-width: 100%; max-height: calc(100vh - 150px); object-fit: contain;
+  border-radius: 14px; box-shadow: 0 30px 70px rgba(0,0,0,.55);
+}
+.r-lb-fig figcaption { text-align: center; }
+.r-lb-t { display: block; font-size: 15px; font-weight: 600; color: #fff; }
+.r-lb-c { display: block; font-size: 12px; color: #b79aa2; margin-top: 4px; }
+
+.r-lb-close, .r-lb-nav {
+  position: absolute; border: none; cursor: pointer; color: #fff;
+  background: rgba(255,255,255,.10); border-radius: 50%;
+  display: flex; align-items: center; justify-content: center; transition: background .15s;
+}
+.r-lb-close:hover, .r-lb-nav:hover { background: rgba(255,255,255,.22); }
+.r-lb-close { top: 22px; right: 24px; width: 42px; height: 42px; font-size: 21px; }
+.r-lb-nav { top: 50%; transform: translateY(-50%); width: 48px; height: 48px; font-size: 26px; }
+.r-lb-prev { left: 18px; }
+.r-lb-next { right: 18px; }
+
+// ---------- Adaptatif --------------------------------------------------------
+@media (max-width: 1140px) {
+  .r-grid { grid-template-columns: repeat(3, 1fr); }
+  .r-facts { grid-template-columns: repeat(2, 1fr); }
+}
+@media (max-width: 760px) {
+  .r-grid { grid-template-columns: repeat(2, 1fr); }
+  .r-video-body { padding: 24px 20px; }
+  .r-video-title { font-size: 24px; }
+  .r-video-poster { min-height: 260px; }
+  .r-lb { padding: 20px 12px 68px; }
+  .r-lb-nav { top: auto; bottom: 12px; transform: none; }
+  .r-lb-prev { left: calc(50% - 58px); }
+  .r-lb-next { right: calc(50% - 58px); }
+}
+@media (max-width: 460px) {
+  .r-grid { grid-template-columns: 1fr; }
+  .r-facts { grid-template-columns: 1fr; }
+}

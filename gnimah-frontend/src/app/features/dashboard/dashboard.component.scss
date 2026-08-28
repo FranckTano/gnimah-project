@@ -1,9 +1,154 @@
-.gn-kpicard { padding: 20px; position: relative; overflow: hidden; }
-.gn-kpiglow { position: absolute; right: -24px; top: -24px; width: 90px; height: 90px; border-radius: 50%; background: #faf0f2; }
-.gn-kpihead { display: flex; align-items: center; gap: 11px; position: relative; }
-.gn-kpilabel { font-size: 13.5px; color: #8a7a7e; font-weight: 500; }
-.gn-kpivalue { font-size: 32px; font-weight: 500; margin-top: 14px; color: #2e2024; position: relative; }
-.gn-kpidelta { font-size: 12.5px; margin-top: 5px; position: relative; font-weight: 600; }
-.gn-kpisub { color: #a99a9d; font-weight: 400; }
-.gn-chartheader { display: flex; align-items: center; justify-content: space-between; }
-.gn-empty { font-size: 13px; color: #a99a9d; padding: 24px 0; text-align: center; }
+// Tableau de bord — s'appuie sur les classes .gn-* globales (.gn-band, .gn-plot,
+// .gn-bartrack, .gn-meter) et n'ajoute que ce qui lui est propre.
+
+$encre: #2e2024;
+$encre2: #6d585d;
+$discret: #a99a9d;
+$grille: #f2e8e4;
+$wine: #8c2f4d;
+
+// ---------- Bandeau d'accueil (sur .gn-band) ---------------------------------
+.gn-welcome { margin-bottom: 18px; min-height: 148px; }
+.gn-welcome-in { padding: 22px 26px; }
+.gn-welcome-h { font-size: 30px; font-weight: 500; color: #fff; line-height: 1.1; margin-top: 8px; }
+.gn-welcome-date { font-size: 13px; color: #d6bcc2; margin-top: 5px; &::first-letter { text-transform: uppercase; } }
+.gn-welcome-right { display: flex; flex-direction: column; align-items: flex-end; gap: 10px; }
+.gn-welcome-chips { display: flex; gap: 8px; flex-wrap: wrap; justify-content: flex-end; padding: 8px 10px; }
+.gn-welcome-chip {
+  display: inline-flex; align-items: center; gap: 7px; font-size: 12.5px; font-weight: 600; color: #f6e9ec;
+  i { font-size: 15px; color: #e2b3c0; }
+}
+.gn-welcome-link {
+  display: inline-flex; align-items: center; gap: 7px; font-size: 12.5px; font-weight: 600;
+  color: #eccbd4; text-decoration: none; transition: color .15s;
+  i { font-size: 15px; }
+  &:hover { color: #fff; }
+}
+
+// ---------- En-têtes de section ----------------------------------------------
+.d-sechead { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 10px; }
+.d-sechead-gap { margin-top: 22px; }
+.d-sectitle { color: $discret; }
+.d-periode { font-size: 12.5px; color: $encre2; &::first-letter { text-transform: uppercase; } }
+// Marqueur « instant présent » : distingue ce qui ignore le filtre de période.
+.d-live { display: inline-flex; align-items: center; gap: 6px; font-size: 11.5px; color: #12855f; font-weight: 600; }
+.d-livedot {
+  width: 6px; height: 6px; border-radius: 50%; background: #12855f;
+  box-shadow: 0 0 0 3px rgba(18,133,95,.16);
+}
+
+// ---------- Tuiles ------------------------------------------------------------
+.d-row { margin-top: 18px; }
+.d-tile { padding: 18px 20px; }
+.d-tile-top { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
+.d-tile-l { font-size: 13px; color: $encre2; font-weight: 500; }
+.d-tile-v { font-size: 30px; font-weight: 500; color: $encre; line-height: 1.05; }
+.d-big { font-size: 24px; }
+.d-tile-h { font-size: 12px; color: $discret; margin-top: 8px; line-height: 1.45; }
+.d-pos { color: #12855f; }
+.d-neg { color: #b2333f; }
+.d-meter { margin-top: 12px; }
+.d-tile-link {
+  display: inline-flex; align-items: center; gap: 5px; margin-top: 9px;
+  font-size: 12.5px; font-weight: 600; color: $wine; text-decoration: none;
+  &:hover { color: #6f2440; }
+}
+
+// Rechargement : on tient le rendu précédent en retrait, sans saut de page.
+.d-stage { transition: opacity .18s ease; }
+.d-stale { opacity: .55; pointer-events: none; }
+
+// ---------- Panneaux ----------------------------------------------------------
+.d-panel { padding: 22px; display: flex; flex-direction: column; }
+.d-panel-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }
+.d-panel-t { font-size: 18px; color: $encre; }
+.d-panel-s { font-size: 12.5px; color: $discret; margin-top: 3px; }
+.d-panel-link {
+  margin-top: auto; padding-top: 14px; display: inline-flex; align-items: center; gap: 6px;
+  font-size: 12.5px; font-weight: 600; color: $wine; text-decoration: none;
+  &:hover { color: #6f2440; }
+}
+
+.d-summary {
+  display: flex; gap: 30px; flex-wrap: wrap;
+  margin: 16px 0 4px; padding: 14px 0; border-top: 1px solid $grille; border-bottom: 1px solid $grille;
+}
+.d-sum-l { color: #b3a2a6; }
+.d-sum-v { font-size: 20px; color: $encre; margin-top: 4px; }
+.d-sum-h { font-size: 11.5px; color: $discret; margin-top: 2px; &::first-letter { text-transform: uppercase; } }
+
+// Le conteneur absorbe la hauteur restante ; le remplissage du canvas est
+// assuré par `.gn-plot` (styles globaux).
+.d-plot { flex: 1 1 auto; min-height: 236px; margin-top: 12px; }
+.d-plot-sm { min-height: 200px; }
+
+// ---------- États vides --------------------------------------------------------
+.d-blank {
+  flex: 1 1 auto; text-align: center; padding: 36px 16px;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+}
+.d-blank-i { font-size: 28px; color: #d9c3c8; }
+.d-blank-t { font-size: 15px; font-weight: 600; color: #4d3f43; margin-top: 10px; }
+.d-blank-s { font-size: 12.5px; color: $discret; margin: 6px auto 0; max-width: 320px; line-height: 1.5; }
+
+// ---------- Occupation ---------------------------------------------------------
+.d-occ { display: flex; align-items: baseline; gap: 12px; margin: 18px 0 12px; }
+.d-occ-v { font-size: 38px; color: $wine; line-height: 1; }
+.d-occ-l { font-size: 12.5px; color: $encre2; line-height: 1.4; span { color: $discret; } }
+
+// L'écart de 2px en couleur de surface sépare les segments : aucun contour.
+.d-stack { display: flex; gap: 2px; height: 16px; border-radius: 8px; overflow: hidden; background: #fff; }
+.d-stack-seg { min-width: 4px; }
+.d-stack-empty { flex: 1; background: #f0e6e3; }
+
+.d-legend { margin-top: 14px; }
+.d-legend-row {
+  display: flex; align-items: center; gap: 10px;
+  padding: 8px 0; border-top: 1px solid $grille; font-size: 13.5px;
+}
+.d-legend-row:first-child { border-top: none; }
+.d-legend-l { flex: 1; color: $encre2; }
+.d-legend-n { font-weight: 700; color: $encre; font-variant-numeric: tabular-nums; }
+
+// ---------- Barres agents -------------------------------------------------------
+.d-bars { margin-top: 14px; }
+.d-bar { padding: 11px 0; border-top: 1px solid $grille; }
+.d-bar:first-child { border-top: none; padding-top: 4px; }
+.d-bar-head { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
+.d-av { width: 30px; height: 30px; font-size: 11.5px; }
+.d-bar-l { flex: 1; font-size: 13.5px; font-weight: 600; color: #3a2c30; min-width: 0; }
+.d-bar-tag {
+  margin-left: 7px; font-style: normal; font-size: 10.5px; font-weight: 600; letter-spacing: .06em;
+  text-transform: uppercase; color: $wine; background: #f9e7ec; padding: 2px 7px; border-radius: 100px;
+}
+.d-bar-v { font-size: 13.5px; font-weight: 700; color: $encre; white-space: nowrap; font-variant-numeric: tabular-nums; }
+.d-bar-s { font-size: 11.5px; color: $discret; margin-top: 6px; }
+
+// ---------- Listes (vue agent) --------------------------------------------------
+.d-list, .d-todos { margin-top: 14px; }
+.d-listrow { display: flex; align-items: center; gap: 12px; padding: 13px 0; border-top: 1px solid $grille; }
+.d-listrow:first-child { border-top: none; }
+.d-av { flex: none; }
+.d-listmain { flex: 1; min-width: 0; }
+.d-listname { font-weight: 600; font-size: 14px; color: #3a2c30; }
+.d-listsub { font-size: 12.5px; color: $discret; margin-top: 2px; }
+.d-mini { padding: 8px 15px; font-size: 12.5px; text-decoration: none; flex: none; }
+
+.d-todo { display: flex; align-items: center; gap: 12px; padding: 13px 14px; border-radius: 14px; margin-bottom: 9px; }
+.d-todo i { font-size: 20px; flex: none; }
+.d-todo-l { flex: 1; font-size: 13.5px; font-weight: 500; color: #3a2c30; }
+.d-todo-tag { font-size: 12px; font-weight: 600; white-space: nowrap; }
+
+// ---------- Renvoi vers l'analyse détaillée ---------------------------------------
+.d-more { display: flex; justify-content: center; margin-top: 20px; }
+.d-morebtn { padding: 11px 20px; font-size: 13.5px; text-decoration: none; }
+
+@media (max-width: 760px) {
+  .gn-welcome-in { padding: 18px; }
+  .gn-welcome-h { font-size: 24px; }
+  .gn-welcome-right { align-items: flex-start; width: 100%; }
+  .gn-welcome-chips { justify-content: flex-start; }
+  .d-summary { gap: 18px; }
+  .d-listrow { flex-wrap: wrap; }
+  .d-mini { width: 100%; justify-content: center; }
+}

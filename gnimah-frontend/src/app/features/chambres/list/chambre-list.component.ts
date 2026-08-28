@@ -3,6 +3,7 @@ import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { MessageService, ConfirmationService } from 'primeng/api';
 import { ChambreService } from '../../../core/services/chambre.service';
 import { PageHeaderService } from '../../../core/services/page-header.service';
+import { MediaService } from '../../../core/services/media.service';
 import {
   ChambreRequest,
   ChambreResponse,
@@ -68,8 +69,19 @@ export class ChambreListComponent implements OnInit {
     private messageService: MessageService,
     private confirmationService: ConfirmationService,
     private fb: FormBuilder,
-    private pageHeaderService: PageHeaderService
+    private pageHeaderService: PageHeaderService,
+    private media: MediaService
   ) {}
+
+  /**
+   * Visuel d'une chambre : la photo téléversée si elle existe, sinon une image
+   * réelle de la résidence choisie d'après le type — la liste n'est jamais vide
+   * de sens, et une vraie photo remplace toujours le repli.
+   */
+  visuel(c: ChambreResponse): string {
+    const televersee = (c.photos || '').split(',').map(u => u.trim()).find(u => !!u);
+    return televersee || this.media.photoChambre(c.type, c.numero).thumb;
+  }
 
   ngOnInit(): void {
     this.pageHeaderService.set('Gestion des chambres', 'Créer, modifier, filtrer et activer les chambres de l\'hôtel');

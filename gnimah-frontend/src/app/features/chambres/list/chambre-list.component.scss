@@ -1,1 +1,12 @@
-// Chambre management uses shared .gn-* classes from src/styles.scss
+// Liste des chambres — l'essentiel vit dans les classes .gn-* globales.
+
+// Colonne d'identité : la vignette donne un visage à chaque ligne du tableau.
+.cl-ident { display: flex; align-items: center; gap: 12px; }
+.cl-thumb {
+  width: 56px; height: 42px; object-fit: cover; border-radius: 10px; flex: none;
+  background: #f2e8e4; box-shadow: 0 1px 3px rgba(60,25,30,.10);
+}
+
+@media (max-width: 560px) {
+  .cl-thumb { width: 44px; height: 34px; }
+}
