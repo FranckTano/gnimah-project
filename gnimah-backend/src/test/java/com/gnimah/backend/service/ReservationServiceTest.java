@@ -20,6 +20,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
@@ -51,8 +52,8 @@ class ReservationServiceTest {
         ReservationRequest request = new ReservationRequest();
         request.setClientId(1L);
         request.setChambreId(10L);
-        request.setDateArrivee(LocalDateTime.now().plusDays(1));
-        request.setDateDepart(LocalDateTime.now().plusDays(3));
+        request.setDateArrivee(LocalDate.now().plusDays(1));
+        request.setDateDepart(LocalDate.now().plusDays(3));
 
         Client client = Client.builder().id(1L).civilite("M.").nom("DIALLO").build();
         Chambre chambre = Chambre.builder().id(10L).numero("101").type(TypeChambre.STANDARD)
@@ -75,8 +76,8 @@ class ReservationServiceTest {
         ReservationRequest request = new ReservationRequest();
         request.setClientId(1L);
         request.setChambreId(10L);
-        request.setDateArrivee(LocalDateTime.now().plusDays(1));
-        request.setDateDepart(LocalDateTime.now().plusDays(3));
+        request.setDateArrivee(LocalDate.now().plusDays(1));
+        request.setDateDepart(LocalDate.now().plusDays(3));
 
         Client client = Client.builder().id(1L).civilite("M.").nom("DIALLO").build();
         Chambre chambre = Chambre.builder().id(10L).numero("101").type(TypeChambre.STANDARD)

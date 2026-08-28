@@ -1,0 +1,180 @@
+<div class="gn-route">
+
+  <!-- ============ AJOUT ============ -->
+  <div class="gn-card m-add">
+    <div class="m-add-head">
+      <div>
+        <div class="gn-serif m-title">Ajouter une photo</div>
+        <div class="m-sub">Elle rejoindra la galerie « La Résidence » et pourra illustrer les chambres.</div>
+      </div>
+      <button class="gn-btn-o m-mini" type="button" (click)="ouvrirAjoutUrl()">
+        <i class="ti ti-link"></i>Depuis une adresse web
+      </button>
+    </div>
+
+    <ng-container *ngIf="hebergementDisponible">
+      <!-- Zone de dépôt -->
+      <label class="m-drop" *ngIf="!apercu">
+        <input type="file" accept="image/*" (change)="onFichier($event)" hidden />
+        <i class="ti ti-photo-plus m-drop-i"></i>
+        <span class="m-drop-t">Choisir une image</span>
+        <span class="m-drop-s">JPG, PNG ou WebP · 10 Mo maximum</span>
+      </label>
+
+      <!-- Aperçu + métadonnées -->
+      <div class="m-form" *ngIf="apercu">
+        <img class="m-preview" [src]="apercu" alt="Aperçu de la photo à envoyer" />
+        <div class="m-fields">
+          <label class="gn-flabel">Titre</label>
+          <input class="gn-input" [(ngModel)]="titreEnvoi" placeholder="Ex : Suite avec balcon" maxlength="150" />
+
+          <label class="gn-flabel m-mt">Catégorie</label>
+          <select class="gn-input" [(ngModel)]="categorieEnvoi">
+            <option *ngFor="let c of categories" [value]="c">{{ c }}</option>
+          </select>
+
+          <div class="m-actions">
+            <button class="gn-btn-p m-btn" type="button" (click)="envoyer()"
+                    [disabled]="envoiEnCours || !titreEnvoi.trim()">
+              <i class="ti ti-loader-2 gn-spin" *ngIf="envoiEnCours"></i>
+              <i class="ti ti-cloud-upload" *ngIf="!envoiEnCours"></i>
+              {{ envoiEnCours ? 'Envoi en cours…' : 'Publier la photo' }}
+            </button>
+            <button class="gn-btn-o m-btn" type="button" (click)="annulerEnvoi()" [disabled]="envoiEnCours">Annuler</button>
+          </div>
+        </div>
+      </div>
+    </ng-container>
+
+    <!-- Serveur sans hébergement configuré -->
+    <div class="m-notice" *ngIf="!hebergementDisponible">
+      <i class="ti ti-cloud-off"></i>
+      <div>
+        <strong>L'envoi de fichier n'est pas disponible sur ce serveur.</strong>
+        Vous pouvez tout de même référencer une image déjà en ligne avec le bouton
+        « Depuis une adresse web ». Pour activer l'envoi direct, renseignez les
+        variables <code>CLOUDINARY_CLOUD_NAME</code>, <code>CLOUDINARY_API_KEY</code>
+        et <code>CLOUDINARY_API_SECRET</code> sur le serveur.
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ GALERIE ============ -->
+  <div class="gn-card m-list">
+    <div class="m-add-head">
+      <div>
+        <div class="gn-serif m-title">
+          Galerie
+          <span class="m-count">{{ nbActifs }} publiée{{ nbActifs > 1 ? 's' : '' }} sur {{ medias.length }}</span>
+        </div>
+        <div class="m-sub">L'ordre ci-dessous est celui de la page « La Résidence ».</div>
+      </div>
+      <button class="gn-btn-o m-mini" type="button" (click)="charger()" [disabled]="loading">
+        <i class="ti ti-refresh" [class.gn-spin]="loading"></i>Actualiser
+      </button>
+    </div>
+
+    <div class="m-grid" *ngIf="medias.length">
+      <div class="m-card" *ngFor="let m of medias; let i = index; let first = first; let last = last"
+           [class.m-off]="!m.actif">
+        <div class="m-thumb">
+          <img [src]="m.urlVignette || m.url" [alt]="m.titre" loading="lazy" />
+          <span class="gn-bdg wine m-badge" *ngIf="m.misEnAvant"><i class="ti ti-star-filled"></i>En avant</span>
+          <span class="gn-bdg gray m-badge m-badge-off" *ngIf="!m.actif"><i class="ti ti-eye-off"></i>Masquée</span>
+        </div>
+
+        <div class="m-body">
+          <div class="m-name">{{ m.titre }}</div>
+          <div class="m-cat">{{ m.categorie }}</div>
+        </div>
+
+        <div class="m-tools">
+          <button class="gn-icobtn m-tool" type="button" (click)="deplacer(m, -1)" [disabled]="first" title="Monter">
+            <i class="ti ti-arrow-up"></i>
+          </button>
+          <button class="gn-icobtn m-tool" type="button" (click)="deplacer(m, 1)" [disabled]="last" title="Descendre">
+            <i class="ti ti-arrow-down"></i>
+          </button>
+          <button class="gn-icobtn m-tool" type="button" (click)="basculerActif(m)"
+                  [title]="m.actif ? 'Masquer de la galerie' : 'Publier dans la galerie'">
+            <i class="ti" [ngClass]="m.actif ? 'ti-eye' : 'ti-eye-off'"></i>
+          </button>
+          <button class="gn-icobtn m-tool" type="button" (click)="ouvrirEdition(m)" title="Modifier">
+            <i class="ti ti-pencil"></i>
+          </button>
+          <button class="gn-icobtn m-tool m-danger" type="button" (click)="supprimer(m)" title="Supprimer">
+            <i class="ti ti-trash"></i>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div class="m-blank" *ngIf="!loading && !medias.length">
+      <i class="ti ti-photo-off m-blank-i"></i>
+      <div class="m-blank-t">Aucune photo dans la galerie</div>
+      <div class="m-blank-s">Ajoutez un premier visuel ci-dessus pour illustrer la résidence.</div>
+    </div>
+  </div>
+</div>
+
+<!-- ============ ÉDITION ============ -->
+<p-dialog [(visible)]="dialogVisible" header="Modifier le visuel" [modal]="true"
+          [style]="{width:'440px'}" [draggable]="false">
+  <img class="m-dialog-img" *ngIf="editing" [src]="editing.urlVignette || editing.url" [alt]="editing.titre" />
+  <form [formGroup]="editForm">
+    <label class="gn-flabel">Titre</label>
+    <input class="gn-input m-mt-sm" formControlName="titre" maxlength="150"
+           [class.gn-invalid]="isInvalid(editForm, 'titre')" />
+
+    <label class="gn-flabel m-mt">Catégorie</label>
+    <select class="gn-input m-mt-sm" formControlName="categorie">
+      <option *ngFor="let c of categories" [value]="c">{{ c }}</option>
+    </select>
+
+    <label class="m-check"><input type="checkbox" formControlName="actif" /> Publiée dans la galerie</label>
+    <label class="m-check"><input type="checkbox" formControlName="misEnAvant" /> Utiliser comme visuel principal</label>
+    <div class="m-hint">Le visuel principal illustre les bandeaux du tableau de bord et des statistiques.</div>
+  </form>
+  <ng-template pTemplate="footer">
+    <button class="gn-btn-o m-btn" type="button" (click)="dialogVisible=false">Annuler</button>
+    <button class="gn-btn-p m-btn" type="button" (click)="enregistrer()" [disabled]="editForm.invalid || enregistrement">
+      <i class="ti ti-loader-2 gn-spin" *ngIf="enregistrement"></i>Enregistrer
+    </button>
+  </ng-template>
+</p-dialog>
+
+<!-- ============ AJOUT PAR ADRESSE ============ -->
+<p-dialog [(visible)]="dialogUrlVisible" header="Ajouter depuis une adresse web" [modal]="true"
+          [style]="{width:'480px'}" [draggable]="false">
+  <p class="m-hint m-hint-top">
+    Pour une image déjà en ligne. Elle n'est pas copiée sur nos serveurs : si elle
+    disparaît de son hébergement d'origine, elle disparaîtra aussi de la galerie.
+  </p>
+  <form [formGroup]="urlForm">
+    <label class="gn-flabel">Titre</label>
+    <input class="gn-input m-mt-sm" formControlName="titre" maxlength="150"
+           [class.gn-invalid]="isInvalid(urlForm, 'titre')" />
+
+    <label class="gn-flabel m-mt">Catégorie</label>
+    <select class="gn-input m-mt-sm" formControlName="categorie">
+      <option *ngFor="let c of categories" [value]="c">{{ c }}</option>
+    </select>
+
+    <label class="gn-flabel m-mt">Adresse de l'image</label>
+    <input class="gn-input m-mt-sm" formControlName="url" placeholder="https://…"
+           [class.gn-invalid]="isInvalid(urlForm, 'url')" />
+    <div class="m-err" *ngIf="isInvalid(urlForm, 'url')">L'adresse doit commencer par http:// ou https://</div>
+
+    <label class="gn-flabel m-mt">Vignette (facultatif)</label>
+    <input class="gn-input m-mt-sm" formControlName="urlVignette" placeholder="https://… (version allégée)" />
+  </form>
+  <ng-template pTemplate="footer">
+    <button class="gn-btn-o m-btn" type="button" (click)="dialogUrlVisible=false">Annuler</button>
+    <button class="gn-btn-p m-btn" type="button" (click)="ajouterUrl()" [disabled]="urlForm.invalid || enregistrement">
+      <i class="ti ti-loader-2 gn-spin" *ngIf="enregistrement"></i>Ajouter
+    </button>
+  </ng-template>
+</p-dialog>
+
+<p-confirmDialog></p-confirmDialog>
+<p-toast></p-toast>

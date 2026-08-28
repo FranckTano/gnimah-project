@@ -213,6 +213,13 @@ h1, h2, h3, h4 { margin: 0; font-weight: 600; }
   .gn-resv { grid-template-columns: repeat(2,1fr); }
 }
 
+/* Les éléments de grille ont `min-width:auto` par défaut : ils refusent de
+   descendre sous la largeur de leur contenu et poussent la page en débordement
+   au lieu de se comprimer — y compris quand l'enfant sait défiler tout seul. */
+.gn-kpi > *, .gn-kpi6 > *, .gn-rooms > *, .gn-resv > *,
+.gn-dash2 > *, .gn-dash3 > *, .gn-hk > *, .gn-agh > *,
+.gn-cal > *, .gn-ck > *, .gn-rcpt > *, .gn-caldays > * { min-width: 0; }
+
 /* ---- Mobile extra (< 480px) ---- */
 @media (max-width: 480px) {
   .gn-kpi6 { grid-template-columns: 1fr 1fr; }
@@ -236,6 +243,17 @@ h1, h2, h3, h4 { margin: 0; font-weight: 600; }
 
   /* Tableaux : forcer le wrapper en overflow */
   .gn-tw { overflow-x: auto !important; }
+}
+
+/* ---- Écrans très étroits (Galaxy Fold replié : 280px) ----
+   Placé après le bloc 480px ci-dessus, qui impose deux colonnes : à cette
+   largeur elles ne laissent plus assez de place au contenu des tuiles, dont le
+   texte débordait (les montants « 15 000 F CFA » contiennent des espaces
+   insécables et ne peuvent pas se couper). */
+@media (max-width: 380px) {
+  .gn-rooms, .gn-resv, .gn-kpi6 { grid-template-columns: 1fr; }
+  .gn-body { padding: 12px 10px 44px !important; }
+  .gn-card { border-radius: 14px; }
 }
 
 /* ---- PrimeNG table restyled to the gn- look (used via styleClass="gn-ptable") ---- */

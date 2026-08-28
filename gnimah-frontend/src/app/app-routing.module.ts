@@ -17,6 +17,7 @@ import { EvenementsComponent } from './features/evenements/evenements.component'
 import { KpiComponent } from './features/kpi/kpi.component';
 import { ResidenceComponent } from './features/residence/residence.component';
 import { UtilisateursComponent } from './features/administration/utilisateurs/utilisateurs.component';
+import { MediasComponent } from './features/administration/medias/medias.component';
 
 const routes: Routes = [
   { path: 'login', component: LoginComponent },
@@ -39,7 +40,10 @@ const routes: Routes = [
       { path: 'entretien', component: EntretienComponent },
       { path: 'evenements', component: EvenementsComponent },
       { path: 'kpi', component: KpiComponent, canActivate: [AuthGuard], data: { role: 'DIRECTEUR' } },
-      { path: 'administration/utilisateurs', component: UtilisateursComponent, canActivate: [AuthGuard], data: { role: 'ADMIN' } }
+      { path: 'administration/utilisateurs', component: UtilisateursComponent, canActivate: [AuthGuard], data: { role: 'ADMIN' } },
+      // La galerie est un contenu éditorial, pas de la gestion de comptes : le
+      // directeur y a accès au même titre que l'administrateur.
+      { path: 'administration/medias', component: MediasComponent, canActivate: [AuthGuard], data: { role: 'DIRECTEUR' } }
     ]
   },
   { path: '**', redirectTo: 'dashboard' }

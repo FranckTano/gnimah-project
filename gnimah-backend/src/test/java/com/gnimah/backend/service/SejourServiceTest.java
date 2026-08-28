@@ -7,6 +7,7 @@ import com.gnimah.backend.entity.Sejour;
 import com.gnimah.backend.entity.enums.EtatChambre;
 import com.gnimah.backend.entity.enums.TypeChambre;
 import com.gnimah.backend.exception.BusinessException;
+import com.gnimah.backend.repository.PaiementRepository;
 import com.gnimah.backend.repository.ClientRepository;
 import com.gnimah.backend.repository.SejourRepository;
 import com.gnimah.backend.repository.UtilisateurRepository;
@@ -21,6 +22,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.time.LocalDate;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -37,6 +39,9 @@ class SejourServiceTest {
     @Mock private UtilisateurRepository utilisateurRepository;
     @Mock private AuditService auditService;
     @Mock private NotificationService notificationService;
+    // Ajouté lors de l'enregistrement de l'acompte au check-in : sans ce mock,
+    // checkIn() lève un NullPointerException dès qu'un montant est payé.
+    @Mock private PaiementRepository paiementRepository;
 
     @InjectMocks
     private SejourService sejourService;
@@ -53,8 +58,8 @@ class SejourServiceTest {
         request.setClientId(1L);
         request.setChambreId(10L);
         request.setTypeLocation("SEJOUR");
-        request.setDateEntree(LocalDateTime.now());
-        request.setDateSortie(LocalDateTime.now().plusDays(2));
+        request.setDateEntree(LocalDate.now());
+        request.setDateSortie(LocalDate.now().plusDays(2));
 
         Client client = Client.builder().id(1L).civilite("M.").nom("DIALLO").nbSejours(0).build();
         Chambre chambre = Chambre.builder().id(10L).numero("101").etat(EtatChambre.OCCUPEE)
@@ -76,7 +81,7 @@ class SejourServiceTest {
         request.setClientId(1L);
         request.setChambreId(10L);
         request.setTypeLocation("SEJOUR");
-        LocalDateTime entree = LocalDateTime.now();
+        LocalDate entree = LocalDate.now();
         request.setDateEntree(entree);
         request.setDateSortie(entree.plusDays(3));
         request.setMontantPaye(BigDecimal.valueOf(20000));

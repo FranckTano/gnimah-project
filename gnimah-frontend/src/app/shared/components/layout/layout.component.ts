@@ -6,6 +6,7 @@ import { CurrentUser } from '../../../core/models/auth.model';
 import { PageHeaderService } from '../../../core/services/page-header.service';
 import { NotificationService } from '../../../core/services/notification.service';
 import { NotificationResponse, NOTIFICATION_ICONS } from '../../../core/models/notification.model';
+import { MediaService } from '../../../core/services/media.service';
 
 interface NavItem {
   label: string;
@@ -44,12 +45,17 @@ export class LayoutComponent implements OnInit, OnDestroy {
     private authService: AuthService,
     private pageHeaderService: PageHeaderService,
     private notificationService: NotificationService,
+    private mediaService: MediaService,
     private router: Router
   ) {}
 
   ngOnInit(): void {
     this.currentUser = this.authService.currentUser;
     this.buildMenu();
+    // La galerie se charge ici : c'est le premier écran authentifié, et l'API
+    // des médias exige un jeton. L'échec est silencieux — le catalogue livré
+    // avec l'application prend alors le relais.
+    this.mediaService.charger();
     this.sub.add(
       this.pageHeaderService.header$.subscribe(h => {
         this.pageTitle = h.title;
@@ -134,11 +140,15 @@ export class LayoutComponent implements OnInit, OnDestroy {
       { label: 'FACTURATION', items: facturation }
     ];
 
+    const administration: NavItem[] = [];
+    if (isDirecteur) {
+      administration.push({ label: 'Photos de la résidence', icon: 'ti-photo-cog', link: '/administration/medias' });
+    }
     if (isAdmin) {
-      this.navSections.push({
-        label: 'ADMINISTRATION',
-        items: [{ label: 'Utilisateurs', icon: 'ti-shield-lock', link: '/administration/utilisateurs' }]
-      });
+      administration.push({ label: 'Utilisateurs', icon: 'ti-shield-lock', link: '/administration/utilisateurs' });
+    }
+    if (administration.length) {
+      this.navSections.push({ label: 'ADMINISTRATION', items: administration });
     }
   }
 

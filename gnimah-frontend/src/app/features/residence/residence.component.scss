@@ -50,6 +50,12 @@ $discret: #a99a9d;
 }
 .r-gal-t { font-size: 18px; color: $encre; }
 .r-gal-s { font-size: 12.5px; color: $discret; margin-top: 3px; }
+.r-gal-admin {
+  display: inline-flex; align-items: center; gap: 5px; margin-left: 10px;
+  color: $wine; text-decoration: none; font-weight: 600;
+  i { font-size: 14px; }
+  &:hover { color: #6f2440; }
+}
 .r-chips { display: flex; gap: 7px; flex-wrap: wrap; }
 .r-chip-n {
   margin-left: 7px; font-size: 11px; opacity: .7; font-variant-numeric: tabular-nums;

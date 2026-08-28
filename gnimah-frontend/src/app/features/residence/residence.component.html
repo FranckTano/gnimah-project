@@ -64,7 +64,12 @@
     <div class="r-gal-head">
       <div>
         <div class="gn-serif r-gal-t">Album photo</div>
-        <div class="r-gal-s">Cliquez sur une photo pour l'agrandir</div>
+        <div class="r-gal-s">
+          Cliquez sur une photo pour l'agrandir
+          <a routerLink="/administration/medias" class="r-gal-admin" *ngIf="peutAdministrer">
+            <i class="ti ti-photo-cog"></i>Gérer les photos
+          </a>
+        </div>
       </div>
       <div class="r-chips">
         <button *ngFor="let c of categories" class="gn-chip" [class.on]="categorieActive === c"

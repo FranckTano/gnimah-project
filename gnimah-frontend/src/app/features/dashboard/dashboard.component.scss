@@ -18,9 +18,12 @@ $wine: #8c2f4d;
   display: inline-flex; align-items: center; gap: 7px; font-size: 12.5px; font-weight: 600; color: #f6e9ec;
   i { font-size: 15px; color: #e2b3c0; }
 }
+// `padding` vertical : le texte seul ne fait que 16px de haut, sous le minimum
+// de 24px pour une cible tactile confortable.
 .gn-welcome-link {
   display: inline-flex; align-items: center; gap: 7px; font-size: 12.5px; font-weight: 600;
   color: #eccbd4; text-decoration: none; transition: color .15s;
+  padding: 6px 2px; min-height: 28px;
   i { font-size: 15px; }
   &:hover { color: #fff; }
 }

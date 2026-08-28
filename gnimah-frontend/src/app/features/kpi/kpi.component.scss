@@ -18,7 +18,13 @@ $wine: #8c2f4d;
   margin-left: 8px; padding: 2px 9px; border-radius: 100px;
   background: rgba(255,255,255,.14); font-size: 11.5px; color: #f0dde2;
 }
-.k-hero-facts { display: flex; align-items: center; gap: 22px; padding: 12px 18px; }
+// `flex-wrap` + `min-width:0` : sur écran très étroit les trois repères passent
+// à la ligne au lieu de pousser le bandeau hors du cadre.
+.k-hero-facts {
+  display: flex; align-items: center; gap: 22px; padding: 12px 18px;
+  flex-wrap: wrap; min-width: 0; max-width: 100%;
+}
+.k-hero-facts > div { min-width: 0; }
 .k-hero-sep { width: 1px; align-self: stretch; background: rgba(226,180,193,.30); }
 .k-fact-l { color: #cd9dab; }
 .k-fact-v { font-size: 22px; color: #fff; margin-top: 4px; }
@@ -157,4 +163,15 @@ $wine: #8c2f4d;
   .k-hero-fig { font-size: 31px; }
   .k-summary { gap: 18px; }
   .k-mini-grid { grid-template-columns: 1fr; }
+}
+// Écrans très étroits (Galaxy Fold replié, 280px) : les séparateurs verticaux
+// n'ont plus de sens une fois les repères empilés.
+@media (max-width: 400px) {
+  .k-hero-in { padding: 16px; }
+  .k-hero-fig { font-size: 26px; }
+  .k-hero-facts { gap: 6px 16px; padding: 10px 13px; }
+  .k-hero-sep { display: none; }
+  .k-fact-v { font-size: 18px; }
+  .k-panel, .k-tile { padding: 16px 14px; }
+  .k-occ-v { font-size: 32px; }
 }

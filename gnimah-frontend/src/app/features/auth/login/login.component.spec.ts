@@ -2,6 +2,7 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import { ReactiveFormsModule } from '@angular/forms';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
+import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { Router } from '@angular/router';
 import { of, throwError } from 'rxjs';
 import { MessageService } from 'primeng/api';
@@ -28,7 +29,9 @@ describe('LoginComponent', () => {
 
     await TestBed.configureTestingModule({
       declarations: [LoginComponent],
-      imports: [ReactiveFormsModule, NoopAnimationsModule, PasswordModule],
+      // MediaService (diaporama du panneau d'accueil) dépend de l'API des médias,
+      // donc de HttpClient — même si l'écran de connexion n'appelle jamais l'API.
+      imports: [ReactiveFormsModule, NoopAnimationsModule, PasswordModule, HttpClientTestingModule],
       providers: [
         { provide: AuthService, useValue: authServiceSpy },
         { provide: PublicInfoService, useValue: publicInfoServiceSpy },

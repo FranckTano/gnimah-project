@@ -50,6 +50,13 @@ spring:
           starttls:
             enable: true
 
+  servlet:
+    multipart:
+      # Le défaut de Spring est 1 Mo : une photo d'hôtel le dépasse largement et
+      # serait rejetée avant même d'atteindre la validation métier (10 Mo).
+      max-file-size: 12MB
+      max-request-size: 14MB
+
   jackson:
     date-format: yyyy-MM-dd'T'HH:mm:ss
     time-zone: Africa/Abidjan
@@ -75,6 +82,16 @@ app:
     target-url: ${KEEPALIVE_TARGET_URL:}
   pdf:
     output-dir: ${PDF_OUTPUT_DIR:./pdfs}
+  cloudinary:
+    # Hébergement des visuels de la galerie. Facultatif : sans ces valeurs,
+    # l'administration reste utilisable pour référencer des images déjà en ligne,
+    # mais l'envoi de fichier depuis l'application est désactivé.
+    # Le secret donne un accès complet au compte : il ne doit exister que comme
+    # variable d'environnement du serveur, jamais dans le dépôt ni dans le frontend.
+    cloud-name: ${CLOUDINARY_CLOUD_NAME:}
+    api-key: ${CLOUDINARY_API_KEY:}
+    api-secret: ${CLOUDINARY_API_SECRET:}
+    folder: ${CLOUDINARY_FOLDER:gnimah/galerie}
   hotel:
     name: "Résidence Hôtel GNIMAH"
     address: "Abobo, Boulevard Belleville, Carrefour Mosquée, Rue Cocotier, Lot 227, Îlot 110, Abidjan"

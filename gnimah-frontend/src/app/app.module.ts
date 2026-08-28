@@ -78,6 +78,7 @@ import { EvenementsComponent } from './features/evenements/evenements.component'
 import { KpiComponent } from './features/kpi/kpi.component';
 import { ResidenceComponent } from './features/residence/residence.component';
 import { UtilisateursComponent } from './features/administration/utilisateurs/utilisateurs.component';
+import { MediasComponent } from './features/administration/medias/medias.component';
 
 @NgModule({
   declarations: [
@@ -98,7 +99,8 @@ import { UtilisateursComponent } from './features/administration/utilisateurs/ut
     EvenementsComponent,
     KpiComponent,
     ResidenceComponent,
-    UtilisateursComponent
+    UtilisateursComponent,
+    MediasComponent
   ],
   imports: [
     BrowserModule,
