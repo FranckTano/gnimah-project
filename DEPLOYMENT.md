@@ -48,6 +48,42 @@ Que tu aies utilisé le Blueprint ou pas, va dans **Environment** et vérifie/co
 
 Render fournit déjà `PORT` automatiquement — le backend l'utilise (`server.port: ${PORT:8080}` dans `application.yml`), rien à faire.
 
+#### Cloudinary (facultatif) — envoi de photos depuis l'application
+
+Ces trois variables activent l'envoi de fichier dans **Administration → Photos de
+la résidence**. Sans elles, l'application fonctionne normalement : la page reste
+utilisable pour référencer une image déjà en ligne, et l'écran l'explique.
+
+| Variable | Où la trouver |
+|---|---|
+| `CLOUDINARY_CLOUD_NAME` | console Cloudinary → **Settings → API Keys** → *Cloud name* |
+| `CLOUDINARY_API_KEY` | même page → *API Key* |
+| `CLOUDINARY_API_SECRET` | même page → *API Secret* (bouton « révéler ») |
+
+**Marche à suivre**
+
+1. Render → ton service `gnimah-backend` → onglet **Environment**.
+2. **Add Environment Variable**, une par une, puis **Save Changes**.
+3. Render redéploie tout seul (~2 min).
+4. Vérifie : connecte-toi en directeur, va sur **Administration → Photos de la
+   résidence**. Le bandeau orange « L'envoi de fichier n'est pas disponible »
+   doit avoir disparu et la zone de dépôt apparaître à la place.
+
+**Pourquoi ces clés vivent sur le serveur et pas dans le frontend**
+
+L'envoi transite par le backend, qui signe la requête Cloudinary. L'autre approche
+— téléverser depuis le navigateur avec un préréglage « non signé » — obligerait à
+publier le nom du préréglage dans le bundle : n'importe quel visiteur pourrait
+alors déposer des fichiers sur le compte. Ici le secret ne quitte jamais Render,
+et seul un directeur authentifié peut déclencher un envoi.
+
+⚠️ Le secret donne un **accès complet** au compte Cloudinary. Ne le committe
+jamais, et fais-le tourner (console → API Keys → *Rotate*) s'il a circulé.
+
+> Les **adresses publiques** des photos, elles, n'ont rien de secret : elles sont
+> figées dans le build du frontend (`environment.prod.ts`) et apparaissent dans le
+> HTML livré au navigateur. Aucune variable Cloudinary n'est à poser sur Vercel.
+
 ### 2.3 Déployer et vérifier
 
 1. Lance le déploiement. Le premier build prend quelques minutes (Gradle + build de l'image Docker).
