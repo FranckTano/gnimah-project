@@ -20,8 +20,24 @@ public class SejourRequest {
     private LocalDate dateSortie;
     private LocalTime heureEntree;
     private LocalTime heureSortie;
+
+    /**
+     * Tarif unitaire négocié pour ce séjour. Laissé vide, le tarif de la
+     * chambre s'applique. Renseigné, il se substitue au tarif catalogue —
+     * c'est la façon la plus directe d'accorder un prix particulier.
+     */
+    private BigDecimal tarifPersonnalise;
+
+    /** POURCENTAGE ou MONTANT. */
+    private String remiseType;
+    /** 15 pour « 15 % », ou 5000 pour « 5 000 F de remise ». */
+    private BigDecimal remiseValeur;
+    private String remiseMotif;
+
     private BigDecimal montantPaye;
     private String modePaiement;
     private String notes;
     private Long reservationId;
+    /** Caisse qui encaisse l'acompte d'arrivée. */
+    private Long caisseId;
 }

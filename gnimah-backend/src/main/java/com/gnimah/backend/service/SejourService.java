@@ -1,7 +1,9 @@
 package com.gnimah.backend.service;
 
+import com.gnimah.backend.dto.sejour.RemiseSejourRequest;
 import com.gnimah.backend.dto.sejour.SejourRequest;
 import com.gnimah.backend.dto.sejour.SejourResponse;
+import com.gnimah.backend.entity.Caisse;
 import com.gnimah.backend.entity.Chambre;
 import com.gnimah.backend.entity.Client;
 import com.gnimah.backend.entity.Paiement;
@@ -9,7 +11,10 @@ import com.gnimah.backend.entity.Sejour;
 import com.gnimah.backend.entity.Utilisateur;
 import com.gnimah.backend.entity.enums.EtatChambre;
 import com.gnimah.backend.entity.enums.ModePaiement;
+import com.gnimah.backend.entity.enums.SensMouvement;
 import com.gnimah.backend.entity.enums.TypeLocation;
+import com.gnimah.backend.entity.enums.TypeMouvementCaisse;
+import com.gnimah.backend.entity.enums.TypeRemise;
 import com.gnimah.backend.exception.BusinessException;
 import com.gnimah.backend.exception.ResourceNotFoundException;
 import com.gnimah.backend.repository.ClientRepository;
@@ -41,6 +46,7 @@ public class SejourService {
     private final PaiementRepository paiementRepository;
     private final AuditService auditService;
     private final NotificationService notificationService;
+    private final CaisseService caisseService;
 
     @Transactional
     public SejourResponse checkIn(SejourRequest request) {
@@ -54,12 +60,27 @@ public class SejourService {
 
         TypeLocation typeLocation = TypeLocation.valueOf(request.getTypeLocation());
 
-        BigDecimal montantTotal = calculerMontant(typeLocation, request, chambre);
+        // Le tarif appliqué peut être négocié ; à défaut c'est celui de la chambre.
+        BigDecimal tarifApplique = request.getTarifPersonnalise() != null
+                && request.getTarifPersonnalise().compareTo(BigDecimal.ZERO) > 0
+                ? request.getTarifPersonnalise()
+                : tarifCatalogue(typeLocation, chambre);
+
+        int nbUnites = nbUnites(typeLocation, request);
+        BigDecimal montantBrut = tarifApplique.multiply(BigDecimal.valueOf(nbUnites));
+
+        TypeRemise remiseType = Remises.parse(request.getRemiseType());
+        BigDecimal remiseMontant = Remises.calculer(montantBrut, remiseType, request.getRemiseValeur());
+        BigDecimal montantTotal = montantBrut.subtract(remiseMontant);
+
         BigDecimal montantPaye = request.getMontantPaye() != null ? request.getMontantPaye() : BigDecimal.ZERO;
+        if (montantPaye.compareTo(montantTotal) > 0) {
+            throw new BusinessException("L'acompte (" + montantPaye + " FCFA) dépasse le montant du séjour ("
+                    + montantTotal + " FCFA)");
+        }
         BigDecimal resteAPayer = montantTotal.subtract(montantPaye);
 
         String numeroRecu = genererNumeroRecu();
-
         Utilisateur agent = getAgentConnecte();
 
         // Le frontend envoie des dates au format "yyyy-MM-dd" (LocalDate), on convertit en LocalDateTime
@@ -76,6 +97,14 @@ public class SejourService {
                 .dateSortie(dateSortieDT)
                 .heureEntree(request.getHeureEntree())
                 .heureSortie(request.getHeureSortie())
+                .montantBrut(montantBrut)
+                .tarifApplique(tarifApplique)
+                .remiseType(remiseMontant.compareTo(BigDecimal.ZERO) > 0 ? remiseType : null)
+                .remiseValeur(request.getRemiseValeur() != null ? request.getRemiseValeur() : BigDecimal.ZERO)
+                .remiseMontant(remiseMontant)
+                .remiseMotif(remiseMontant.compareTo(BigDecimal.ZERO) > 0 ? request.getRemiseMotif() : null)
+                .remisePar(remiseMontant.compareTo(BigDecimal.ZERO) > 0 ? agent : null)
+                .montantExtras(BigDecimal.ZERO)
                 .montantTotal(montantTotal)
                 .montantPaye(montantPaye)
                 .resteAPayer(resteAPayer)
@@ -84,9 +113,8 @@ public class SejourService {
                 .reservationId(request.getReservationId())
                 .build();
 
-        if (typeLocation == TypeLocation.SEJOUR && request.getDateSortie() != null) {
-            long nbJours = ChronoUnit.DAYS.between(request.getDateEntree(), request.getDateSortie());
-            sejour.setNbJours((int) Math.max(nbJours, 1));
+        if (typeLocation == TypeLocation.SEJOUR) {
+            sejour.setNbJours(nbUnites);
         }
 
         chambre.setEtat(EtatChambre.OCCUPEE);
@@ -109,11 +137,75 @@ public class SejourService {
                     .datePaiement(LocalDateTime.now())
                     .build();
             paiementRepository.save(paiement);
+
+            Caisse caisse = caisseService.resoudreCaisse(request.getCaisseId());
+            caisseService.enregistrer(caisse, SensMouvement.ENTREE, TypeMouvementCaisse.ENCAISSEMENT_SEJOUR,
+                    montantPaye, mode,
+                    "Acompte à l'arrivée — chambre " + chambre.getNumero() + " (" + client.getNomComplet() + ")",
+                    numeroRecu, "SEJOUR", saved.getId(), agent);
         }
 
         auditService.log(agent, "CHECK_IN", "Sejour", saved.getId(), "Check-in chambre " + chambre.getNumero() + " pour " + client.getNomComplet());
+        if (remiseMontant.compareTo(BigDecimal.ZERO) > 0) {
+            auditService.log(agent, "REMISE_SEJOUR", "Sejour", saved.getId(),
+                    "Remise de " + remiseMontant + " FCFA sur " + montantBrut + " FCFA"
+                            + (request.getRemiseMotif() != null ? " — " + request.getRemiseMotif() : ""));
+        }
 
         return toResponse(saved);
+    }
+
+    /**
+     * Révise le prix d'un séjour en cours : tarif négocié et/ou remise. Le
+     * montant déjà encaissé est préservé et le reste à payer recalculé, ce qui
+     * permet de corriger une note après un premier versement.
+     */
+    @Transactional
+    public SejourResponse appliquerRemise(Long id, RemiseSejourRequest request) {
+        Sejour sejour = findById(id);
+        if (!"EN_COURS".equals(sejour.getStatut())) {
+            throw new BusinessException("Seul un séjour en cours peut voir son prix révisé");
+        }
+
+        BigDecimal tarifApplique = request.getTarifPersonnalise() != null
+                && request.getTarifPersonnalise().compareTo(BigDecimal.ZERO) > 0
+                ? request.getTarifPersonnalise()
+                : (sejour.getTarifApplique() != null
+                    ? sejour.getTarifApplique()
+                    : tarifCatalogue(sejour.getTypeLocation(), sejour.getChambre()));
+
+        int nbUnites = sejour.getTypeLocation() == TypeLocation.SEJOUR
+                ? Math.max(sejour.getNbJours() != null ? sejour.getNbJours() : 1, 1) : 1;
+        BigDecimal montantBrut = tarifApplique.multiply(BigDecimal.valueOf(nbUnites));
+
+        TypeRemise remiseType = Remises.parse(request.getRemiseType());
+        BigDecimal remiseMontant = Remises.calculer(montantBrut, remiseType, request.getRemiseValeur());
+
+        BigDecimal extras = sejour.getMontantExtras() != null ? sejour.getMontantExtras() : BigDecimal.ZERO;
+        BigDecimal nouveauTotal = montantBrut.subtract(remiseMontant).add(extras);
+
+        if (nouveauTotal.compareTo(sejour.getMontantPaye()) < 0) {
+            throw new BusinessException("Le nouveau montant (" + nouveauTotal + " FCFA) est inférieur à ce que le "
+                    + "client a déjà versé (" + sejour.getMontantPaye() + " FCFA) — un remboursement est nécessaire.");
+        }
+
+        Utilisateur agent = getAgentConnecte();
+        sejour.setTarifApplique(tarifApplique);
+        sejour.setMontantBrut(montantBrut);
+        sejour.setRemiseType(remiseMontant.compareTo(BigDecimal.ZERO) > 0 ? remiseType : null);
+        sejour.setRemiseValeur(request.getRemiseValeur() != null ? request.getRemiseValeur() : BigDecimal.ZERO);
+        sejour.setRemiseMontant(remiseMontant);
+        sejour.setRemiseMotif(remiseMontant.compareTo(BigDecimal.ZERO) > 0 ? request.getRemiseMotif() : null);
+        sejour.setRemisePar(remiseMontant.compareTo(BigDecimal.ZERO) > 0 ? agent : null);
+        sejour.setMontantTotal(nouveauTotal);
+        sejour.setResteAPayer(nouveauTotal.subtract(sejour.getMontantPaye()));
+
+        auditService.log(agent, "REVISION_PRIX_SEJOUR", "Sejour", sejour.getId(),
+                "Nouveau montant " + nouveauTotal + " FCFA (brut " + montantBrut
+                        + ", remise " + remiseMontant + ")"
+                        + (request.getRemiseMotif() != null ? " — " + request.getRemiseMotif() : ""));
+
+        return toResponse(sejourRepository.save(sejour));
     }
 
     @Transactional
@@ -133,6 +225,14 @@ public class SejourService {
         auditService.log(agent, "CHECK_OUT", "Sejour", sejour.getId(), "Check-out chambre " + chambre.getNumero());
         notificationService.creer("FIN_SEJOUR", "Séjour terminé",
                 "Chambre " + chambre.getNumero() + " libérée par " + sejour.getClient().getNomComplet() + " — à nettoyer", "/entretien");
+
+        // Le solde impayé n'empêche pas la sortie — l'arrangement se règle entre
+        // la réception et le client —, mais il ne doit pas passer inaperçu.
+        if (sejour.getResteAPayer().compareTo(BigDecimal.ZERO) > 0) {
+            notificationService.creer("IMPAYE", "Départ avec solde impayé",
+                    sejour.getClient().getNomComplet() + " — reste " + sejour.getResteAPayer()
+                            + " FCFA sur le reçu " + sejour.getNumeroRecu(), "/paiements");
+        }
 
         return toResponse(sejourRepository.save(sejour));
     }
@@ -164,18 +264,18 @@ public class SejourService {
         return sejourRepository.findDepartsJour(debut, fin).stream().map(this::toResponse).collect(Collectors.toList());
     }
 
-    private BigDecimal calculerMontant(TypeLocation type, SejourRequest request, Chambre chambre) {
-        if (type == TypeLocation.SEJOUR) {
-            if (request.getDateSortie() != null) {
-                long nbJours = ChronoUnit.DAYS.between(request.getDateEntree(), request.getDateSortie());
-                if (nbJours <= 0) nbJours = 1;
-                return chambre.getTarifNuitee().multiply(BigDecimal.valueOf(nbJours));
-            }
-            return chambre.getTarifNuitee();
-        } else {
-            // PASSAGE : tarif forfaitaire à l'unité
-            return chambre.getTarifPassage();
+    /** Tarif catalogue de la chambre pour le mode de location retenu. */
+    private BigDecimal tarifCatalogue(TypeLocation type, Chambre chambre) {
+        return type == TypeLocation.SEJOUR ? chambre.getTarifNuitee() : chambre.getTarifPassage();
+    }
+
+    /** Nombre de nuitées facturées ; un passage est un forfait à l'unité. */
+    private int nbUnites(TypeLocation type, SejourRequest request) {
+        if (type != TypeLocation.SEJOUR || request.getDateSortie() == null) {
+            return 1;
         }
+        long nbJours = ChronoUnit.DAYS.between(request.getDateEntree(), request.getDateSortie());
+        return (int) Math.max(nbJours, 1);
     }
 
     private String genererNumeroRecu() {
@@ -213,6 +313,14 @@ public class SejourService {
                 .heureSortie(s.getHeureSortie())
                 .nbJours(s.getNbJours())
                 .nbHeures(s.getNbHeures())
+                .montantBrut(s.getMontantBrut())
+                .tarifApplique(s.getTarifApplique())
+                .remiseType(s.getRemiseType() != null ? s.getRemiseType().name() : null)
+                .remiseValeur(s.getRemiseValeur())
+                .remiseMontant(s.getRemiseMontant())
+                .remiseMotif(s.getRemiseMotif())
+                .remiseParNom(s.getRemisePar() != null ? s.getRemisePar().getNomComplet() : null)
+                .montantExtras(s.getMontantExtras())
                 .montantTotal(s.getMontantTotal())
                 .montantPaye(s.getMontantPaye())
                 .resteAPayer(s.getResteAPayer())

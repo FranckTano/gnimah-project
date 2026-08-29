@@ -8,10 +8,23 @@ export interface SejourRequest {
   dateSortie?: string;
   heureEntree?: string;
   heureSortie?: string;
+  /** Tarif unitaire négocié ; vide = tarif catalogue de la chambre. */
+  tarifPersonnalise?: number | null;
+  remiseType?: string | null;
+  remiseValeur?: number | null;
+  remiseMotif?: string | null;
   montantPaye?: number;
   modePaiement?: string;
   notes?: string;
   reservationId?: number;
+  caisseId?: number | null;
+}
+
+export interface RemiseSejourRequest {
+  tarifPersonnalise?: number | null;
+  remiseType?: string | null;
+  remiseValeur?: number | null;
+  remiseMotif?: string | null;
 }
 
 export interface SejourResponse {
@@ -31,6 +44,16 @@ export interface SejourResponse {
   heureSortie: string;
   nbJours: number;
   nbHeures: number;
+
+  montantBrut: number;
+  tarifApplique: number | null;
+  remiseType: string | null;
+  remiseValeur: number;
+  remiseMontant: number;
+  remiseMotif: string | null;
+  remiseParNom: string | null;
+  montantExtras: number;
+
   montantTotal: number;
   montantPaye: number;
   resteAPayer: number;
@@ -38,3 +61,8 @@ export interface SejourResponse {
   notes: string;
   createdAt: string;
 }
+
+export const TYPE_REMISE_OPTIONS = [
+  { label: 'Pourcentage (%)', value: 'POURCENTAGE' },
+  { label: 'Montant (FCFA)',  value: 'MONTANT' }
+];

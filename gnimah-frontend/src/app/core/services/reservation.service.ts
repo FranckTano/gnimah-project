@@ -1,7 +1,10 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { ReservationRequest, ReservationResponse } from '../models/reservation.model';
+import {
+  AcompteRequest, AnnulationRequest, PolitiqueAnnulation,
+  ReservationRequest, ReservationResponse
+} from '../models/reservation.model';
 import { PageResponse } from '../models/client.model';
 import { environment } from '../../../environments/environment';
 
@@ -32,11 +35,20 @@ export class ReservationService {
     return this.http.get<ReservationResponse[]>(`${this.API}/arrivees-jour`);
   }
 
-  confirmer(id: number): Observable<ReservationResponse> {
-    return this.http.patch<ReservationResponse>(`${this.API}/${id}/statut`, { statut: 'CONFIRMEE' });
+  /**
+   * Encaisse l'acompte. C'est ce geste qui confirme la réservation : il n'y a
+   * plus de confirmation « sèche » sans argent reçu.
+   */
+  enregistrerAcompte(id: number, request: AcompteRequest): Observable<ReservationResponse> {
+    return this.http.post<ReservationResponse>(`${this.API}/${id}/acompte`, request);
   }
 
-  annuler(id: number): Observable<ReservationResponse> {
-    return this.http.patch<ReservationResponse>(`${this.API}/${id}/statut`, { statut: 'ANNULEE' });
+  /** Simule l'annulation (pénalité, remboursement) sans rien modifier. */
+  politiqueAnnulation(id: number): Observable<PolitiqueAnnulation> {
+    return this.http.get<PolitiqueAnnulation>(`${this.API}/${id}/politique-annulation`);
+  }
+
+  annuler(id: number, request?: AnnulationRequest): Observable<ReservationResponse> {
+    return this.http.post<ReservationResponse>(`${this.API}/${id}/annulation`, request ?? {});
   }
 }

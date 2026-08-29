@@ -1,5 +1,8 @@
 package com.gnimah.backend.controller;
 
+import com.gnimah.backend.dto.reservation.AcompteRequest;
+import com.gnimah.backend.dto.reservation.AnnulationRequest;
+import com.gnimah.backend.dto.reservation.PolitiqueAnnulationResponse;
 import com.gnimah.backend.dto.reservation.ReservationRequest;
 import com.gnimah.backend.dto.reservation.ReservationResponse;
 import com.gnimah.backend.service.ReservationService;
@@ -34,6 +37,26 @@ public class ReservationController {
     @Operation(summary = "Changer le statut d'une réservation")
     public ResponseEntity<ReservationResponse> updateStatut(@PathVariable Long id, @RequestBody Map<String, String> body) {
         return ResponseEntity.ok(reservationService.updateStatut(id, body.get("statut")));
+    }
+
+    @PostMapping("/{id}/acompte")
+    @Operation(summary = "Encaisser l'acompte — confirme la réservation si le minimum est atteint")
+    public ResponseEntity<ReservationResponse> enregistrerAcompte(
+            @PathVariable Long id, @Valid @RequestBody AcompteRequest request) {
+        return ResponseEntity.ok(reservationService.enregistrerAcompte(id, request));
+    }
+
+    @GetMapping("/{id}/politique-annulation")
+    @Operation(summary = "Simuler l'annulation : pénalité et remboursement, sans rien modifier")
+    public ResponseEntity<PolitiqueAnnulationResponse> politiqueAnnulation(@PathVariable Long id) {
+        return ResponseEntity.ok(reservationService.politiqueAnnulation(id));
+    }
+
+    @PostMapping("/{id}/annulation")
+    @Operation(summary = "Annuler une réservation en appliquant la règle des 48 h")
+    public ResponseEntity<ReservationResponse> annuler(
+            @PathVariable Long id, @RequestBody(required = false) AnnulationRequest request) {
+        return ResponseEntity.ok(reservationService.annuler(id, request));
     }
 
     @GetMapping("/{id}")

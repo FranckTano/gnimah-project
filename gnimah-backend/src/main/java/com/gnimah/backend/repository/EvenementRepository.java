@@ -16,4 +16,10 @@ public interface EvenementRepository extends JpaRepository<Evenement, Long> {
     List<Evenement> findByPeriode(@Param("debut") LocalDateTime debut, @Param("fin") LocalDateTime fin);
 
     List<Evenement> findByClientId(Long clientId);
+
+    /** Recette événementielle d'une période, hors événements annulés. */
+    @Query("SELECT COALESCE(SUM(e.montant), 0) FROM Evenement e " +
+           "WHERE e.statut <> com.gnimah.backend.entity.enums.StatutEvenement.ANNULE " +
+           "AND e.dateDebut BETWEEN :debut AND :fin")
+    java.math.BigDecimal sumMontantPeriode(@Param("debut") LocalDateTime debut, @Param("fin") LocalDateTime fin);
 }

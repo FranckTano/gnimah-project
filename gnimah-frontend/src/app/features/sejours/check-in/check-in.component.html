@@ -147,6 +147,53 @@
       <div class="gn-railrow"><span>Type de location</span><span>{{ isSejour ? 'Séjour (nuitée)' : 'Passage (heure)' }}</span></div>
       <div class="gn-railrow"><span>Client</span><span>{{ foundClient?.nomComplet || '—' }}</span></div>
     </div>
+    <!-- Tarification : tarif négocié et remise commerciale.
+         Repliée par défaut — la grande majorité des enregistrements se font au
+         tarif catalogue, et l'écran doit rester rapide dans ce cas. -->
+    <form [formGroup]="tarifForm">
+      <button type="button" class="ck-remise-toggle" (click)="basculerRemise()">
+        <i class="ti" [ngClass]="afficherRemise ? 'ti-chevron-down' : 'ti-chevron-right'"></i>
+        <span>Tarif & remise</span>
+        <span class="ck-remise-badge" *ngIf="remiseMontant > 0">− {{ formatCurrency(remiseMontant) }}</span>
+      </button>
+
+      <div class="ck-remise" *ngIf="afficherRemise">
+        <label class="ck-rlabel">Tarif {{ isSejour ? 'par nuit' : 'du passage' }}</label>
+        <input class="gn-input gn-railinput" type="number" formControlName="tarifPersonnalise"
+               [placeholder]="tarifCatalogue" />
+        <div class="ck-rnote">Laisser vide pour appliquer le tarif de la chambre.</div>
+
+        <div class="ck-r2">
+          <div>
+            <label class="ck-rlabel">Type de remise</label>
+            <select class="gn-input gn-railinput" formControlName="remiseType">
+              <option [ngValue]="null">Aucune</option>
+              <option *ngFor="let t of typeRemiseOptions" [ngValue]="t.value">{{ t.label }}</option>
+            </select>
+          </div>
+          <div>
+            <label class="ck-rlabel">Valeur</label>
+            <input class="gn-input gn-railinput" type="number" formControlName="remiseValeur"
+                   [placeholder]="tarifForm.value.remiseType === 'POURCENTAGE' ? '%' : 'FCFA'" />
+          </div>
+        </div>
+
+        <ng-container *ngIf="tarifForm.value.remiseType">
+          <label class="ck-rlabel">Motif de la remise</label>
+          <input class="gn-input gn-railinput" formControlName="remiseMotif"
+                 placeholder="Client fidèle, geste commercial…" />
+        </ng-container>
+      </div>
+    </form>
+
+    <div class="ck-recap" *ngIf="remiseMontant > 0">
+      <div class="ck-recap-l"><span>Montant brut</span><span>{{ formatCurrency(montantBrut) }}</span></div>
+      <div class="ck-recap-l remise">
+        <span>Remise{{ tarifForm.value.remiseType === 'POURCENTAGE' ? ' (' + tarifForm.value.remiseValeur + ' %)' : '' }}</span>
+        <span>− {{ formatCurrency(remiseMontant) }}</span>
+      </div>
+    </div>
+
     <div style="display:flex;justify-content:space-between;align-items:baseline;margin-top:16px;">
       <span style="color:#bfa4aa;font-size:13.5px;">Montant total</span>
       <span class="gn-serif" style="font-size:30px;color:#fff;">{{ formatCurrency(montantTotal) }}</span>

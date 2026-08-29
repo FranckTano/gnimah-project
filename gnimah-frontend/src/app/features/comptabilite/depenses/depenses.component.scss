@@ -1,0 +1,67 @@
+.dep-tabs {
+  display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
+  background: #f6ece7; border-radius: 100px; padding: 6px; margin-bottom: 14px;
+  .gn-seg { display: inline-flex; align-items: center; gap: 7px; }
+}
+.dep-link { padding: 6px 14px; font-size: 12.5px; text-decoration: none; border-radius: 100px; }
+
+.dep-bar {
+  display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin: 14px 0;
+}
+
+.dep-kpi { margin-top: 4px; }
+.dep-tile { padding: 16px 18px; }
+.dep-tile-v { font-size: 20px; color: #2e2024; margin-top: 5px; }
+.dep-tile-s { font-size: 11.5px; color: #a99a9d; margin-top: 3px; }
+
+.dep-sub { font-size: 11.5px; color: #a99a9d; margin-top: 2px; }
+
+.dep-actions { display: flex; gap: 5px; flex-wrap: wrap; }
+.dep-a {
+  width: 32px; height: 32px; padding: 0; border-radius: 10px; flex: none;
+  font-size: 15px;
+  &:disabled { opacity: .45; cursor: not-allowed; }
+}
+
+.dep-vide {
+  text-align: center; padding: 34px 10px; color: #a99a9d; font-size: 13.5px;
+  i { font-size: 30px; display: block; margin-bottom: 10px; color: #d7c6c1; }
+}
+
+/* ---- Fournisseurs ---- */
+.dep-frn-grid {
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 14px; margin-top: 4px;
+}
+.dep-frn { padding: 18px; }
+.dep-frn-h { display: flex; align-items: flex-start; gap: 11px; margin-bottom: 10px; }
+.dep-frn-n { font-size: 14.5px; font-weight: 600; color: #2e2024; }
+.dep-frn-d {
+  font-size: 12.5px; color: #6d585d; margin-top: 5px;
+  display: flex; align-items: center; gap: 7px;
+  i { color: #b3a2a6; font-size: 14px; }
+}
+
+/* ---- Formulaires ---- */
+.dep-form { display: flex; flex-direction: column; gap: 14px; }
+.dep-f2 { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+
+.dep-check {
+  display: flex; align-items: flex-start; gap: 10px; cursor: pointer;
+  background: #fbeef1; border-radius: 14px; padding: 13px 15px;
+  input { margin-top: 3px; accent-color: #8c2f4d; width: 16px; height: 16px; flex: none; }
+  strong { display: block; font-size: 13.5px; color: #3a2c30; }
+  small { display: block; font-size: 12px; color: #8a7a7e; margin-top: 3px; line-height: 1.45; }
+}
+
+:host ::ng-deep {
+  .dep-select { min-width: 190px; }
+  .dep-select-full { width: 100%; display: block; }
+  .dep-select-full .p-select { width: 100%; }
+}
+
+@media (max-width: 620px) {
+  .dep-f2 { grid-template-columns: 1fr; }
+  :host ::ng-deep .dep-select { min-width: 100%; }
+  .dep-bar > p-select { width: 100%; }
+}

@@ -26,6 +26,16 @@ public class SejourResponse {
     private LocalTime heureSortie;
     private Integer nbJours;
     private Integer nbHeures;
+
+    private BigDecimal montantBrut;
+    private BigDecimal tarifApplique;
+    private String remiseType;
+    private BigDecimal remiseValeur;
+    private BigDecimal remiseMontant;
+    private String remiseMotif;
+    private String remiseParNom;
+    private BigDecimal montantExtras;
+
     private BigDecimal montantTotal;
     private BigDecimal montantPaye;
     private BigDecimal resteAPayer;

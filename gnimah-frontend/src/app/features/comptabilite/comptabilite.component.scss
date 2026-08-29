@@ -1,0 +1,87 @@
+.cpt-actions {
+  display: flex; gap: 10px; flex-wrap: wrap; margin: 14px 0 4px;
+  .gn-btn-o { padding: 9px 16px; font-size: 13px; text-decoration: none; }
+}
+
+/* ---- Bandeau résultat ---- */
+.cpt-resultat {
+  margin-top: 14px; padding: 26px 28px;
+  display: flex; align-items: center; justify-content: space-between; gap: 24px; flex-wrap: wrap;
+}
+.cpt-res-value {
+  font-size: 40px; line-height: 1.1; color: #2f9e6f; margin-top: 6px;
+  &.negatif { color: #d0455a; }
+}
+.cpt-res-sub { font-size: 13px; color: #6d585d; margin-top: 8px; display: flex; align-items: center; flex-wrap: wrap; }
+.cpt-res-split { display: flex; gap: 34px; flex-wrap: wrap; }
+.cpt-res-item { min-width: 150px; }
+
+/* ---- Tuiles KPI ---- */
+.cpt-kpi { padding: 18px; display: flex; align-items: flex-start; gap: 14px; }
+.cpt-kpi-v { font-size: 20px; color: #2e2024; margin-top: 4px; }
+.cpt-kpi-s { font-size: 11.5px; color: #a99a9d; margin-top: 3px; }
+
+/* ---- Blocs ---- */
+.cpt-h {
+  display: flex; align-items: center; justify-content: space-between; gap: 12px;
+  flex-wrap: wrap; margin-bottom: 16px;
+}
+.cpt-title { font-size: 17px; color: #2e2024; }
+.cpt-legend {
+  display: flex; gap: 14px; font-size: 12px; color: #8a7a7e;
+  span { display: inline-flex; align-items: center; gap: 6px; }
+}
+
+/* ---- Lignes de répartition ---- */
+.cpt-line { margin-bottom: 15px; }
+.cpt-line-h { display: flex; justify-content: space-between; gap: 10px; margin-bottom: 6px; }
+.cpt-line-lb { font-size: 13.5px; font-weight: 600; color: #3a2c30; display: inline-flex; align-items: center; }
+.cpt-line-v { font-size: 13.5px; font-weight: 600; color: #2e2024; white-space: nowrap; }
+.cpt-line-p { font-size: 11.5px; color: #a99a9d; margin-top: 4px; }
+.cpt-count { font-weight: 500; color: #a99a9d; margin-left: 5px; font-size: 12px; }
+
+/* ---- Graphique en colonnes (pur CSS, pas de dépendance) ---- */
+.cpt-chart {
+  display: flex; align-items: flex-end; gap: 6px; overflow-x: auto;
+  padding-bottom: 4px; min-height: 170px;
+}
+.cpt-day { flex: 1 0 34px; display: flex; flex-direction: column; align-items: center; gap: 6px; }
+.cpt-bars { display: flex; align-items: flex-end; gap: 3px; height: 130px; width: 100%; justify-content: center; }
+.cpt-bar {
+  width: 10px; border-radius: 3px 3px 0 0; min-height: 3px;
+  transition: height .4s cubic-bezier(.22,1,.36,1);
+  &.rec { background: #2f9e6f; }
+  &.dep { background: #b23a55; }
+}
+.cpt-day-lb { font-size: 10px; color: #a99a9d; white-space: nowrap; }
+
+/* ---- Fournisseurs ---- */
+.cpt-frn {
+  display: flex; align-items: center; gap: 12px; padding: 11px 0;
+  border-top: 1px solid #f2e8e4;
+  &:first-of-type { border-top: none; }
+}
+.cpt-frn-n { font-size: 13.5px; font-weight: 600; color: #3a2c30; }
+.cpt-frn-s { font-size: 11.5px; color: #a99a9d; margin-top: 2px; }
+
+/* ---- Caisses ---- */
+.cpt-caisses { display: grid; grid-template-columns: repeat(auto-fill, minmax(210px, 1fr)); gap: 14px; }
+.cpt-caisse { border: 1px solid #f2e8e4; border-radius: 16px; padding: 15px; }
+.cpt-caisse-h { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.cpt-caisse-n { font-size: 13px; font-weight: 600; color: #3a2c30; }
+.cpt-caisse-v { font-size: 19px; color: #8c2f4d; margin-top: 8px; }
+.cpt-caisse-s { font-size: 11.5px; color: #a99a9d; margin-top: 4px; }
+
+/* ---- Note de bas de page ---- */
+.cpt-note {
+  margin-top: 16px; padding: 13px 16px; border-radius: 14px;
+  background: #fdf4e3; color: #8a6a1e; font-size: 13px;
+  display: flex; align-items: center; gap: 9px; flex-wrap: wrap;
+  a { color: #8c2f4d; font-weight: 600; }
+}
+
+@media (max-width: 700px) {
+  .cpt-resultat { padding: 20px; }
+  .cpt-res-value { font-size: 30px; }
+  .cpt-res-split { gap: 20px; }
+}

@@ -1,0 +1,366 @@
+<div class="gn-route">
+
+  <div class="ver-tabs">
+    <button class="gn-seg" [class.on]="onglet === 'VERSEMENTS'" (click)="onglet = 'VERSEMENTS'">
+      <i class="ti ti-building-bank"></i> Versements
+    </button>
+    <button class="gn-seg" [class.on]="onglet === 'COMPTES'" (click)="onglet = 'COMPTES'">
+      <i class="ti ti-wallet"></i> Comptes ({{ comptes.length }})
+    </button>
+    <span style="flex:1"></span>
+    <a class="gn-btn-o ver-link" routerLink="/caisse"><i class="ti ti-cash-register"></i> Caisse</a>
+  </div>
+
+  <!-- ================= VERSEMENTS ================= -->
+  <ng-container *ngIf="onglet === 'VERSEMENTS'">
+
+    <div class="gn-kpi ver-kpi">
+      <div class="gn-card ver-tile">
+        <div class="gn-slabel" style="color:#b3a2a6;">Total versé</div>
+        <div class="gn-serif ver-tile-v">{{ formatMontant(totaux.total) }}</div>
+      </div>
+      <div class="gn-card ver-tile">
+        <div class="gn-slabel" style="color:#b3a2a6;">Préparés</div>
+        <div class="gn-serif ver-tile-v" style="color:#c9922f;">{{ totaux.prepares }}</div>
+        <div class="ver-tile-s">en attente de dépôt</div>
+      </div>
+      <div class="gn-card ver-tile">
+        <div class="gn-slabel" style="color:#b3a2a6;">À confirmer</div>
+        <div class="gn-serif ver-tile-v" style="color:#5f7191;">{{ totaux.aConfirmer }}</div>
+        <div class="ver-tile-s">déposés, justificatif attendu</div>
+      </div>
+      <div class="gn-card ver-tile">
+        <div class="gn-slabel" style="color:#b3a2a6;">Comptes actifs</div>
+        <div class="gn-serif ver-tile-v">{{ comptes.length }}</div>
+      </div>
+    </div>
+
+    <div class="ver-bar">
+      <p-select [options]="statutOptions" [(ngModel)]="filtreStatut" optionLabel="label"
+                optionValue="value" placeholder="Statut" styleClass="ver-select"></p-select>
+      <span style="flex:1"></span>
+      <button class="gn-btn-p mob-full" style="padding:11px 18px;font-size:13.5px;"
+              [disabled]="!comptes.length || !caisses.length" (click)="ouvrirPreparation()">
+        <i class="ti ti-plus"></i> Nouveau versement
+      </button>
+    </div>
+
+    <div class="ver-warn" *ngIf="!comptes.length">
+      <i class="ti ti-alert-triangle"></i>
+      Aucun compte de destination n'est configuré. Ajoutez un compte bancaire ou un
+      numéro mobile money dans l'onglet « Comptes » avant de verser.
+    </div>
+
+    <div class="gn-card" style="padding:22px;margin-top:14px;">
+      <div *ngIf="loading" class="gn-empty" style="text-align:center;">
+        <i class="ti ti-loader-2 gn-spin"></i> Chargement des versements…
+      </div>
+
+      <div *ngIf="!loading && !versementsFiltres.length" class="ver-vide">
+        <i class="ti ti-building-bank"></i>
+        <div>Aucun versement enregistré.</div>
+        <small>Préparez un versement pour déposer la recette de la caisse.</small>
+      </div>
+
+      <div class="ver-list" *ngIf="!loading && versementsFiltres.length">
+        <div class="ver-item" *ngFor="let v of versementsFiltres">
+
+          <div class="ver-item-ico" [ngClass]="v.compteType === 'MOBILE_MONEY' ? 'mm' : 'bk'">
+            <i class="ti" [ngClass]="v.compteType === 'MOBILE_MONEY' ? 'ti-device-mobile' : 'ti-building-bank'"></i>
+          </div>
+
+          <div class="ver-item-b">
+            <div class="ver-item-h">
+              <span class="gn-serif ver-num">{{ v.numero }}</span>
+              <span class="gn-bdg" [ngClass]="statutTone(v.statut)">{{ statutLabels[v.statut] }}</span>
+              <span class="gn-bdg gray">{{ periodiciteLabels[v.periodicite] }}</span>
+            </div>
+            <div class="ver-item-s">
+              {{ v.caisseNom }} → <strong>{{ v.compteLibelle }}</strong>
+              <span *ngIf="v.compteIdentifiant"> ({{ v.compteIdentifiant }})</span>
+            </div>
+            <div class="ver-item-s">
+              Période du {{ v.periodeDebut | date:'dd/MM/yy' }} au {{ v.periodeFin | date:'dd/MM/yy' }}
+              · Versé le {{ v.dateVersement | date:'dd/MM/yy' }}
+              <span *ngIf="v.heureVersement"> à {{ v.heureVersement }}</span>
+            </div>
+            <div class="ver-item-s" *ngIf="v.referenceTransaction">
+              Réf. transaction {{ v.referenceTransaction }}
+            </div>
+            <div class="ver-item-s" *ngIf="v.caissierNom">
+              Préparé par {{ v.caissierNom }}
+              <span *ngIf="v.valideParNom"> · confirmé par {{ v.valideParNom }}</span>
+            </div>
+          </div>
+
+          <div class="ver-item-r">
+            <div class="gn-serif ver-montant">{{ formatMontant(v.montant) }}</div>
+            <div class="ver-actions">
+              <button class="gn-btn-o ver-a" (click)="voirDetail(v)" title="Journal des actions">
+                <i class="ti ti-history"></i>
+              </button>
+              <button class="gn-btn-o ver-a" *ngIf="v.statut === 'PREPARE'"
+                      [disabled]="actionId === v.id" (click)="deposer(v)" title="Marquer déposé">
+                <i class="ti ti-send" style="color:#8c2f4d;"></i>
+              </button>
+              <button class="gn-btn-o ver-a" *ngIf="peutConfirmer && v.statut === 'EFFECTUE'"
+                      [disabled]="actionId === v.id" (click)="confirmer(v)" title="Confirmer">
+                <i class="ti ti-circle-check" style="color:#2f9e6f;"></i>
+              </button>
+              <button class="gn-btn-o ver-a" *ngIf="v.statut !== 'ANNULE' && (peutConfirmer || v.statut === 'PREPARE')"
+                      [disabled]="actionId === v.id" (click)="annuler(v)" title="Annuler">
+                <i class="ti ti-x" style="color:#d0455a;"></i>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </ng-container>
+
+  <!-- ================= COMPTES ================= -->
+  <ng-container *ngIf="onglet === 'COMPTES'">
+    <div class="ver-bar">
+      <div class="gn-serif" style="font-size:17px;color:#2e2024;">Destinations de versement</div>
+      <span style="flex:1"></span>
+      <button class="gn-btn-p mob-full" style="padding:11px 18px;font-size:13.5px;" (click)="ouvrirCompte()">
+        <i class="ti ti-plus"></i> Nouveau compte
+      </button>
+    </div>
+
+    <div class="ver-comptes">
+      <div class="gn-card ver-compte" *ngFor="let c of comptes">
+        <div class="ver-compte-h">
+          <div class="gn-tile" [ngClass]="c.type === 'MOBILE_MONEY' ? 'gold' : 'wine'">
+            <i class="ti" [ngClass]="c.type === 'MOBILE_MONEY' ? 'ti-device-mobile' : 'ti-building-bank'"></i>
+          </div>
+          <div style="flex:1;min-width:0;">
+            <div class="ver-compte-n">{{ c.libelle }}</div>
+            <div class="ver-compte-t">{{ c.etablissement || (c.type === 'MOBILE_MONEY' ? 'Mobile Money' : 'Banque') }}</div>
+          </div>
+          <button class="gn-btn-o ver-a" (click)="desactiverCompte(c)" title="Désactiver">
+            <i class="ti ti-ban" style="color:#a99a9d;"></i>
+          </button>
+        </div>
+
+        <div class="ver-compte-id" [class.manquant]="!c.identifiant">
+          <i class="ti" [ngClass]="c.identifiant ? 'ti-hash' : 'ti-alert-triangle'"></i>
+          {{ c.identifiant || 'Numéro à renseigner avant tout versement' }}
+        </div>
+        <div class="ver-compte-d" *ngIf="c.titulaire"><i class="ti ti-user"></i> {{ c.titulaire }}</div>
+
+        <div class="ver-compte-solde">
+          <span class="gn-slabel" style="color:#b3a2a6;">Cumul versé</span>
+          <span class="gn-serif">{{ formatMontant(c.solde) }}</span>
+        </div>
+      </div>
+
+      <div *ngIf="!comptes.length" class="ver-vide" style="grid-column:1/-1;">
+        <i class="ti ti-wallet-off"></i>
+        <div>Aucun compte enregistré.</div>
+      </div>
+    </div>
+  </ng-container>
+</div>
+
+<!-- ===== PRÉPARATION ===== -->
+<p-dialog [(visible)]="showPreparation" [modal]="true" [style]="{ width: '600px' }"
+          header="Préparer un versement" [draggable]="false">
+  <form [formGroup]="form" class="ver-form">
+
+    <div class="ver-f2">
+      <div>
+        <label class="gn-flabel">Caisse d'origine *</label>
+        <p-select [options]="caisses" formControlName="caisseId" optionLabel="nom" optionValue="id"
+                  (onChange)="calculerRecette()" styleClass="ver-select-full" appendTo="body"></p-select>
+      </div>
+      <div>
+        <label class="gn-flabel">Compte de destination *</label>
+        <p-select [options]="comptes" formControlName="compteId" optionLabel="libelle" optionValue="id"
+                  styleClass="ver-select-full" appendTo="body"></p-select>
+      </div>
+    </div>
+
+    <div class="ver-f3">
+      <div>
+        <label class="gn-flabel">Périodicité *</label>
+        <p-select [options]="periodiciteOptions" formControlName="periodicite" optionLabel="label"
+                  optionValue="value" (onChange)="onPeriodiciteChange()"
+                  styleClass="ver-select-full" appendTo="body"></p-select>
+      </div>
+      <div>
+        <label class="gn-flabel">Début de période</label>
+        <input class="gn-input" type="date" formControlName="periodeDebut" (change)="calculerRecette()" />
+      </div>
+      <div>
+        <label class="gn-flabel">Fin de période</label>
+        <input class="gn-input" type="date" formControlName="periodeFin" (change)="calculerRecette()" />
+      </div>
+    </div>
+
+    <!-- Assiette calculée par le backend -->
+    <div class="ver-recette" *ngIf="recette as r">
+      <div class="ver-recette-h"><i class="ti ti-calculator"></i> Recette de la période</div>
+      <div class="ver-recette-l">
+        <span>Encaissé sur {{ r.caisseNom }}</span><strong>{{ formatMontant(r.recetteEncaissee) }}</strong>
+      </div>
+      <div class="ver-recette-l" *ngIf="r.dejaVerse > 0">
+        <span>Déjà versé pour cette période</span><strong>− {{ formatMontant(r.dejaVerse) }}</strong>
+      </div>
+      <div class="ver-recette-l total">
+        <span>Reste à verser</span><strong>{{ formatMontant(r.resteAVerser) }}</strong>
+      </div>
+      <div class="ver-recette-n">
+        Solde actuel de la caisse : {{ formatMontant(r.soldeCaisse) }} — le versement ne peut pas le dépasser.
+      </div>
+    </div>
+
+    <div class="ver-f3">
+      <div>
+        <label class="gn-flabel">Montant versé (FCFA) *</label>
+        <input class="gn-input" type="number" formControlName="montant"
+               [class.gn-invalid]="isInvalid('montant', form)" placeholder="0" />
+      </div>
+      <div>
+        <label class="gn-flabel">Date du versement *</label>
+        <input class="gn-input" type="date" formControlName="dateVersement"
+               [class.gn-invalid]="isInvalid('dateVersement', form)" />
+      </div>
+      <div>
+        <label class="gn-flabel">Mode</label>
+        <p-select [options]="modeOptions" formControlName="mode" optionLabel="label"
+                  optionValue="value" styleClass="ver-select-full" appendTo="body"></p-select>
+      </div>
+    </div>
+
+    <div>
+      <label class="gn-flabel">Référence de transaction</label>
+      <input class="gn-input" formControlName="referenceTransaction"
+             placeholder="N° de bordereau, référence Wave / Orange Money…" />
+    </div>
+
+    <div>
+      <label class="gn-flabel">Notes</label>
+      <textarea class="gn-input" rows="2" formControlName="notes"></textarea>
+    </div>
+
+    <p class="ver-hint">
+      Le versement est d'abord <strong>préparé</strong>. L'argent ne quitte la caisse
+      qu'au moment où vous enregistrez le <strong>dépôt effectif</strong>.
+    </p>
+  </form>
+
+  <ng-template pTemplate="footer">
+    <button class="gn-btn-o" style="padding:10px 18px;" (click)="showPreparation = false">Annuler</button>
+    <button class="gn-btn-p" style="padding:10px 20px;" [disabled]="saving" (click)="preparer()">
+      <i class="ti ti-loader-2 gn-spin" *ngIf="saving"></i> Préparer le versement
+    </button>
+  </ng-template>
+</p-dialog>
+
+<!-- ===== DÉTAIL / JOURNAL DES ACTIONS ===== -->
+<p-dialog [(visible)]="showDetail" [modal]="true" [style]="{ width: '560px' }"
+          header="Journal du versement" [draggable]="false">
+  <div *ngIf="selection as v">
+    <div class="ver-det-h">
+      <div>
+        <div class="gn-serif" style="font-size:20px;color:#8c2f4d;">{{ v.numero }}</div>
+        <div style="font-size:12.5px;color:#8a7a7e;margin-top:4px;">
+          {{ v.caisseNom }} → {{ v.compteLibelle }}
+        </div>
+      </div>
+      <div style="text-align:right;">
+        <div class="gn-serif" style="font-size:22px;color:#2e2024;">{{ formatMontant(v.montant) }}</div>
+        <span class="gn-bdg" [ngClass]="statutTone(v.statut)">{{ statutLabels[v.statut] }}</span>
+      </div>
+    </div>
+
+    <div class="ver-det-grid">
+      <div><span class="gn-slabel" style="color:#b3a2a6;">Périodicité</span><b>{{ periodiciteLabels[v.periodicite] }}</b></div>
+      <div><span class="gn-slabel" style="color:#b3a2a6;">Période</span><b>{{ v.periodeDebut | date:'dd/MM/yy' }} → {{ v.periodeFin | date:'dd/MM/yy' }}</b></div>
+      <div><span class="gn-slabel" style="color:#b3a2a6;">Date de versement</span><b>{{ v.dateVersement | date:'dd/MM/yyyy' }}</b></div>
+      <div><span class="gn-slabel" style="color:#b3a2a6;">Mode</span><b>{{ modeLabels[v.mode] || v.mode }}</b></div>
+      <div *ngIf="v.compteIdentifiant"><span class="gn-slabel" style="color:#b3a2a6;">Compte</span><b>{{ v.compteIdentifiant }}</b></div>
+      <div *ngIf="v.referenceTransaction"><span class="gn-slabel" style="color:#b3a2a6;">Référence</span><b>{{ v.referenceTransaction }}</b></div>
+    </div>
+
+    <div class="gn-slabel" style="color:#b3a2a6;margin:20px 0 12px;">Actions enregistrées</div>
+    <div class="ver-timeline">
+      <div class="ver-tl" *ngFor="let a of v.actions">
+        <div class="ver-tl-ico"><i class="ti" [ngClass]="actionIcons[a.action] || 'ti-point'"></i></div>
+        <div>
+          <div class="ver-tl-t">{{ actionLabels[a.action] || a.action }}</div>
+          <div class="ver-tl-s">
+            {{ a.dateAction | date:'dd/MM/yyyy à HH:mm' }}
+            <span *ngIf="a.agentNom"> · {{ a.agentNom }}</span>
+            <span *ngIf="a.montant"> · {{ formatMontant(a.montant) }}</span>
+          </div>
+          <div class="ver-tl-c" *ngIf="a.commentaire">{{ a.commentaire }}</div>
+        </div>
+      </div>
+      <div *ngIf="!v.actions?.length" class="gn-empty">Aucune action enregistrée.</div>
+    </div>
+
+    <div class="ver-det-notes" *ngIf="v.notes">
+      <span class="gn-slabel" style="color:#b3a2a6;">Notes</span>
+      <p>{{ v.notes }}</p>
+    </div>
+  </div>
+
+  <ng-template pTemplate="footer">
+    <button class="gn-btn-o" style="padding:10px 18px;" (click)="showDetail = false">Fermer</button>
+  </ng-template>
+</p-dialog>
+
+<!-- ===== COMPTE ===== -->
+<p-dialog [(visible)]="showCompte" [modal]="true" [style]="{ width: '520px' }"
+          header="Nouveau compte de versement" [draggable]="false">
+  <form [formGroup]="compteForm" class="ver-form">
+    <div class="ver-f2">
+      <div>
+        <label class="gn-flabel">Libellé *</label>
+        <input class="gn-input" formControlName="libelle"
+               [class.gn-invalid]="isInvalid('libelle', compteForm)"
+               placeholder="Ex : Compte principal, Wave recette" />
+      </div>
+      <div>
+        <label class="gn-flabel">Type *</label>
+        <p-select [options]="typeCompteOptions" formControlName="type" optionLabel="label"
+                  optionValue="value" styleClass="ver-select-full" appendTo="body"></p-select>
+      </div>
+    </div>
+
+    <div>
+      <label class="gn-flabel">{{ compteEstMobile ? 'Opérateur' : 'Banque' }}</label>
+      <input class="gn-input" formControlName="etablissement"
+             [placeholder]="compteEstMobile ? 'Wave, Orange Money, MTN…' : 'Nom de la banque'" />
+    </div>
+
+    <div *ngIf="!compteEstMobile">
+      <label class="gn-flabel">Numéro de compte *</label>
+      <input class="gn-input" formControlName="numeroCompte" placeholder="RIB / IBAN" />
+    </div>
+
+    <div *ngIf="compteEstMobile">
+      <label class="gn-flabel">Numéro de téléphone *</label>
+      <input class="gn-input" formControlName="numeroTelephone" placeholder="+225 …" />
+    </div>
+
+    <div>
+      <label class="gn-flabel">Titulaire</label>
+      <input class="gn-input" formControlName="titulaire" />
+    </div>
+
+    <div>
+      <label class="gn-flabel">Notes</label>
+      <textarea class="gn-input" rows="2" formControlName="notes"></textarea>
+    </div>
+  </form>
+
+  <ng-template pTemplate="footer">
+    <button class="gn-btn-o" style="padding:10px 18px;" (click)="showCompte = false">Annuler</button>
+    <button class="gn-btn-p" style="padding:10px 20px;" [disabled]="saving" (click)="enregistrerCompte()">
+      <i class="ti ti-loader-2 gn-spin" *ngIf="saving"></i> Ajouter
+    </button>
+  </ng-template>
+</p-dialog>

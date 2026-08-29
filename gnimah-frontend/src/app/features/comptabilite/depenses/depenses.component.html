@@ -1,0 +1,308 @@
+<div class="gn-route">
+
+  <!-- ===== ONGLETS ===== -->
+  <div class="dep-tabs">
+    <button class="gn-seg" [class.on]="onglet === 'DEPENSES'" (click)="onglet = 'DEPENSES'">
+      <i class="ti ti-receipt-2"></i> Dépenses
+    </button>
+    <button class="gn-seg" [class.on]="onglet === 'FOURNISSEURS'" (click)="onglet = 'FOURNISSEURS'">
+      <i class="ti ti-truck-delivery"></i> Fournisseurs ({{ fournisseurs.length }})
+    </button>
+    <span style="flex:1"></span>
+    <a class="gn-btn-o dep-link" routerLink="/comptabilite"><i class="ti ti-chart-pie"></i> Synthèse</a>
+  </div>
+
+  <!-- ================= DÉPENSES ================= -->
+  <ng-container *ngIf="onglet === 'DEPENSES'">
+
+    <app-periode-filtre presetInitial="mois-courant" [loading]="loading" (periode)="onPeriode($event)"></app-periode-filtre>
+
+    <div class="dep-bar">
+      <p-select [options]="familleFiltreOptions"
+                [(ngModel)]="filtreFamille" optionLabel="label" optionValue="value"
+                placeholder="Poste de charge" styleClass="dep-select"></p-select>
+      <p-select [options]="statutOptions" [(ngModel)]="filtreStatut"
+                optionLabel="label" optionValue="value" placeholder="Statut" styleClass="dep-select"></p-select>
+      <span style="flex:1"></span>
+      <button class="gn-btn-p mob-full" style="padding:11px 18px;font-size:13.5px;" (click)="ouvrirNouvelle()">
+        <i class="ti ti-plus"></i> Nouvelle dépense
+      </button>
+    </div>
+
+    <!-- Totaux -->
+    <div class="gn-kpi dep-kpi">
+      <div class="gn-card dep-tile">
+        <div class="gn-slabel" style="color:#b3a2a6;">Total · {{ libelle }}</div>
+        <div class="gn-serif dep-tile-v">{{ formatMontant(totaux.total) }}</div>
+      </div>
+      <div class="gn-card dep-tile">
+        <div class="gn-slabel" style="color:#b3a2a6;">Réglé</div>
+        <div class="gn-serif dep-tile-v" style="color:#2f9e6f;">{{ formatMontant(totaux.payees) }}</div>
+      </div>
+      <div class="gn-card dep-tile">
+        <div class="gn-slabel" style="color:#b3a2a6;">En attente</div>
+        <div class="gn-serif dep-tile-v" style="color:#c9922f;">{{ formatMontant(totaux.enAttente) }}</div>
+        <div class="dep-tile-s">{{ totaux.nbEnAttente }} à valider</div>
+      </div>
+      <div class="gn-card dep-tile">
+        <div class="gn-slabel" style="color:#b3a2a6;">Écritures</div>
+        <div class="gn-serif dep-tile-v">{{ depensesFiltrees.length }}</div>
+      </div>
+    </div>
+
+    <!-- Liste -->
+    <div class="gn-card" style="padding:22px;margin-top:18px;">
+      <div *ngIf="loading" class="gn-empty" style="text-align:center;">
+        <i class="ti ti-loader-2 gn-spin"></i> Chargement des dépenses…
+      </div>
+
+      <div *ngIf="!loading && !depensesFiltrees.length" class="dep-vide">
+        <i class="ti ti-receipt-off"></i>
+        <div>Aucune dépense sur cette période.</div>
+        <button class="gn-btn-o" style="padding:9px 16px;font-size:13px;margin-top:10px;" (click)="ouvrirNouvelle()">
+          Enregistrer la première
+        </button>
+      </div>
+
+      <div class="gn-tw" *ngIf="!loading && depensesFiltrees.length">
+        <table class="gn-table">
+          <thead>
+            <tr>
+              <th class="gn-th">Date</th>
+              <th class="gn-th">Libellé</th>
+              <th class="gn-th">Poste</th>
+              <th class="gn-th">Fournisseur</th>
+              <th class="gn-th">Montant</th>
+              <th class="gn-th">Statut</th>
+              <th class="gn-th">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr class="gn-rowh" *ngFor="let d of depensesFiltrees">
+              <td style="font-size:13px;color:#6d585d;white-space:nowrap;">{{ d.dateDepense | date:'dd/MM/yy' }}</td>
+              <td>
+                <div style="font-weight:600;font-size:13.5px;color:#3a2c30;">{{ d.libelle }}</div>
+                <div class="dep-sub" *ngIf="d.chambreNumero">Chambre {{ d.chambreNumero }}</div>
+                <div class="dep-sub" *ngIf="d.referencePiece">Pièce {{ d.referencePiece }}</div>
+              </td>
+              <td>
+                <span class="gn-bdg gray">
+                  <i class="ti" [ngClass]="familleIcons[d.famille] || 'ti-dots'"></i>
+                  {{ familleLabels[d.famille] || d.famille }}
+                </span>
+              </td>
+              <td style="font-size:13px;color:#6d585d;">{{ d.fournisseurNom || '—' }}</td>
+              <td class="gn-serif" style="font-size:15px;color:#b23a55;white-space:nowrap;">
+                {{ formatMontant(d.montant) }}
+                <div class="dep-sub">{{ modeLabels[d.modeReglement] || d.modeReglement }}</div>
+              </td>
+              <td>
+                <span class="gn-bdg" [ngClass]="statutTone(d.statut)">{{ statutLabels[d.statut] }}</span>
+                <div class="dep-sub" *ngIf="d.caisseNom">{{ d.caisseNom }}</div>
+              </td>
+              <td>
+                <div class="dep-actions">
+                  <button class="gn-btn-o dep-a" *ngIf="d.statut === 'EN_ATTENTE'"
+                          (click)="ouvrirEdition(d)" title="Modifier">
+                    <i class="ti ti-pencil"></i>
+                  </button>
+                  <button class="gn-btn-o dep-a" *ngIf="peutValider && d.statut === 'EN_ATTENTE'"
+                          [disabled]="actionId === d.id" (click)="valider(d)" title="Valider">
+                    <i class="ti ti-check" style="color:#2f9e6f;"></i>
+                  </button>
+                  <button class="gn-btn-o dep-a"
+                          *ngIf="peutValider && (d.statut === 'EN_ATTENTE' || d.statut === 'VALIDEE')"
+                          [disabled]="actionId === d.id" (click)="regler(d)" title="Régler">
+                    <i class="ti ti-cash" style="color:#8c2f4d;"></i>
+                  </button>
+                  <button class="gn-btn-o dep-a"
+                          *ngIf="peutValider && (d.statut === 'EN_ATTENTE' || d.statut === 'VALIDEE')"
+                          [disabled]="actionId === d.id" (click)="rejeter(d)" title="Rejeter">
+                    <i class="ti ti-x" style="color:#d0455a;"></i>
+                  </button>
+                  <button class="gn-btn-o dep-a" *ngIf="peutValider && d.statut !== 'PAYEE'"
+                          [disabled]="actionId === d.id" (click)="supprimer(d)" title="Supprimer">
+                    <i class="ti ti-trash" style="color:#a99a9d;"></i>
+                  </button>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </ng-container>
+
+  <!-- ================= FOURNISSEURS ================= -->
+  <ng-container *ngIf="onglet === 'FOURNISSEURS'">
+    <div class="dep-bar" style="margin-top:14px;">
+      <div class="gn-serif" style="font-size:17px;color:#2e2024;">Fournisseurs de la résidence</div>
+      <span style="flex:1"></span>
+      <button class="gn-btn-p mob-full" style="padding:11px 18px;font-size:13.5px;" (click)="ouvrirFournisseur()">
+        <i class="ti ti-plus"></i> Nouveau fournisseur
+      </button>
+    </div>
+
+    <div class="dep-frn-grid">
+      <div class="gn-card dep-frn" *ngFor="let f of fournisseurs">
+        <div class="dep-frn-h">
+          <div class="gn-av slate" style="width:38px;height:38px;font-size:14px;">{{ f.nom.charAt(0) }}</div>
+          <div style="flex:1;min-width:0;">
+            <div class="dep-frn-n">{{ f.nom }}</div>
+            <span class="gn-bdg gray" style="margin-top:4px;">{{ f.type }}</span>
+          </div>
+          <button class="gn-btn-o dep-a" (click)="desactiverFournisseur(f)" title="Désactiver">
+            <i class="ti ti-ban" style="color:#a99a9d;"></i>
+          </button>
+        </div>
+        <div class="dep-frn-d" *ngIf="f.contact"><i class="ti ti-user"></i> {{ f.contact }}</div>
+        <div class="dep-frn-d" *ngIf="f.telephone"><i class="ti ti-phone"></i> {{ f.telephone }}</div>
+        <div class="dep-frn-d" *ngIf="f.email"><i class="ti ti-mail"></i> {{ f.email }}</div>
+        <div class="dep-frn-d" *ngIf="f.adresse"><i class="ti ti-map-pin"></i> {{ f.adresse }}</div>
+      </div>
+
+      <div *ngIf="!fournisseurs.length" class="dep-vide" style="grid-column:1/-1;">
+        <i class="ti ti-truck-off"></i>
+        <div>Aucun fournisseur enregistré.</div>
+      </div>
+    </div>
+  </ng-container>
+</div>
+
+<!-- ===== DIALOGUE DÉPENSE ===== -->
+<p-dialog [(visible)]="showDialog" [modal]="true" [style]="{ width: '620px' }"
+          [header]="editionId ? 'Modifier la dépense' : 'Nouvelle dépense'" [draggable]="false">
+  <form [formGroup]="form" class="dep-form">
+
+    <div class="dep-f2">
+      <div>
+        <label class="gn-flabel">Libellé *</label>
+        <input class="gn-input" formControlName="libelle" [class.gn-invalid]="isInvalid('libelle')"
+               placeholder="Ex : Achat riz et huile" />
+      </div>
+      <div>
+        <label class="gn-flabel">Montant (FCFA) *</label>
+        <input class="gn-input" type="number" formControlName="montant"
+               [class.gn-invalid]="isInvalid('montant')" placeholder="0" />
+      </div>
+    </div>
+
+    <div class="dep-f2">
+      <div>
+        <label class="gn-flabel">Poste de charge *</label>
+        <p-select [options]="familleOptions" formControlName="famille" optionLabel="label"
+                  optionValue="value" styleClass="dep-select-full" appendTo="body"></p-select>
+      </div>
+      <div>
+        <label class="gn-flabel">Sous-poste</label>
+        <input class="gn-input" formControlName="categorie" placeholder="Ex : Riz, Ampoules…" />
+      </div>
+    </div>
+
+    <div class="dep-f2">
+      <div>
+        <label class="gn-flabel">Date</label>
+        <input class="gn-input" type="date" formControlName="dateDepense" />
+      </div>
+      <div>
+        <label class="gn-flabel">Fournisseur</label>
+        <p-select [options]="fournisseurs" formControlName="fournisseurId" optionLabel="nom"
+                  optionValue="id" placeholder="Aucun" [showClear]="true"
+                  styleClass="dep-select-full" appendTo="body"></p-select>
+      </div>
+    </div>
+
+    <div class="dep-f2">
+      <div>
+        <label class="gn-flabel">Mode de règlement</label>
+        <p-select [options]="modeOptions" formControlName="modeReglement" optionLabel="label"
+                  optionValue="value" styleClass="dep-select-full" appendTo="body"></p-select>
+      </div>
+      <div>
+        <label class="gn-flabel">N° de pièce / facture</label>
+        <input class="gn-input" formControlName="referencePiece" placeholder="Facultatif" />
+      </div>
+    </div>
+
+    <div class="dep-f2">
+      <div>
+        <label class="gn-flabel">Chambre concernée</label>
+        <p-select [options]="chambres" formControlName="chambreId" optionLabel="numero"
+                  optionValue="id" placeholder="Aucune" [showClear]="true"
+                  styleClass="dep-select-full" appendTo="body"></p-select>
+      </div>
+      <div>
+        <label class="gn-flabel">Caisse de décaissement</label>
+        <p-select [options]="caisses" formControlName="caisseId" optionLabel="nom"
+                  optionValue="id" placeholder="Caisse par défaut" [showClear]="true"
+                  styleClass="dep-select-full" appendTo="body"></p-select>
+      </div>
+    </div>
+
+    <div>
+      <label class="gn-flabel">Notes</label>
+      <textarea class="gn-input" rows="2" formControlName="notes"
+                placeholder="Précisions utiles pour la comptabilité"></textarea>
+    </div>
+
+    <label class="dep-check" *ngIf="peutValider && !editionId">
+      <input type="checkbox" formControlName="reglerImmediatement" />
+      <span>
+        <strong>Régler immédiatement</strong>
+        <small>Le montant sort de la caisse dès l'enregistrement — pour les achats payés sur-le-champ.</small>
+      </span>
+    </label>
+  </form>
+
+  <ng-template pTemplate="footer">
+    <button class="gn-btn-o" style="padding:10px 18px;" (click)="showDialog = false">Annuler</button>
+    <button class="gn-btn-p" style="padding:10px 20px;" [disabled]="saving" (click)="enregistrer()">
+      <i class="ti ti-loader-2 gn-spin" *ngIf="saving"></i>
+      {{ editionId ? 'Enregistrer' : 'Créer la dépense' }}
+    </button>
+  </ng-template>
+</p-dialog>
+
+<!-- ===== DIALOGUE FOURNISSEUR ===== -->
+<p-dialog [(visible)]="showFournisseurDialog" [modal]="true" [style]="{ width: '520px' }"
+          header="Nouveau fournisseur" [draggable]="false">
+  <form [formGroup]="fournisseurForm" class="dep-form">
+    <div class="dep-f2">
+      <div>
+        <label class="gn-flabel">Nom *</label>
+        <input class="gn-input" formControlName="nom"
+               [class.gn-invalid]="isInvalid('nom', fournisseurForm)" placeholder="Raison sociale" />
+      </div>
+      <div>
+        <label class="gn-flabel">Type</label>
+        <p-select [options]="typeFournisseurOptions" formControlName="type" optionLabel="label"
+                  optionValue="value" styleClass="dep-select-full" appendTo="body"></p-select>
+      </div>
+    </div>
+    <div class="dep-f2">
+      <div>
+        <label class="gn-flabel">Contact</label>
+        <input class="gn-input" formControlName="contact" placeholder="Personne à joindre" />
+      </div>
+      <div>
+        <label class="gn-flabel">Téléphone</label>
+        <input class="gn-input" formControlName="telephone" placeholder="+225 …" />
+      </div>
+    </div>
+    <div>
+      <label class="gn-flabel">E-mail</label>
+      <input class="gn-input" formControlName="email" placeholder="Facultatif" />
+    </div>
+    <div>
+      <label class="gn-flabel">Adresse</label>
+      <input class="gn-input" formControlName="adresse" placeholder="Facultatif" />
+    </div>
+  </form>
+
+  <ng-template pTemplate="footer">
+    <button class="gn-btn-o" style="padding:10px 18px;" (click)="showFournisseurDialog = false">Annuler</button>
+    <button class="gn-btn-p" style="padding:10px 20px;" [disabled]="savingFournisseur" (click)="enregistrerFournisseur()">
+      <i class="ti ti-loader-2 gn-spin" *ngIf="savingFournisseur"></i> Créer
+    </button>
+  </ng-template>
+</p-dialog>

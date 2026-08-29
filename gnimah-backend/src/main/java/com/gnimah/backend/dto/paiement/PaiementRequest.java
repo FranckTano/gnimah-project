@@ -16,4 +16,6 @@ public class PaiementRequest {
     private String mode;
     private String referenceTransaction;
     private String notes;
+    /** Caisse qui reçoit l'encaissement ; à défaut, la caisse de réception. */
+    private Long caisseId;
 }

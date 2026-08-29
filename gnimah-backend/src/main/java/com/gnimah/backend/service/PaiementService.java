@@ -2,10 +2,13 @@ package com.gnimah.backend.service;
 
 import com.gnimah.backend.dto.paiement.PaiementRequest;
 import com.gnimah.backend.dto.paiement.PaiementResponse;
+import com.gnimah.backend.entity.Caisse;
 import com.gnimah.backend.entity.Paiement;
 import com.gnimah.backend.entity.Sejour;
 import com.gnimah.backend.entity.Utilisateur;
 import com.gnimah.backend.entity.enums.ModePaiement;
+import com.gnimah.backend.entity.enums.SensMouvement;
+import com.gnimah.backend.entity.enums.TypeMouvementCaisse;
 import com.gnimah.backend.exception.BusinessException;
 import com.gnimah.backend.exception.ResourceNotFoundException;
 import com.gnimah.backend.repository.PaiementRepository;
@@ -31,6 +34,7 @@ public class PaiementService {
     private final SejourRepository sejourRepository;
     private final UtilisateurRepository utilisateurRepository;
     private final PdfReceiptService pdfReceiptService;
+    private final CaisseService caisseService;
 
     @Transactional
     public PaiementResponse enregistrer(PaiementRequest request) {
@@ -42,11 +46,12 @@ public class PaiementService {
         }
 
         Utilisateur agent = getAgentConnecte();
+        ModePaiement mode = ModePaiement.valueOf(request.getMode());
 
         Paiement paiement = Paiement.builder()
                 .sejour(sejour)
                 .montant(request.getMontant())
-                .mode(ModePaiement.valueOf(request.getMode()))
+                .mode(mode)
                 .referenceTransaction(request.getReferenceTransaction())
                 .agent(agent)
                 .notes(request.getNotes())
@@ -57,6 +62,16 @@ public class PaiementService {
         sejour.setMontantPaye(sejour.getMontantPaye().add(request.getMontant()));
         sejour.setResteAPayer(sejour.getMontantTotal().subtract(sejour.getMontantPaye()));
         sejourRepository.save(sejour);
+
+        // Tout encaissement alimente une caisse : sans cette écriture, la recette
+        // apparaîtrait dans les séjours mais serait invisible en trésorerie et
+        // ne pourrait jamais être versée en banque.
+        Caisse caisse = caisseService.resoudreCaisse(request.getCaisseId());
+        caisseService.enregistrer(caisse, SensMouvement.ENTREE, TypeMouvementCaisse.ENCAISSEMENT_SEJOUR,
+                request.getMontant(), mode,
+                "Paiement séjour — chambre " + sejour.getChambre().getNumero()
+                        + " (" + sejour.getClient().getNomComplet() + ")",
+                sejour.getNumeroRecu(), "PAIEMENT", paiement.getId(), agent);
 
         return toResponse(paiement);
     }

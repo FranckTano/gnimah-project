@@ -23,6 +23,10 @@ public class Paiement {
     @Column(nullable = false, precision = 10, scale = 2)
     private BigDecimal montant;
 
+    // @Builder.Default est indispensable ici : sans lui, Lombok ignore les
+    // valeurs ci-dessous et le builder produit un paiement sans date, rejeté par
+    // la contrainte NOT NULL de la colonne date_paiement.
+    @Builder.Default
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 20)
     private ModePaiement mode = ModePaiement.ESPECES;
@@ -30,6 +34,7 @@ public class Paiement {
     @Column(name = "reference_transaction", length = 100)
     private String referenceTransaction;
 
+    @Builder.Default
     @Column(name = "date_paiement", nullable = false)
     private LocalDateTime datePaiement = LocalDateTime.now();
 

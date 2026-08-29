@@ -51,6 +51,34 @@
 }
 
 // Aperçu de la chambre attribuée, dans le rail récapitulatif sombre.
+/* ---- Tarif négocié & remise (panneau latéral) ---- */
+.ck-remise-toggle {
+  width: 100%; display: flex; align-items: center; gap: 8px; margin-top: 16px;
+  background: rgba(255,255,255,.07); border: 1px solid rgba(255,255,255,.12);
+  border-radius: 12px; padding: 10px 12px; cursor: pointer; font-family: inherit;
+  color: #f0d9df; font-size: 12.5px; font-weight: 600; text-align: left;
+  &:hover { background: rgba(255,255,255,.11); }
+  i { font-size: 15px; }
+}
+.ck-remise-badge {
+  margin-left: auto; background: #2f9e6f; color: #fff;
+  border-radius: 100px; padding: 2px 9px; font-size: 11px;
+}
+.ck-remise { margin-top: 11px; }
+.ck-rlabel {
+  font-size: 12px; color: #bfa4aa; display: block; margin-top: 11px; margin-bottom: 6px;
+  &:first-child { margin-top: 0; }
+}
+.ck-rnote { font-size: 11px; color: #8f6b72; margin-top: 5px; line-height: 1.45; }
+.ck-r2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 11px; }
+
+.ck-recap { margin-top: 14px; }
+.ck-recap-l {
+  display: flex; justify-content: space-between; gap: 10px;
+  font-size: 12.5px; color: #bfa4aa; padding: 3px 0;
+  &.remise span:last-child { color: #86e0b4; font-weight: 600; }
+}
+
 .ck-preview {
   position: relative; margin: 14px 0 0; border-radius: 14px; overflow: hidden;
   aspect-ratio: 16 / 10; background: rgba(255,255,255,.07);

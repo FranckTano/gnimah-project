@@ -1,0 +1,395 @@
+<div class="gn-route">
+
+  <div class="stk-tabs">
+    <button class="gn-seg" [class.on]="onglet === 'INVENTAIRE'" (click)="changerOnglet('INVENTAIRE')">
+      <i class="ti ti-package"></i> Inventaire
+    </button>
+    <button class="gn-seg" [class.on]="onglet === 'MOUVEMENTS'" (click)="changerOnglet('MOUVEMENTS')">
+      <i class="ti ti-arrows-exchange"></i> Mouvements
+    </button>
+    <span style="flex:1"></span>
+    <button class="gn-btn-p stk-new" *ngIf="peutGerer" (click)="ouvrirArticle()">
+      <i class="ti ti-plus"></i> Nouvel article
+    </button>
+  </div>
+
+  <!-- ================= INVENTAIRE ================= -->
+  <ng-container *ngIf="onglet === 'INVENTAIRE'">
+
+    <div class="gn-kpi stk-kpi">
+      <div class="gn-card stk-tile">
+        <div class="gn-tile brown"><i class="ti ti-package"></i></div>
+        <div>
+          <div class="gn-slabel" style="color:#b3a2a6;">Valeur du stock</div>
+          <div class="gn-serif stk-tile-v">{{ formatMontant(valeurTotale) }}</div>
+        </div>
+      </div>
+      <div class="gn-card stk-tile">
+        <div class="gn-tile wine"><i class="ti ti-list"></i></div>
+        <div>
+          <div class="gn-slabel" style="color:#b3a2a6;">Références</div>
+          <div class="gn-serif stk-tile-v">{{ articles.length }}</div>
+        </div>
+      </div>
+      <div class="gn-card stk-tile" [class.stk-alerte]="nbAlertes > 0">
+        <div class="gn-tile gold"><i class="ti ti-alert-triangle"></i></div>
+        <div>
+          <div class="gn-slabel" style="color:#b3a2a6;">À réapprovisionner</div>
+          <div class="gn-serif stk-tile-v" [style.color]="nbAlertes ? '#c9922f' : '#2e2024'">{{ nbAlertes }}</div>
+        </div>
+      </div>
+      <div class="gn-card stk-tile">
+        <div class="gn-tile green"><i class="ti ti-category"></i></div>
+        <div>
+          <div class="gn-slabel" style="color:#b3a2a6;">Catégories</div>
+          <div class="gn-serif stk-tile-v">{{ categoriesPresentes.length }}</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="stk-bar">
+      <div class="stk-search">
+        <i class="ti ti-search"></i>
+        <input class="gn-input" [(ngModel)]="recherche" placeholder="Rechercher un article…" />
+      </div>
+      <p-select [options]="categorieFiltreOptions"
+                [(ngModel)]="filtreCategorie" optionLabel="label" optionValue="value"
+                placeholder="Catégorie" styleClass="stk-select"></p-select>
+      <button class="gn-chip" [class.on]="alertesSeules" (click)="alertesSeules = !alertesSeules">
+        <i class="ti ti-alert-triangle"></i> Alertes ({{ nbAlertes }})
+      </button>
+    </div>
+
+    <div *ngIf="loading" class="gn-card" style="padding:36px;text-align:center;">
+      <i class="ti ti-loader-2 gn-spin" style="font-size:24px;color:#8c2f4d;"></i>
+      <div class="gn-empty">Chargement de l'inventaire…</div>
+    </div>
+
+    <div class="stk-grid" *ngIf="!loading">
+      <div class="gn-card stk-art" *ngFor="let a of articlesFiltres" [class.alerte]="a.enAlerte">
+        <div class="stk-art-h">
+          <div class="gn-tile" [ngClass]="a.enAlerte ? 'gold' : 'brown'">
+            <i class="ti" [ngClass]="categorieIcons[a.categorie] || 'ti-package'"></i>
+          </div>
+          <div style="flex:1;min-width:0;">
+            <div class="stk-art-n">{{ a.designation }}</div>
+            <div class="stk-art-c">
+              {{ categorieLabels[a.categorie] || a.categorie }}
+              <span *ngIf="a.code"> · {{ a.code }}</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="stk-art-q">
+          <div>
+            <span class="gn-serif stk-qte" [style.color]="jaugeTon(a)">{{ formatQte(a.quantite) }}</span>
+            <span class="stk-unite">{{ uniteLabels[a.unite] || a.unite }}</span>
+          </div>
+          <span class="gn-bdg" [ngClass]="a.enAlerte ? 'amber' : 'green'">
+            {{ a.enAlerte ? 'À commander' : 'En stock' }}
+          </span>
+        </div>
+
+        <div class="gn-bartrack" style="margin-top:9px;">
+          <div class="gn-barfill" [style.width.%]="jauge(a)" [style.background]="jaugeTon(a)"></div>
+        </div>
+        <div class="stk-art-s">
+          Seuil {{ formatQte(a.seuilAlerte) }} · {{ formatMontant(a.prixUnitaire) }}/{{ uniteLabels[a.unite] }}
+          · valeur {{ formatMontant(a.valeurStock) }}
+        </div>
+        <div class="stk-art-s" *ngIf="a.fournisseurNom">
+          <i class="ti ti-truck-delivery"></i> {{ a.fournisseurNom }}
+        </div>
+
+        <div class="stk-art-actions">
+          <button class="gn-btn-o stk-a" (click)="ouvrirMouvement(a, 'ACHAT')" title="Approvisionner">
+            <i class="ti ti-arrow-down-left" style="color:#2f9e6f;"></i> Entrée
+          </button>
+          <button class="gn-btn-o stk-a"
+                  (click)="ouvrirMouvement(a, a.categorie === 'PROVISION_ALIMENTAIRE' || a.categorie === 'BOISSON' ? 'CONSOMMATION_RESTAURATION' : 'CONSOMMATION_CHAMBRE')"
+                  title="Sortir du stock">
+            <i class="ti ti-arrow-up-right" style="color:#d0455a;"></i> Sortie
+          </button>
+          <button class="gn-btn-o stk-ai" (click)="voirHistorique(a)" title="Historique">
+            <i class="ti ti-history"></i>
+          </button>
+          <button class="gn-btn-o stk-ai" *ngIf="peutGerer" (click)="ouvrirArticle(a)" title="Modifier">
+            <i class="ti ti-pencil"></i>
+          </button>
+          <button class="gn-btn-o stk-ai" *ngIf="peutGerer" (click)="desactiver(a)" title="Retirer">
+            <i class="ti ti-trash" style="color:#a99a9d;"></i>
+          </button>
+        </div>
+      </div>
+
+      <div *ngIf="!articlesFiltres.length" class="stk-vide" style="grid-column:1/-1;">
+        <i class="ti ti-package-off"></i>
+        <div>Aucun article ne correspond.</div>
+      </div>
+    </div>
+  </ng-container>
+
+  <!-- ================= MOUVEMENTS ================= -->
+  <ng-container *ngIf="onglet === 'MOUVEMENTS'">
+    <div class="gn-card" style="padding:22px;margin-top:14px;">
+      <div class="gn-serif" style="font-size:17px;color:#2e2024;margin-bottom:14px;">
+        Journal des mouvements de stock
+      </div>
+
+      <div *ngIf="loading" class="gn-empty" style="text-align:center;">
+        <i class="ti ti-loader-2 gn-spin"></i> Chargement…
+      </div>
+
+      <div *ngIf="!loading && !mouvements.length" class="stk-vide">
+        <i class="ti ti-arrows-exchange"></i>
+        <div>Aucun mouvement enregistré.</div>
+      </div>
+
+      <div class="gn-tw" *ngIf="!loading && mouvements.length">
+        <table class="gn-table">
+          <thead>
+            <tr>
+              <th class="gn-th">Date</th>
+              <th class="gn-th">Article</th>
+              <th class="gn-th">Nature</th>
+              <th class="gn-th">Quantité</th>
+              <th class="gn-th">Stock après</th>
+              <th class="gn-th">Montant</th>
+              <th class="gn-th">Agent</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr class="gn-rowh" *ngFor="let m of mouvements">
+              <td style="font-size:13px;color:#6d585d;white-space:nowrap;">
+                {{ m.dateMouvement | date:'dd/MM HH:mm' }}
+              </td>
+              <td>
+                <div style="font-weight:600;font-size:13.5px;color:#3a2c30;">{{ m.articleDesignation }}</div>
+                <div class="stk-sub" *ngIf="m.chambreNumero">Chambre {{ m.chambreNumero }}</div>
+                <div class="stk-sub" *ngIf="m.fournisseurNom">{{ m.fournisseurNom }}</div>
+              </td>
+              <td>
+                <span class="gn-bdg" [ngClass]="m.sens === 'ENTREE' ? 'green' : 'wine'">
+                  <i class="ti" [ngClass]="m.sens === 'ENTREE' ? 'ti-arrow-down-left' : 'ti-arrow-up-right'"></i>
+                  {{ typeMouvementLabels[m.type] || m.type }}
+                </span>
+              </td>
+              <td class="gn-serif" style="font-size:14px;"
+                  [style.color]="m.sens === 'ENTREE' ? '#2f9e6f' : '#d0455a'">
+                {{ m.sens === 'ENTREE' ? '+' : '−' }}{{ formatQte(m.quantite) }} {{ uniteLabels[m.unite] || m.unite }}
+              </td>
+              <td style="font-size:13px;color:#6d585d;">{{ formatQte(m.quantiteApres) }}</td>
+              <td style="font-size:13px;color:#3a2c30;font-weight:600;">{{ formatMontant(m.montant) }}</td>
+              <td style="font-size:12.5px;color:#8a7a7e;">{{ m.agentNom || '—' }}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </ng-container>
+</div>
+
+<!-- ===== ARTICLE ===== -->
+<p-dialog [(visible)]="showArticle" [modal]="true" [style]="{ width: '580px' }"
+          [header]="articleEditionId ? 'Modifier l\'article' : 'Nouvel article de stock'" [draggable]="false">
+  <form [formGroup]="articleForm" class="stk-form">
+    <div class="stk-f2">
+      <div>
+        <label class="gn-flabel">Désignation *</label>
+        <input class="gn-input" formControlName="designation"
+               [class.gn-invalid]="isInvalid('designation', articleForm)"
+               placeholder="Ex : Riz parfumé" />
+      </div>
+      <div>
+        <label class="gn-flabel">Code</label>
+        <input class="gn-input" formControlName="code" placeholder="Facultatif" />
+      </div>
+    </div>
+
+    <div class="stk-f2">
+      <div>
+        <label class="gn-flabel">Catégorie *</label>
+        <p-select [options]="categorieOptions" formControlName="categorie" optionLabel="label"
+                  optionValue="value" styleClass="stk-select-full" appendTo="body"></p-select>
+      </div>
+      <div>
+        <label class="gn-flabel">Unité</label>
+        <p-select [options]="uniteOptions" formControlName="unite" optionLabel="label"
+                  optionValue="value" styleClass="stk-select-full" appendTo="body"></p-select>
+      </div>
+    </div>
+
+    <div class="stk-f3">
+      <div>
+        <label class="gn-flabel">
+          {{ articleEditionId ? 'Quantité actuelle' : 'Quantité initiale' }}
+        </label>
+        <input class="gn-input" type="number" formControlName="quantite"
+               [readonly]="!!articleEditionId" [class.stk-ro]="!!articleEditionId" />
+        <small class="stk-note" *ngIf="articleEditionId">
+          Se modifie uniquement par un mouvement de stock.
+        </small>
+      </div>
+      <div>
+        <label class="gn-flabel">Seuil d'alerte</label>
+        <input class="gn-input" type="number" formControlName="seuilAlerte" />
+      </div>
+      <div>
+        <label class="gn-flabel">Prix unitaire (FCFA)</label>
+        <input class="gn-input" type="number" formControlName="prixUnitaire" />
+      </div>
+    </div>
+
+    <div class="stk-f2">
+      <div>
+        <label class="gn-flabel">Fournisseur habituel</label>
+        <p-select [options]="fournisseurs" formControlName="fournisseurId" optionLabel="nom"
+                  optionValue="id" placeholder="Aucun" [showClear]="true"
+                  styleClass="stk-select-full" appendTo="body"></p-select>
+      </div>
+      <div>
+        <label class="gn-flabel">Emplacement</label>
+        <input class="gn-input" formControlName="emplacement" placeholder="Ex : Réserve cuisine" />
+      </div>
+    </div>
+  </form>
+
+  <ng-template pTemplate="footer">
+    <button class="gn-btn-o" style="padding:10px 18px;" (click)="showArticle = false">Annuler</button>
+    <button class="gn-btn-p" style="padding:10px 20px;" [disabled]="saving" (click)="enregistrerArticle()">
+      <i class="ti ti-loader-2 gn-spin" *ngIf="saving"></i> Enregistrer
+    </button>
+  </ng-template>
+</p-dialog>
+
+<!-- ===== MOUVEMENT ===== -->
+<p-dialog [(visible)]="showMouvement" [modal]="true" [style]="{ width: '560px' }"
+          header="Mouvement de stock" [draggable]="false">
+  <div *ngIf="articleCible as a">
+    <div class="stk-mvt-h">
+      <div class="gn-tile brown"><i class="ti" [ngClass]="categorieIcons[a.categorie] || 'ti-package'"></i></div>
+      <div>
+        <div style="font-weight:600;font-size:15px;color:#2e2024;">{{ a.designation }}</div>
+        <div style="font-size:12.5px;color:#8a7a7e;margin-top:3px;">
+          Stock actuel : {{ formatQte(a.quantite) }} {{ uniteLabels[a.unite] || a.unite }}
+        </div>
+      </div>
+    </div>
+
+    <form [formGroup]="mouvementForm" class="stk-form" style="margin-top:16px;">
+      <div>
+        <label class="gn-flabel">Nature du mouvement *</label>
+        <p-select [options]="typeMouvementOptions" formControlName="type" optionLabel="label"
+                  optionValue="value" (onChange)="onTypeMouvementChange()"
+                  styleClass="stk-select-full" appendTo="body"></p-select>
+      </div>
+
+      <div class="stk-f2">
+        <div>
+          <label class="gn-flabel">Quantité ({{ uniteLabels[a.unite] || a.unite }}) *</label>
+          <input class="gn-input" type="number" formControlName="quantite"
+                 [class.gn-invalid]="isInvalid('quantite', mouvementForm)" placeholder="0" />
+        </div>
+        <div>
+          <label class="gn-flabel">Prix unitaire (FCFA)</label>
+          <input class="gn-input" type="number" formControlName="prixUnitaire" />
+        </div>
+      </div>
+
+      <div class="stk-montant" *ngIf="montantMouvement > 0">
+        Valeur du mouvement : <strong>{{ formatMontant(montantMouvement) }}</strong>
+      </div>
+
+      <div *ngIf="mouvementEstAchat">
+        <label class="gn-flabel">Fournisseur</label>
+        <p-select [options]="fournisseurs" formControlName="fournisseurId" optionLabel="nom"
+                  optionValue="id" placeholder="Aucun" [showClear]="true"
+                  styleClass="stk-select-full" appendTo="body"></p-select>
+      </div>
+
+      <div *ngIf="mouvementVersChambre">
+        <label class="gn-flabel">Chambre destinataire</label>
+        <p-select [options]="chambres" formControlName="chambreId" optionLabel="numero"
+                  optionValue="id" placeholder="Aucune" [showClear]="true"
+                  styleClass="stk-select-full" appendTo="body"></p-select>
+      </div>
+
+      <ng-container *ngIf="mouvementEstAchat">
+        <label class="stk-check">
+          <input type="checkbox" formControlName="genererDepense" />
+          <span>
+            <strong>Générer la dépense et le décaissement</strong>
+            <small>
+              Enregistre la charge en comptabilité et sort l'argent de la caisse,
+              en une seule opération.
+            </small>
+          </span>
+        </label>
+
+        <div class="stk-f2" *ngIf="mouvementForm.value.genererDepense">
+          <div>
+            <label class="gn-flabel">Caisse</label>
+            <p-select [options]="caisses" formControlName="caisseId" optionLabel="nom"
+                      optionValue="id" placeholder="Caisse par défaut" [showClear]="true"
+                      styleClass="stk-select-full" appendTo="body"></p-select>
+          </div>
+          <div>
+            <label class="gn-flabel">Mode de règlement</label>
+            <p-select [options]="modeOptions" formControlName="modeReglement" optionLabel="label"
+                      optionValue="value" styleClass="stk-select-full" appendTo="body"></p-select>
+          </div>
+        </div>
+      </ng-container>
+
+      <div>
+        <label class="gn-flabel">Motif / commentaire</label>
+        <textarea class="gn-input" rows="2" formControlName="motif"></textarea>
+      </div>
+    </form>
+  </div>
+
+  <ng-template pTemplate="footer">
+    <button class="gn-btn-o" style="padding:10px 18px;" (click)="showMouvement = false">Annuler</button>
+    <button class="gn-btn-p" style="padding:10px 20px;" [disabled]="saving" (click)="enregistrerMouvement()">
+      <i class="ti ti-loader-2 gn-spin" *ngIf="saving"></i>
+      {{ mouvementEstEntree ? 'Enregistrer l\'entrée' : 'Enregistrer la sortie' }}
+    </button>
+  </ng-template>
+</p-dialog>
+
+<!-- ===== HISTORIQUE ===== -->
+<p-dialog [(visible)]="showHistorique" [modal]="true" [style]="{ width: '600px' }"
+          header="Historique de l'article" [draggable]="false">
+  <div *ngIf="articleCible as a">
+    <div style="font-weight:600;font-size:15px;color:#2e2024;margin-bottom:14px;">{{ a.designation }}</div>
+
+    <div class="stk-hist" *ngIf="historique.length">
+      <div class="stk-hist-l" *ngFor="let m of historique">
+        <div class="stk-hist-ico" [ngClass]="m.sens === 'ENTREE' ? 'in' : 'out'">
+          <i class="ti" [ngClass]="m.sens === 'ENTREE' ? 'ti-arrow-down-left' : 'ti-arrow-up-right'"></i>
+        </div>
+        <div style="flex:1;min-width:0;">
+          <div class="stk-hist-t">{{ typeMouvementLabels[m.type] || m.type }}</div>
+          <div class="stk-hist-s">
+            {{ m.dateMouvement | date:'dd/MM/yyyy HH:mm' }}
+            <span *ngIf="m.agentNom"> · {{ m.agentNom }}</span>
+            <span *ngIf="m.chambreNumero"> · chambre {{ m.chambreNumero }}</span>
+          </div>
+          <div class="stk-hist-m" *ngIf="m.motif">{{ m.motif }}</div>
+        </div>
+        <div style="text-align:right;flex:none;">
+          <div class="gn-serif" [style.color]="m.sens === 'ENTREE' ? '#2f9e6f' : '#d0455a'">
+            {{ m.sens === 'ENTREE' ? '+' : '−' }}{{ formatQte(m.quantite) }}
+          </div>
+          <div class="stk-hist-s">reste {{ formatQte(m.quantiteApres) }}</div>
+        </div>
+      </div>
+    </div>
+
+    <div *ngIf="!historique.length" class="gn-empty">Aucun mouvement pour cet article.</div>
+  </div>
+
+  <ng-template pTemplate="footer">
+    <button class="gn-btn-o" style="padding:10px 18px;" (click)="showHistorique = false">Fermer</button>
+  </ng-template>
+</p-dialog>

@@ -1,0 +1,116 @@
+.cai-select {
+  display: flex; align-items: center; gap: 9px; flex-wrap: wrap; margin-bottom: 14px;
+}
+.cai-chip {
+  display: inline-flex; align-items: center; gap: 8px;
+  border: 1px solid #e6d3d9; background: #fff; color: #4d3f43;
+  border-radius: 100px; padding: 9px 15px; font-size: 13px; font-weight: 600;
+  cursor: pointer; transition: .15s; font-family: inherit;
+  &:hover { background: #fbeef1; }
+  &.on { background: var(--gn-wine); color: #fff; border-color: var(--gn-wine); }
+  .gn-dot { width: 7px; height: 7px; }
+}
+.cai-link { padding: 8px 15px; font-size: 12.5px; text-decoration: none; border-radius: 100px; }
+
+/* ---- Bandeau état ---- */
+.cai-etat {
+  padding: 24px 26px; display: flex; align-items: center;
+  justify-content: space-between; gap: 20px; flex-wrap: wrap;
+}
+.cai-solde { font-size: 34px; color: #8c2f4d; margin-top: 6px; line-height: 1.1; }
+.cai-etat-sub { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-top: 9px; }
+.cai-caissier { font-size: 12.5px; color: #8a7a7e; }
+.cai-etat-actions {
+  display: flex; gap: 9px; flex-wrap: wrap;
+  .gn-btn-p, .gn-btn-o { padding: 11px 17px; font-size: 13.5px; }
+}
+
+/* ---- Tuiles ---- */
+.cai-kpi { margin-top: 16px; }
+.cai-tile { padding: 16px 18px; }
+.cai-tile-hi { border: 1px solid #f0d9e0; }
+.cai-tile-v { font-size: 19px; color: #2e2024; margin-top: 5px; }
+.cai-tile-s { font-size: 11.5px; color: #a99a9d; margin-top: 3px; }
+
+/* ---- Liste des mouvements ---- */
+.cai-h {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 12px; flex-wrap: wrap; margin-bottom: 14px;
+}
+.cai-title { font-size: 17px; color: #2e2024; }
+.cai-h-tot { display: flex; gap: 8px; }
+
+.cai-mvts { display: flex; flex-direction: column; }
+.cai-mvt {
+  display: flex; align-items: flex-start; gap: 13px; padding: 13px 0;
+  border-top: 1px solid #f2e8e4;
+  &:first-child { border-top: none; }
+}
+.cai-mvt-ico {
+  width: 36px; height: 36px; border-radius: 11px; flex: none;
+  display: flex; align-items: center; justify-content: center; font-size: 17px;
+  &.in { background: #e6f4ec; color: #2f9e6f; }
+  &.out { background: #f8e0e0; color: #d0455a; }
+}
+.cai-mvt-b { flex: 1; min-width: 0; }
+.cai-mvt-lb { font-size: 13.5px; font-weight: 600; color: #3a2c30; }
+.cai-mvt-s { font-size: 11.5px; color: #a99a9d; margin-top: 3px; }
+.cai-mvt-r { font-size: 11px; color: #b3a2a6; margin-top: 2px; }
+.cai-mvt-m {
+  text-align: right; font-size: 14.5px; font-weight: 700; white-space: nowrap; flex: none;
+  font-family: 'Newsreader', Georgia, serif;
+  &.in { color: #2f9e6f; }
+  &.out { color: #d0455a; }
+}
+.cai-mvt-solde {
+  font-size: 11px; color: #a99a9d; font-weight: 500; margin-top: 3px;
+  font-family: 'DM Sans', sans-serif;
+}
+
+.cai-vide {
+  text-align: center; padding: 34px 16px; color: #a99a9d; font-size: 13.5px;
+  i { font-size: 30px; display: block; margin-bottom: 10px; color: #d7c6c1; }
+  small { display: block; margin-top: 6px; font-size: 12px; }
+}
+
+/* ---- Dialogues ---- */
+.cai-form { display: flex; flex-direction: column; gap: 14px; }
+.cai-f2 { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+.cai-hint {
+  margin: 0; font-size: 12.5px; color: #8a7a7e; line-height: 1.55;
+  background: #faf4f1; border-radius: 12px; padding: 12px 14px;
+}
+
+.cai-compte {
+  background: #faf4f1; border-radius: 14px; padding: 14px 16px;
+}
+.cai-compte-l {
+  display: flex; justify-content: space-between; gap: 12px;
+  font-size: 13px; color: #6d585d; padding: 5px 0;
+  &.total {
+    border-top: 1px solid #ecdcd6; margin-top: 6px; padding-top: 10px;
+    font-size: 14px; color: #2e2024;
+    strong { font-size: 18px; color: #8c2f4d; }
+  }
+}
+
+.cai-ecart {
+  display: flex; align-items: center; gap: 9px;
+  border-radius: 13px; padding: 12px 14px; font-size: 13px; font-weight: 600;
+  i { font-size: 18px; }
+  &.ok { background: #e6f4ec; color: #2f9e6f; }
+  &.plus { background: #fbeecb; color: #b98a1e; }
+  &.moins { background: #f8e0e0; color: #d0455a; }
+}
+
+:host ::ng-deep {
+  .cai-select-full { width: 100%; display: block; }
+  .cai-select-full .p-select { width: 100%; }
+}
+
+@media (max-width: 700px) {
+  .cai-etat { padding: 20px; }
+  .cai-solde { font-size: 28px; }
+  .cai-etat-actions { width: 100%; .gn-btn-p, .gn-btn-o { flex: 1; justify-content: center; } }
+  .cai-f2 { grid-template-columns: 1fr; }
+}

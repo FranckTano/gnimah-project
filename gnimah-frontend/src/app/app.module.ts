@@ -74,9 +74,16 @@ import { ReservationListComponent } from './features/reservations/list/reservati
 import { ReservationFormComponent } from './features/reservations/form/reservation-form.component';
 import { PaiementsComponent } from './features/paiements/paiements.component';
 import { EntretienComponent } from './features/entretien/entretien.component';
+import { IncidentsComponent } from './features/entretien/incidents/incidents.component';
 import { EvenementsComponent } from './features/evenements/evenements.component';
 import { KpiComponent } from './features/kpi/kpi.component';
 import { ResidenceComponent } from './features/residence/residence.component';
+import { ComptabiliteComponent } from './features/comptabilite/comptabilite.component';
+import { DepensesComponent } from './features/comptabilite/depenses/depenses.component';
+import { CaisseComponent } from './features/caisse/caisse.component';
+import { VersementsComponent } from './features/caisse/versements/versements.component';
+import { RestaurationComponent } from './features/restauration/restauration.component';
+import { StockComponent } from './features/stock/stock.component';
 import { UtilisateursComponent } from './features/administration/utilisateurs/utilisateurs.component';
 import { MediasComponent } from './features/administration/medias/medias.component';
 
@@ -96,9 +103,16 @@ import { MediasComponent } from './features/administration/medias/medias.compone
     ReservationFormComponent,
     PaiementsComponent,
     EntretienComponent,
+    IncidentsComponent,
     EvenementsComponent,
     KpiComponent,
     ResidenceComponent,
+    ComptabiliteComponent,
+    DepensesComponent,
+    CaisseComponent,
+    VersementsComponent,
+    RestaurationComponent,
+    StockComponent,
     UtilisateursComponent,
     MediasComponent
   ],

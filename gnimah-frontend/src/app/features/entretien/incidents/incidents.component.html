@@ -1,0 +1,325 @@
+<div class="gn-route">
+
+  <div class="inc-head">
+    <a class="gn-btn-o inc-link" routerLink="/entretien"><i class="ti ti-spray"></i> Tâches d'entretien</a>
+    <span style="flex:1"></span>
+    <button class="gn-btn-p mob-full" style="padding:11px 18px;font-size:13.5px;" (click)="ouvrirDeclaration()">
+      <i class="ti ti-alert-triangle"></i> Déclarer un incident
+    </button>
+  </div>
+
+  <!-- ===== SYNTHÈSE ===== -->
+  <div class="gn-kpi inc-kpi">
+    <div class="gn-card inc-tile">
+      <div class="gn-tile gold"><i class="ti ti-clipboard-list"></i></div>
+      <div>
+        <div class="gn-slabel" style="color:#b3a2a6;">À traiter</div>
+        <div class="gn-serif inc-tile-v">{{ stats.ouverts }}</div>
+      </div>
+    </div>
+    <div class="gn-card inc-tile" [class.inc-urgent]="stats.majeurs > 0">
+      <div class="gn-tile wine"><i class="ti ti-urgent"></i></div>
+      <div>
+        <div class="gn-slabel" style="color:#b3a2a6;">Majeurs ouverts</div>
+        <div class="gn-serif inc-tile-v" [style.color]="stats.majeurs ? '#d0455a' : '#2e2024'">
+          {{ stats.majeurs }}
+        </div>
+      </div>
+    </div>
+    <div class="gn-card inc-tile">
+      <div class="gn-tile brown"><i class="ti ti-tool"></i></div>
+      <div>
+        <div class="gn-slabel" style="color:#b3a2a6;">Coût constaté</div>
+        <div class="gn-serif inc-tile-v">{{ formatMontant(stats.coutTotal) }}</div>
+      </div>
+    </div>
+    <div class="gn-card inc-tile">
+      <div class="gn-tile green"><i class="ti ti-user-dollar"></i></div>
+      <div>
+        <div class="gn-slabel" style="color:#b3a2a6;">Refacturé aux clients</div>
+        <div class="gn-serif inc-tile-v" style="color:#2f9e6f;">{{ formatMontant(stats.factures) }}</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== FILTRES ===== -->
+  <div class="inc-bar">
+    <p-select [options]="statutOptions" [(ngModel)]="filtreStatut" optionLabel="label"
+              optionValue="value" placeholder="Statut" styleClass="inc-select"></p-select>
+    <p-select [options]="graviteFiltreOptions"
+              [(ngModel)]="filtreGravite" optionLabel="label" optionValue="value"
+              placeholder="Gravité" styleClass="inc-select"></p-select>
+  </div>
+
+  <!-- ===== LISTE ===== -->
+  <div *ngIf="loading" class="gn-card" style="padding:36px;text-align:center;">
+    <i class="ti ti-loader-2 gn-spin" style="font-size:24px;color:#8c2f4d;"></i>
+    <div class="gn-empty">Chargement des incidents…</div>
+  </div>
+
+  <div class="inc-list" *ngIf="!loading">
+    <div class="gn-card inc-item" *ngFor="let i of incidentsFiltres"
+         [class.majeur]="i.gravite === 'MAJEUR' && estOuvert(i)">
+
+      <div class="inc-item-l">
+        <div class="inc-ico" [ngClass]="'g-' + i.gravite.toLowerCase()">
+          <i class="ti" [ngClass]="typeIcons[i.type] || 'ti-alert-triangle'"></i>
+        </div>
+      </div>
+
+      <div class="inc-item-b">
+        <div class="inc-item-h">
+          <span class="gn-serif inc-num">{{ i.numero }}</span>
+          <span class="gn-bdg" [ngClass]="statutTones[i.statut]">{{ statutLabels[i.statut] }}</span>
+          <span class="gn-bdg" [ngClass]="graviteTones[i.gravite]">{{ graviteLabels[i.gravite] }}</span>
+          <span class="gn-bdg gray">Chambre {{ i.chambreNumero }}</span>
+        </div>
+
+        <div class="inc-desig">
+          {{ i.designation }}
+          <span class="inc-qte" *ngIf="i.quantite > 1">× {{ i.quantite }}</span>
+        </div>
+        <div class="inc-type">{{ typeLabels[i.type] || i.type }}</div>
+
+        <div class="inc-desc" *ngIf="i.description">{{ i.description }}</div>
+
+        <div class="inc-meta">
+          <span><i class="ti ti-calendar"></i> {{ i.dateIncident | date:'dd/MM/yy HH:mm' }}</span>
+          <span *ngIf="i.declareParNom"><i class="ti ti-user"></i> {{ i.declareParNom }}</span>
+          <span *ngIf="i.clientNom"><i class="ti ti-bed"></i> {{ i.clientNom }}</span>
+          <span *ngIf="i.tacheId"><i class="ti ti-tool"></i> Tâche ouverte</span>
+        </div>
+
+        <div class="inc-cout" *ngIf="i.coutEstime > 0 || i.coutReel > 0">
+          <span *ngIf="i.coutEstime > 0 && i.statut === 'DECLARE'">
+            Estimé à <strong>{{ formatMontant(i.coutEstime) }}</strong>
+          </span>
+          <span *ngIf="i.coutReel > 0">
+            Coût réel <strong>{{ formatMontant(i.coutReel) }}</strong>
+            <span class="inc-impute" *ngIf="i.imputeClient">facturé au client</span>
+            <span class="inc-charge" *ngIf="!i.imputeClient && i.depenseId">à la charge de la résidence</span>
+          </span>
+        </div>
+      </div>
+
+      <div class="inc-item-r">
+        <button class="gn-btn-o inc-a" *ngIf="i.statut === 'DECLARE'"
+                [disabled]="actionId === i.id" (click)="prendreEnCharge(i)" title="Prendre en charge">
+          <i class="ti ti-player-play" style="color:#5f7191;"></i>
+        </button>
+        <button class="gn-btn-o inc-a" *ngIf="peutResoudre && estOuvert(i)"
+                (click)="ouvrirResolution(i)" title="Clôturer">
+          <i class="ti ti-checks" style="color:#2f9e6f;"></i>
+        </button>
+        <button class="gn-btn-o inc-a" *ngIf="peutResoudre && estOuvert(i) && !i.depenseId && !i.imputeClient"
+                [disabled]="actionId === i.id" (click)="supprimer(i)" title="Supprimer">
+          <i class="ti ti-trash" style="color:#a99a9d;"></i>
+        </button>
+      </div>
+    </div>
+
+    <div *ngIf="!incidentsFiltres.length" class="gn-card inc-vide">
+      <i class="ti ti-mood-check"></i>
+      <div>Aucun incident à afficher.</div>
+      <small>Les chambres sont en ordre — ou les filtres sont trop restrictifs.</small>
+    </div>
+  </div>
+</div>
+
+<!-- ===== DÉCLARATION ===== -->
+<p-dialog [(visible)]="showDeclaration" [modal]="true" [style]="{ width: '600px' }"
+          header="Déclarer un objet ou matériel défectueux" [draggable]="false">
+  <form [formGroup]="form" class="inc-form">
+
+    <p class="inc-hint">
+      À remplir après le passage d'un client. Signalez ce que vous constatez :
+      le chiffrage et la décision de facturer se font ensuite, par la direction.
+    </p>
+
+    <div class="inc-f2">
+      <div>
+        <label class="gn-flabel">Chambre *</label>
+        <p-select [options]="chambres" formControlName="chambreId" optionLabel="numero"
+                  optionValue="id" placeholder="Choisir" [filter]="true" filterBy="numero"
+                  [class.gn-invalid]="isInvalid('chambreId', form)"
+                  styleClass="inc-select-full" appendTo="body"></p-select>
+      </div>
+      <div>
+        <label class="gn-flabel">Type d'incident *</label>
+        <p-select [options]="typeOptions" formControlName="type" optionLabel="label"
+                  optionValue="value" styleClass="inc-select-full" appendTo="body"></p-select>
+      </div>
+    </div>
+
+    <div>
+      <label class="gn-flabel">Article de l'inventaire</label>
+      <p-select [options]="articlesStock" formControlName="articleStockId" optionLabel="designation"
+                optionValue="id" placeholder="Sélectionner si le matériel est suivi en stock"
+                [showClear]="true" [filter]="true" filterBy="designation"
+                (onChange)="onArticleStockChange()"
+                styleClass="inc-select-full" appendTo="body"></p-select>
+      <small class="inc-note">
+        Si l'objet est remplacé, il sortira automatiquement du stock à la clôture.
+      </small>
+    </div>
+
+    <div class="inc-f2">
+      <div>
+        <label class="gn-flabel">Désignation *</label>
+        <input class="gn-input" formControlName="designation"
+               [class.gn-invalid]="isInvalid('designation', form)"
+               placeholder="Ex : Télécommande TV, robinet du lavabo" />
+      </div>
+      <div>
+        <label class="gn-flabel">Quantité</label>
+        <input class="gn-input" type="number" formControlName="quantite" min="1" />
+      </div>
+    </div>
+
+    <div class="inc-f2">
+      <div>
+        <label class="gn-flabel">Gravité</label>
+        <p-select [options]="graviteOptions" formControlName="gravite" optionLabel="label"
+                  optionValue="value" styleClass="inc-select-full" appendTo="body"></p-select>
+      </div>
+      <div>
+        <label class="gn-flabel">Coût estimé (FCFA)</label>
+        <input class="gn-input" type="number" formControlName="coutEstime" placeholder="Facultatif" />
+      </div>
+    </div>
+
+    <div>
+      <label class="gn-flabel">Séjour concerné</label>
+      <p-select [options]="sejoursChambre" formControlName="sejourId" optionValue="id"
+                placeholder="Détecté automatiquement si vide" [showClear]="true"
+                styleClass="inc-select-full" appendTo="body">
+        <ng-template let-s pTemplate="item">
+          {{ s.clientNom }} — reçu {{ s.numeroRecu }}
+        </ng-template>
+        <ng-template let-s pTemplate="selectedItem">
+          {{ s.clientNom }} — reçu {{ s.numeroRecu }}
+        </ng-template>
+      </p-select>
+      <small class="inc-note">
+        Nécessaire uniquement si le dégât doit être facturé au client.
+      </small>
+    </div>
+
+    <div>
+      <label class="gn-flabel">Description</label>
+      <textarea class="gn-input" rows="3" formControlName="description"
+                placeholder="Ce que vous avez constaté, où, dans quel état…"></textarea>
+    </div>
+
+    <label class="inc-check">
+      <input type="checkbox" formControlName="bloquerChambre" />
+      <span>
+        <strong>Mettre la chambre en maintenance</strong>
+        <small>À cocher si la chambre ne peut pas être relouée en l'état. Automatique pour un incident majeur.</small>
+      </span>
+    </label>
+
+    <label class="inc-check">
+      <input type="checkbox" formControlName="imputeClient" />
+      <span>
+        <strong>Dégât imputable au client</strong>
+        <small>Simple signalement : la facturation effective se décide à la clôture.</small>
+      </span>
+    </label>
+  </form>
+
+  <ng-template pTemplate="footer">
+    <button class="gn-btn-o" style="padding:10px 18px;" (click)="showDeclaration = false">Annuler</button>
+    <button class="gn-btn-p" style="padding:10px 20px;" [disabled]="saving" (click)="declarer()">
+      <i class="ti ti-loader-2 gn-spin" *ngIf="saving"></i> Déclarer
+    </button>
+  </ng-template>
+</p-dialog>
+
+<!-- ===== RÉSOLUTION ===== -->
+<p-dialog [(visible)]="showResolution" [modal]="true" [style]="{ width: '560px' }"
+          header="Clôturer l'incident" [draggable]="false">
+  <div *ngIf="incidentCible as i">
+    <div class="inc-res-h">
+      <div class="inc-ico" [ngClass]="'g-' + i.gravite.toLowerCase()">
+        <i class="ti" [ngClass]="typeIcons[i.type] || 'ti-alert-triangle'"></i>
+      </div>
+      <div>
+        <div style="font-weight:600;font-size:15px;color:#2e2024;">{{ i.designation }}</div>
+        <div style="font-size:12.5px;color:#8a7a7e;margin-top:3px;">
+          {{ i.numero }} · Chambre {{ i.chambreNumero }}
+          <span *ngIf="i.clientNom"> · {{ i.clientNom }}</span>
+        </div>
+      </div>
+    </div>
+
+    <form [formGroup]="resolutionForm" class="inc-form" style="margin-top:16px;">
+      <div class="inc-f2">
+        <div>
+          <label class="gn-flabel">Issue *</label>
+          <p-select [options]="resolutionOptions" formControlName="statut" optionLabel="label"
+                    optionValue="value" styleClass="inc-select-full" appendTo="body"></p-select>
+        </div>
+        <div *ngIf="!resolutionSansSuite">
+          <label class="gn-flabel">Coût réel (FCFA)</label>
+          <input class="gn-input" type="number" formControlName="coutReel" placeholder="0" />
+        </div>
+      </div>
+
+      <ng-container *ngIf="!resolutionSansSuite">
+        <label class="inc-check" [class.inc-disabled]="!peutImputer">
+          <input type="checkbox" formControlName="imputeClient" [disabled]="!peutImputer" />
+          <span>
+            <strong>Facturer au client</strong>
+            <small *ngIf="peutImputer">
+              Le coût s'ajoute au reste à payer du séjour {{ i.sejourNumeroRecu }}.
+            </small>
+            <small *ngIf="!peutImputer">
+              Impossible : aucun séjour n'est rattaché à cet incident.
+            </small>
+          </span>
+        </label>
+
+        <ng-container *ngIf="!resolutionImpute">
+          <div class="inc-f2">
+            <div>
+              <label class="gn-flabel">Poste de charge</label>
+              <p-select [options]="familleOptions" formControlName="familleDepense" optionLabel="label"
+                        optionValue="value" styleClass="inc-select-full" appendTo="body"></p-select>
+            </div>
+            <div>
+              <label class="gn-flabel">Caisse</label>
+              <p-select [options]="caisses" formControlName="caisseId" optionLabel="nom"
+                        optionValue="id" placeholder="Caisse par défaut" [showClear]="true"
+                        styleClass="inc-select-full" appendTo="body"></p-select>
+            </div>
+          </div>
+          <p class="inc-hint" style="margin:0;">
+            Une dépense sera créée et réglée pour ce montant, à la charge de la résidence.
+          </p>
+        </ng-container>
+      </ng-container>
+
+      <label class="inc-check">
+        <input type="checkbox" formControlName="libererChambre" />
+        <span>
+          <strong>Remettre la chambre en service</strong>
+          <small>La chambre repasse « à nettoyer » si elle était en maintenance.</small>
+        </span>
+      </label>
+
+      <div>
+        <label class="gn-flabel">Notes de clôture</label>
+        <textarea class="gn-input" rows="2" formControlName="notes"
+                  placeholder="Intervention réalisée, pièce changée…"></textarea>
+      </div>
+    </form>
+  </div>
+
+  <ng-template pTemplate="footer">
+    <button class="gn-btn-o" style="padding:10px 18px;" (click)="showResolution = false">Annuler</button>
+    <button class="gn-btn-p" style="padding:10px 20px;" [disabled]="saving" (click)="resoudre()">
+      <i class="ti ti-loader-2 gn-spin" *ngIf="saving"></i> Clôturer
+    </button>
+  </ng-template>
+</p-dialog>

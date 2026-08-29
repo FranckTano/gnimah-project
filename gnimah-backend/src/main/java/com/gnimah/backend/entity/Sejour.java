@@ -1,6 +1,7 @@
 package com.gnimah.backend.entity;
 
 import com.gnimah.backend.entity.enums.TypeLocation;
+import com.gnimah.backend.entity.enums.TypeRemise;
 import jakarta.persistence.*;
 import lombok.*;
 import org.springframework.data.annotation.CreatedDate;
@@ -37,6 +38,7 @@ public class Sejour {
     private Utilisateur agent;
 
     @Enumerated(EnumType.STRING)
+    @Builder.Default
     @Column(name = "type_location", nullable = false, length = 20)
     private TypeLocation typeLocation = TypeLocation.SEJOUR;
 
@@ -58,15 +60,58 @@ public class Sejour {
     @Column(name = "nb_heures")
     private Integer nbHeures;
 
+    /**
+     * Montant de l'hébergement avant remise (tarif appliqué × durée). Conservé
+     * distinctement du total facturé pour que le geste commercial reste lisible
+     * sur le reçu et mesurable dans les statistiques.
+     */
+    @Builder.Default
+    @Column(name = "montant_brut", nullable = false, precision = 12, scale = 2)
+    private BigDecimal montantBrut = BigDecimal.ZERO;
+
+    /** Tarif unitaire réellement pratiqué, s'il diffère du tarif de la chambre. */
+    @Column(name = "tarif_applique", precision = 12, scale = 2)
+    private BigDecimal tarifApplique;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "remise_type", length = 20)
+    private TypeRemise remiseType;
+
+    /** Valeur saisie : un pourcentage (ex. 15) ou un montant ferme selon le type. */
+    @Builder.Default
+    @Column(name = "remise_valeur", nullable = false, precision = 12, scale = 2)
+    private BigDecimal remiseValeur = BigDecimal.ZERO;
+
+    /** Remise convertie en francs — toujours renseignée, quel que soit le type. */
+    @Builder.Default
+    @Column(name = "remise_montant", nullable = false, precision = 12, scale = 2)
+    private BigDecimal remiseMontant = BigDecimal.ZERO;
+
+    @Column(name = "remise_motif", length = 255)
+    private String remiseMotif;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "remise_par_id")
+    private Utilisateur remisePar;
+
+    /** Consommations annexes imputées à la chambre (restauration, room service). */
+    @Builder.Default
+    @Column(name = "montant_extras", nullable = false, precision = 12, scale = 2)
+    private BigDecimal montantExtras = BigDecimal.ZERO;
+
+    @Builder.Default
     @Column(name = "montant_total", nullable = false, precision = 10, scale = 2)
     private BigDecimal montantTotal = BigDecimal.ZERO;
 
+    @Builder.Default
     @Column(name = "montant_paye", nullable = false, precision = 10, scale = 2)
     private BigDecimal montantPaye = BigDecimal.ZERO;
 
+    @Builder.Default
     @Column(name = "reste_a_payer", nullable = false, precision = 10, scale = 2)
     private BigDecimal resteAPayer = BigDecimal.ZERO;
 
+    @Builder.Default
     @Column(nullable = false, length = 30)
     private String statut = "EN_COURS";
 

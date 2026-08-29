@@ -1,5 +1,6 @@
 package com.gnimah.backend.controller;
 
+import com.gnimah.backend.dto.sejour.RemiseSejourRequest;
 import com.gnimah.backend.dto.sejour.SejourRequest;
 import com.gnimah.backend.dto.sejour.SejourResponse;
 import com.gnimah.backend.service.SejourService;
@@ -33,6 +34,14 @@ public class SejourController {
     @Operation(summary = "Clôturer un séjour (check-out)")
     public ResponseEntity<SejourResponse> checkOut(@PathVariable Long id) {
         return ResponseEntity.ok(sejourService.checkOut(id));
+    }
+
+    @PatchMapping("/{id}/remise")
+    @Operation(summary = "Réviser le prix d'un séjour en cours (tarif négocié et/ou remise)")
+    public ResponseEntity<SejourResponse> appliquerRemise(
+            @PathVariable Long id,
+            @Valid @RequestBody RemiseSejourRequest request) {
+        return ResponseEntity.ok(sejourService.appliquerRemise(id, request));
     }
 
     @GetMapping("/{id}")

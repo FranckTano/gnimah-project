@@ -25,18 +25,24 @@ public class Facture {
     @Column(name = "montant_total", nullable = false, precision = 10, scale = 2)
     private BigDecimal montantTotal;
 
+    // Même raison que sur Paiement : sans @Builder.Default, Lombok ignore ces
+    // valeurs et le builder produit une facture sans date ni montants.
+    @Builder.Default
     @Column(name = "montant_paye", nullable = false, precision = 10, scale = 2)
     private BigDecimal montantPaye = BigDecimal.ZERO;
 
+    @Builder.Default
     @Column(name = "reste_a_payer", nullable = false, precision = 10, scale = 2)
     private BigDecimal resteAPayer = BigDecimal.ZERO;
 
     @Column(name = "pdf_path", length = 500)
     private String pdfPath;
 
+    @Builder.Default
     @Column(name = "date_emission", nullable = false)
     private LocalDateTime dateEmission = LocalDateTime.now();
 
+    @Builder.Default
     @Column(name = "created_at", nullable = false)
     private LocalDateTime createdAt = LocalDateTime.now();
 }

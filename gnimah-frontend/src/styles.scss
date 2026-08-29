@@ -333,6 +333,33 @@ textarea.gn-input { font-family: inherit; }
 .p-button { border-radius: 12px; font-weight: 600; }
 .p-inputtext { border-radius: 12px; }
 .p-dropdown, .p-select { border-radius: 12px; }
+
+/* ---- Select pleine largeur dans les formulaires (styleClass="gn-select") ----
+   Le composant p-select pose lui-même la classe .p-select sur son élément hôte,
+   et cette classe vaut `display: inline-flex`. Lui imposer `display: block` pour
+   l'élargir casse la mise en page interne : le libellé et le chevron s'empilent
+   l'un sous l'autre et le texte se retrouve tronqué à deux caractères. On ne
+   touche donc qu'à la largeur, jamais au mode d'affichage.
+
+   Règle globale et non encapsulée : `styleClass` atterrit sur un élément que les
+   styles de composant n'atteignent pas de façon fiable, et le panneau ouvert
+   avec `appendTo="body"` vit hors du composant. */
+.gn-select {
+  width: 100%;
+
+  /* Sans min-width:0, un libellé long refuse de se comprimer et déborde du champ. */
+  .p-select-label {
+    flex: 1 1 auto;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+}
+
+/* Le panneau doit passer au-dessus du masque des dialogues, sinon un select
+   ouvert depuis une fenêtre modale s'affiche derrière elle. */
+.p-select-overlay { z-index: 1200 !important; }
 .p-calendar, .p-datepicker-input { .p-inputtext { border-radius: 12px; } }
 
 /* p-password used on the login screen inside a .gn-field-icon wrapper (lock icon prefix) */

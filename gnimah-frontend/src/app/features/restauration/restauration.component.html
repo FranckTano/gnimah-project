@@ -1,0 +1,390 @@
+<div class="gn-route">
+
+  <div class="res-tabs">
+    <button class="gn-seg" [class.on]="onglet === 'SERVICE'" (click)="changerOnglet('SERVICE')">
+      <i class="ti ti-tools-kitchen-2"></i> Service
+    </button>
+    <button class="gn-seg" [class.on]="onglet === 'ADDITIONS'" (click)="changerOnglet('ADDITIONS')">
+      <i class="ti ti-receipt"></i> Additions
+      <span class="res-badge" *ngIf="additionsOuvertes.length">{{ additionsOuvertes.length }}</span>
+    </button>
+    <button class="gn-seg" [class.on]="onglet === 'CARTE'" (click)="changerOnglet('CARTE')">
+      <i class="ti ti-book"></i> Carte
+    </button>
+  </div>
+
+  <!-- ================= SERVICE ================= -->
+  <div class="res-service" *ngIf="onglet === 'SERVICE'">
+
+    <!-- Carte -->
+    <div class="gn-card res-carte">
+      <div class="res-filtres">
+        <div class="res-search">
+          <i class="ti ti-search"></i>
+          <input class="gn-input" [(ngModel)]="rechercheCarte" placeholder="Rechercher un plat…" />
+        </div>
+      </div>
+
+      <div class="res-cats">
+        <button class="gn-chip" [class.on]="!categorieActive" (click)="categorieActive = null">Tout</button>
+        <button class="gn-chip" *ngFor="let c of categoriesPresentes"
+                [class.on]="categorieActive === c" (click)="categorieActive = c">
+          <i class="ti" [ngClass]="categorieIcons[c] || 'ti-dots'"></i>
+          {{ categorieLabels[c] || c }}
+        </button>
+      </div>
+
+      <div class="res-grid">
+        <button class="res-art" *ngFor="let a of carteFiltree"
+                [class.off]="!a.disponible" (click)="ajouter(a)">
+          <div class="res-art-ico"><i class="ti" [ngClass]="categorieIcons[a.categorie] || 'ti-tools-kitchen-2'"></i></div>
+          <div class="res-art-n">{{ a.nom }}</div>
+          <div class="res-art-p">{{ formatMontant(a.prixVente) }}</div>
+          <span class="res-art-off" *ngIf="!a.disponible">Indisponible</span>
+        </button>
+
+        <div *ngIf="!carteFiltree.length" class="res-vide" style="grid-column:1/-1;">
+          <i class="ti ti-tools-kitchen-off"></i>
+          <div>Aucun article ne correspond.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Panier -->
+    <div class="gn-card res-panier">
+      <div class="res-panier-h">
+        <div class="gn-serif" style="font-size:17px;color:#2e2024;">Addition en cours</div>
+        <button class="gn-btn-o res-a" *ngIf="panier.length" (click)="viderPanier()" title="Vider">
+          <i class="ti ti-trash" style="color:#a99a9d;"></i>
+        </button>
+      </div>
+
+      <div class="res-lignes" *ngIf="panier.length">
+        <div class="res-ligne" *ngFor="let l of panier">
+          <div style="flex:1;min-width:0;">
+            <div class="res-ligne-n">{{ l.designation }}</div>
+            <div class="res-ligne-p">{{ formatMontant(l.prixUnitaire) }} × {{ l.quantite }}</div>
+          </div>
+          <div class="res-qte">
+            <button type="button" (click)="retirer(l)"><i class="ti ti-minus"></i></button>
+            <span>{{ l.quantite }}</span>
+            <button type="button" (click)="incrementer(l)"><i class="ti ti-plus"></i></button>
+          </div>
+          <div class="res-ligne-m">{{ formatMontant(l.quantite * l.prixUnitaire) }}</div>
+          <button class="res-x" (click)="supprimerLigne(l)"><i class="ti ti-x"></i></button>
+        </div>
+      </div>
+
+      <div *ngIf="!panier.length" class="res-vide">
+        <i class="ti ti-shopping-cart"></i>
+        <div>Aucun article.</div>
+        <small>Cliquez sur la carte pour composer l'addition.</small>
+      </div>
+
+      <ng-container *ngIf="panier.length">
+        <form [formGroup]="commandeForm" class="res-form">
+          <div class="res-f2">
+            <div>
+              <label class="gn-flabel">Type</label>
+              <p-select [options]="typeCommandeOptions" formControlName="type" optionLabel="label"
+                        optionValue="value" (onChange)="onTypeCommandeChange()"
+                        styleClass="res-select-full" appendTo="body"></p-select>
+            </div>
+            <div>
+              <label class="gn-flabel">Table</label>
+              <input class="gn-input" formControlName="tableNumero" placeholder="N°" />
+            </div>
+          </div>
+
+          <div *ngIf="estRoomService">
+            <label class="gn-flabel">Chambre à débiter</label>
+            <p-select [options]="sejoursEnCours" formControlName="sejourId" optionValue="id"
+                      placeholder="Choisir le séjour" [showClear]="true"
+                      styleClass="res-select-full" appendTo="body">
+              <ng-template let-s pTemplate="item">
+                Chambre {{ s.chambreNumero }} — {{ s.clientNom }}
+              </ng-template>
+              <ng-template let-s pTemplate="selectedItem">
+                Chambre {{ s.chambreNumero }} — {{ s.clientNom }}
+              </ng-template>
+            </p-select>
+            <label class="res-check">
+              <input type="checkbox" formControlName="imputeSejour" />
+              <span>
+                <strong>Porter au compte de la chambre</strong>
+                <small>L'addition s'ajoute au reste à payer, réglée au départ du client.</small>
+              </span>
+            </label>
+          </div>
+
+          <!-- Remise -->
+          <div class="res-remise">
+            <div class="res-f2">
+              <div>
+                <label class="gn-flabel">Remise</label>
+                <p-select [options]="typeRemiseOptions" formControlName="remiseType" optionLabel="label"
+                          optionValue="value" placeholder="Aucune" [showClear]="true"
+                          styleClass="res-select-full" appendTo="body"></p-select>
+              </div>
+              <div>
+                <label class="gn-flabel">Valeur</label>
+                <input class="gn-input" type="number" formControlName="remiseValeur" placeholder="0" />
+              </div>
+            </div>
+            <input class="gn-input" formControlName="remiseMotif" style="margin-top:10px;"
+                   placeholder="Motif de la remise (geste commercial, fidélité…)"
+                   *ngIf="commandeForm.value.remiseType" />
+          </div>
+        </form>
+
+        <div class="res-totaux">
+          <div class="res-tot-l"><span>Sous-total</span><strong>{{ formatMontant(totalBrut) }}</strong></div>
+          <div class="res-tot-l" *ngIf="remisePanier > 0">
+            <span>Remise</span><strong class="c-green">− {{ formatMontant(remisePanier) }}</strong>
+          </div>
+          <div class="res-tot-l total">
+            <span>À payer</span><strong class="gn-serif">{{ formatMontant(totalNet) }}</strong>
+          </div>
+        </div>
+
+        <button class="gn-btn-p res-valider" [disabled]="saving" (click)="envoyerCommande()">
+          <i class="ti ti-loader-2 gn-spin" *ngIf="saving"></i>
+          <i class="ti ti-check" *ngIf="!saving"></i>
+          Valider l'addition
+        </button>
+      </ng-container>
+    </div>
+  </div>
+
+  <!-- ================= ADDITIONS ================= -->
+  <ng-container *ngIf="onglet === 'ADDITIONS'">
+    <div class="gn-card" style="padding:22px;margin-top:14px;">
+      <div class="res-h">
+        <div class="gn-serif" style="font-size:17px;color:#2e2024;">Additions</div>
+        <span class="gn-bdg amber" *ngIf="additionsOuvertes.length">
+          {{ additionsOuvertes.length }} en cours
+        </span>
+      </div>
+
+      <div *ngIf="loading" class="gn-empty" style="text-align:center;">
+        <i class="ti ti-loader-2 gn-spin"></i> Chargement…
+      </div>
+
+      <div *ngIf="!loading && !commandes.length" class="res-vide">
+        <i class="ti ti-receipt-off"></i>
+        <div>Aucune addition enregistrée.</div>
+      </div>
+
+      <div class="res-adds" *ngIf="!loading && commandes.length">
+        <div class="res-add" *ngFor="let c of commandes">
+          <div class="res-add-h">
+            <span class="gn-serif res-add-n">{{ c.numero }}</span>
+            <span class="gn-bdg" [ngClass]="statutTone(c.statut)">{{ statutCommandeLabels[c.statut] }}</span>
+            <span class="gn-bdg gray">{{ libelleCible(c) }}</span>
+            <span class="gn-bdg wine" *ngIf="c.imputeSejour">Portée à la chambre</span>
+          </div>
+
+          <div class="res-add-lignes">
+            <span *ngFor="let l of c.lignes">{{ l.quantite }}× {{ l.designation }}</span>
+          </div>
+
+          <div class="res-add-f">
+            <div class="res-add-info">
+              {{ c.dateCommande | date:'dd/MM HH:mm' }}
+              <span *ngIf="c.agentNom"> · {{ c.agentNom }}</span>
+              <span *ngIf="c.remiseMontant > 0"> · remise {{ formatMontant(c.remiseMontant) }}</span>
+            </div>
+            <div class="res-add-r">
+              <span class="gn-serif res-add-m">{{ formatMontant(c.montantNet) }}</span>
+              <div class="res-add-actions">
+                <button class="gn-btn-o res-a"
+                        *ngIf="c.statut === 'OUVERTE' || c.statut === 'ENVOYEE_CUISINE'"
+                        [disabled]="actionId === c.id" (click)="marquerServie(c)" title="Marquer servie">
+                  <i class="ti ti-check" style="color:#c9922f;"></i>
+                </button>
+                <button class="gn-btn-o res-a" *ngIf="c.statut !== 'PAYEE' && c.statut !== 'ANNULEE'"
+                        (click)="ouvrirEncaissement(c)" title="Encaisser">
+                  <i class="ti ti-cash" style="color:#2f9e6f;"></i>
+                </button>
+                <button class="gn-btn-o res-a" *ngIf="c.statut !== 'PAYEE' && c.statut !== 'ANNULEE'"
+                        [disabled]="actionId === c.id" (click)="annulerCommande(c)" title="Annuler">
+                  <i class="ti ti-x" style="color:#d0455a;"></i>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </ng-container>
+
+  <!-- ================= CARTE ================= -->
+  <ng-container *ngIf="onglet === 'CARTE'">
+    <div class="res-bar">
+      <div class="gn-serif" style="font-size:17px;color:#2e2024;">Carte du restaurant</div>
+      <span style="flex:1"></span>
+      <button class="gn-btn-p mob-full" *ngIf="peutGererCarte"
+              style="padding:11px 18px;font-size:13.5px;" (click)="ouvrirArticle()">
+        <i class="ti ti-plus"></i> Nouvel article
+      </button>
+    </div>
+
+    <div class="gn-card" style="padding:22px;">
+      <div class="gn-tw">
+        <table class="gn-table">
+          <thead>
+            <tr>
+              <th class="gn-th">Article</th>
+              <th class="gn-th">Catégorie</th>
+              <th class="gn-th">Prix de vente</th>
+              <th class="gn-th">Coût</th>
+              <th class="gn-th">Marge</th>
+              <th class="gn-th">État</th>
+              <th class="gn-th" *ngIf="peutGererCarte">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr class="gn-rowh" *ngFor="let a of carte">
+              <td>
+                <div style="font-weight:600;font-size:13.5px;color:#3a2c30;">{{ a.nom }}</div>
+                <div class="res-sub" *ngIf="a.code">{{ a.code }}</div>
+              </td>
+              <td>
+                <span class="gn-bdg gray">
+                  <i class="ti" [ngClass]="categorieIcons[a.categorie] || 'ti-dots'"></i>
+                  {{ categorieLabels[a.categorie] || a.categorie }}
+                </span>
+              </td>
+              <td class="gn-serif" style="font-size:15px;color:#2e2024;">{{ formatMontant(a.prixVente) }}</td>
+              <td style="font-size:13px;color:#6d585d;">{{ formatMontant(a.coutRevient) }}</td>
+              <td style="font-size:13px;color:#2f9e6f;font-weight:600;">{{ formatMontant(a.marge) }}</td>
+              <td>
+                <span class="gn-bdg" [ngClass]="a.disponible ? 'green' : 'gray'">
+                  {{ a.disponible ? 'Disponible' : 'Retiré' }}
+                </span>
+              </td>
+              <td *ngIf="peutGererCarte">
+                <div class="res-add-actions">
+                  <button class="gn-btn-o res-a" (click)="ouvrirArticle(a)" title="Modifier">
+                    <i class="ti ti-pencil"></i>
+                  </button>
+                  <button class="gn-btn-o res-a" (click)="basculerDisponibilite(a)"
+                          [title]="a.disponible ? 'Retirer du jour' : 'Remettre à la carte'">
+                    <i class="ti" [ngClass]="a.disponible ? 'ti-eye-off' : 'ti-eye'"></i>
+                  </button>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div *ngIf="!carte.length" class="res-vide">
+        <i class="ti ti-book-off"></i>
+        <div>La carte est vide.</div>
+      </div>
+    </div>
+  </ng-container>
+</div>
+
+<!-- ===== ENCAISSEMENT ===== -->
+<p-dialog [(visible)]="showEncaissement" [modal]="true" [style]="{ width: '480px' }"
+          header="Encaisser l'addition" [draggable]="false">
+  <div *ngIf="commandeAEncaisser as c">
+    <div class="res-enc-h">
+      <div>
+        <div class="gn-serif" style="font-size:18px;color:#8c2f4d;">{{ c.numero }}</div>
+        <div style="font-size:12.5px;color:#8a7a7e;margin-top:3px;">{{ libelleCible(c) }}</div>
+      </div>
+      <div class="gn-serif" style="font-size:24px;color:#2e2024;">{{ formatMontant(c.montantNet) }}</div>
+    </div>
+
+    <form [formGroup]="paiementForm" class="res-form" style="margin-top:16px;">
+      <label class="res-check" *ngIf="c.sejourId">
+        <input type="checkbox" formControlName="imputeSejour" />
+        <span>
+          <strong>Porter au compte de la chambre {{ c.sejourChambre }}</strong>
+          <small>Rien n'est encaissé maintenant : le montant s'ajoute au reste à payer du séjour.</small>
+        </span>
+      </label>
+
+      <ng-container *ngIf="!paiementForm.value.imputeSejour">
+        <div>
+          <label class="gn-flabel">Mode de paiement *</label>
+          <p-select [options]="modeOptions" formControlName="mode" optionLabel="label"
+                    optionValue="value" styleClass="res-select-full" appendTo="body"></p-select>
+        </div>
+        <div>
+          <label class="gn-flabel">Référence de transaction</label>
+          <input class="gn-input" formControlName="referenceTransaction" placeholder="Facultatif" />
+        </div>
+      </ng-container>
+
+      <div>
+        <label class="gn-flabel">Notes</label>
+        <textarea class="gn-input" rows="2" formControlName="notes"></textarea>
+      </div>
+    </form>
+  </div>
+
+  <ng-template pTemplate="footer">
+    <button class="gn-btn-o" style="padding:10px 18px;" (click)="showEncaissement = false">Annuler</button>
+    <button class="gn-btn-p" style="padding:10px 20px;" [disabled]="saving" (click)="encaisser()">
+      <i class="ti ti-loader-2 gn-spin" *ngIf="saving"></i>
+      {{ paiementForm.value.imputeSejour ? 'Porter à la chambre' : 'Encaisser' }}
+    </button>
+  </ng-template>
+</p-dialog>
+
+<!-- ===== ARTICLE ===== -->
+<p-dialog [(visible)]="showArticle" [modal]="true" [style]="{ width: '540px' }"
+          [header]="articleEditionId ? 'Modifier l\'article' : 'Nouvel article'" [draggable]="false">
+  <form [formGroup]="articleForm" class="res-form">
+    <div class="res-f2">
+      <div>
+        <label class="gn-flabel">Nom *</label>
+        <input class="gn-input" formControlName="nom"
+               [class.gn-invalid]="isInvalid('nom', articleForm)" placeholder="Ex : Poulet braisé" />
+      </div>
+      <div>
+        <label class="gn-flabel">Code</label>
+        <input class="gn-input" formControlName="code" placeholder="Facultatif" />
+      </div>
+    </div>
+
+    <div>
+      <label class="gn-flabel">Catégorie *</label>
+      <p-select [options]="categorieOptions" formControlName="categorie" optionLabel="label"
+                optionValue="value" styleClass="res-select-full" appendTo="body"></p-select>
+    </div>
+
+    <div class="res-f2">
+      <div>
+        <label class="gn-flabel">Prix de vente (FCFA) *</label>
+        <input class="gn-input" type="number" formControlName="prixVente"
+               [class.gn-invalid]="isInvalid('prixVente', articleForm)" placeholder="0" />
+      </div>
+      <div>
+        <label class="gn-flabel">Coût matière (FCFA)</label>
+        <input class="gn-input" type="number" formControlName="coutRevient" placeholder="0" />
+      </div>
+    </div>
+
+    <div>
+      <label class="gn-flabel">Description</label>
+      <textarea class="gn-input" rows="2" formControlName="description"></textarea>
+    </div>
+
+    <label class="res-check">
+      <input type="checkbox" formControlName="disponible" />
+      <span><strong>Disponible à la carte</strong></span>
+    </label>
+  </form>
+
+  <ng-template pTemplate="footer">
+    <button class="gn-btn-o" style="padding:10px 18px;" (click)="showArticle = false">Annuler</button>
+    <button class="gn-btn-p" style="padding:10px 20px;" [disabled]="saving" (click)="enregistrerArticle()">
+      <i class="ti ti-loader-2 gn-spin" *ngIf="saving"></i> Enregistrer
+    </button>
+  </ng-template>
+</p-dialog>

@@ -67,6 +67,10 @@ public class SecurityConfig {
                 .requestMatchers("/actuator/**").hasRole("ADMIN")
                 .requestMatchers(HttpMethod.GET, "/chambres/**").authenticated()
                 .requestMatchers("/kpi/**", "/statistiques/**").hasAnyRole("DIRECTEUR", "ADMIN")
+                // Le compte de résultat et la position de trésorerie relèvent de la
+                // direction : un agent de réception n'a pas à connaître la marge de
+                // l'établissement ni le détail de ses charges.
+                .requestMatchers("/comptabilite/**").hasAnyRole("DIRECTEUR", "ADMIN")
                 // Le directeur peut consulter la liste du personnel (attribution des performances) mais pas la modifier.
                 .requestMatchers(HttpMethod.GET, "/utilisateurs/**").hasAnyRole("DIRECTEUR", "ADMIN")
                 .requestMatchers("/utilisateurs/**").hasRole("ADMIN")

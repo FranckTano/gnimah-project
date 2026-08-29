@@ -1,0 +1,197 @@
+<div class="gn-route">
+
+  <app-periode-filtre presetInitial="mois-courant" [loading]="loading" (periode)="onPeriode($event)"></app-periode-filtre>
+
+  <div class="cpt-actions">
+    <a class="gn-btn-o" routerLink="/comptabilite/depenses"><i class="ti ti-receipt-2"></i> Gérer les dépenses</a>
+    <a class="gn-btn-o" routerLink="/caisse"><i class="ti ti-cash-register"></i> Caisse</a>
+    <a class="gn-btn-o" routerLink="/caisse/versements"><i class="ti ti-building-bank"></i> Versements</a>
+  </div>
+
+  <div *ngIf="loading && !synthese" class="gn-card" style="padding:40px;text-align:center;">
+    <i class="ti ti-loader-2 gn-spin" style="font-size:26px;color:#8c2f4d;"></i>
+    <div class="gn-empty">Calcul de la synthèse…</div>
+  </div>
+
+  <ng-container *ngIf="synthese as s">
+
+    <!-- ===== RÉSULTAT ===== -->
+    <div class="cpt-resultat gn-card">
+      <div class="cpt-res-main">
+        <div class="gn-slabel" style="color:#b3a2a6;">Résultat · {{ libelle }}</div>
+        <div class="gn-serif cpt-res-value" [class.negatif]="!resultatPositif">
+          {{ formatMontant(s.resultat) }}
+        </div>
+        <div class="cpt-res-sub">
+          Taux de marge <strong>{{ s.tauxMarge }} %</strong>
+          <span class="gn-bdg" [ngClass]="resultatPositif ? 'green' : 'red'" style="margin-left:8px;">
+            <i class="ti" [ngClass]="resultatPositif ? 'ti-trending-up' : 'ti-trending-down'"></i>
+            {{ resultatPositif ? 'Bénéfice' : 'Perte' }}
+          </span>
+        </div>
+      </div>
+      <div class="cpt-res-split">
+        <div class="cpt-res-item">
+          <div class="gn-slabel" style="color:#b3a2a6;">Recettes</div>
+          <div class="gn-serif" style="font-size:22px;color:#2f9e6f;">{{ formatMontant(s.totalRecettes) }}</div>
+        </div>
+        <div class="cpt-res-item">
+          <div class="gn-slabel" style="color:#b3a2a6;">Charges</div>
+          <div class="gn-serif" style="font-size:22px;color:#d0455a;">{{ formatMontant(s.totalDepenses) }}</div>
+          <div style="font-size:11.5px;color:#a99a9d;margin-top:3px;" *ngIf="s.depensesEnAttente > 0">
+            dont {{ formatMontant(s.depensesEnAttente) }} non réglées
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== TRÉSORERIE ===== -->
+    <div class="gn-kpi" style="margin-top:18px;">
+      <div class="gn-card cpt-kpi">
+        <div class="gn-tile wine"><i class="ti ti-cash-register"></i></div>
+        <div>
+          <div class="gn-slabel" style="color:#b3a2a6;">En caisse</div>
+          <div class="gn-serif cpt-kpi-v">{{ formatMontant(s.soldeCaisses) }}</div>
+          <div class="cpt-kpi-s">à verser en banque</div>
+        </div>
+      </div>
+      <div class="gn-card cpt-kpi">
+        <div class="gn-tile green"><i class="ti ti-building-bank"></i></div>
+        <div>
+          <div class="gn-slabel" style="color:#b3a2a6;">Versé</div>
+          <div class="gn-serif cpt-kpi-v">{{ formatMontant(s.totalVerse) }}</div>
+          <div class="cpt-kpi-s">sur la période</div>
+        </div>
+      </div>
+      <div class="gn-card cpt-kpi">
+        <div class="gn-tile gold"><i class="ti ti-user-dollar"></i></div>
+        <div>
+          <div class="gn-slabel" style="color:#b3a2a6;">Créances</div>
+          <div class="gn-serif cpt-kpi-v">{{ formatMontant(s.creancesClients) }}</div>
+          <div class="cpt-kpi-s">restant dû par les clients</div>
+        </div>
+      </div>
+      <div class="gn-card cpt-kpi">
+        <div class="gn-tile brown"><i class="ti ti-package"></i></div>
+        <div>
+          <div class="gn-slabel" style="color:#b3a2a6;">Stock</div>
+          <div class="gn-serif cpt-kpi-v">{{ formatMontant(s.valeurStock) }}</div>
+          <div class="cpt-kpi-s">valeur d'inventaire</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== RECETTES / CHARGES ===== -->
+    <div class="gn-dash3" style="margin-top:18px;">
+
+      <div class="gn-card" style="padding:22px;">
+        <div class="cpt-h">
+          <div class="gn-serif cpt-title">D'où vient l'argent</div>
+          <span class="gn-bdg green">{{ formatMontant(s.totalRecettes) }}</span>
+        </div>
+        <div *ngIf="!s.recettesParSource.length" class="gn-empty">Aucune recette sur la période.</div>
+        <div class="cpt-line" *ngFor="let l of s.recettesParSource">
+          <div class="cpt-line-h">
+            <span class="cpt-line-lb">{{ l.libelle }}</span>
+            <span class="cpt-line-v">{{ formatMontant(l.montant) }}</span>
+          </div>
+          <div class="gn-bartrack">
+            <div class="gn-barfill" [style.width.%]="largeur(l, s.recettesParSource)" style="background:#2f9e6f;"></div>
+          </div>
+          <div class="cpt-line-p">{{ l.part }} % des recettes</div>
+        </div>
+      </div>
+
+      <div class="gn-card" style="padding:22px;">
+        <div class="cpt-h">
+          <div class="gn-serif cpt-title">Où part l'argent</div>
+          <span class="gn-bdg red">{{ formatMontant(s.totalDepenses) }}</span>
+        </div>
+        <div *ngIf="!s.depensesParFamille.length" class="gn-empty">Aucune charge enregistrée sur la période.</div>
+        <div class="cpt-line" *ngFor="let l of s.depensesParFamille">
+          <div class="cpt-line-h">
+            <span class="cpt-line-lb">
+              <i class="ti" [ngClass]="familleIcons[l.cle] || 'ti-dots'" style="margin-right:6px;color:#b23a55;"></i>
+              {{ l.libelle }}
+              <span class="cpt-count">({{ l.nombre }})</span>
+            </span>
+            <span class="cpt-line-v">{{ formatMontant(l.montant) }}</span>
+          </div>
+          <div class="gn-bartrack">
+            <div class="gn-barfill" [style.width.%]="largeur(l, s.depensesParFamille)" style="background:#b23a55;"></div>
+          </div>
+          <div class="cpt-line-p">{{ l.part }} % des charges</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== FLUX ET FOURNISSEURS ===== -->
+    <div class="gn-dash2" style="margin-top:18px;">
+
+      <div class="gn-card" style="padding:22px;">
+        <div class="cpt-h">
+          <div class="gn-serif cpt-title">Flux journaliers</div>
+          <div class="cpt-legend">
+            <span><i class="gn-swatch" style="background:#2f9e6f;"></i> Recettes</span>
+            <span><i class="gn-swatch" style="background:#b23a55;"></i> Charges</span>
+          </div>
+        </div>
+        <div *ngIf="!s.evolutionJournaliere.length" class="gn-empty">Aucun mouvement sur la période.</div>
+        <div class="cpt-chart" *ngIf="s.evolutionJournaliere.length">
+          <div class="cpt-day" *ngFor="let j of s.evolutionJournaliere" [title]="j.date">
+            <div class="cpt-bars">
+              <div class="cpt-bar rec" [style.height.%]="hauteurBarre(j.recettes)"></div>
+              <div class="cpt-bar dep" [style.height.%]="hauteurBarre(j.depenses)"></div>
+            </div>
+            <div class="cpt-day-lb">{{ j.date | date:'dd/MM' }}</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="gn-card" style="padding:22px;">
+        <div class="cpt-h">
+          <div class="gn-serif cpt-title">Principaux fournisseurs</div>
+        </div>
+        <div *ngIf="!s.topFournisseurs.length" class="gn-empty">
+          Aucune charge rattachée à un fournisseur sur la période.
+        </div>
+        <div class="cpt-frn" *ngFor="let f of s.topFournisseurs">
+          <div class="gn-av slate" style="width:34px;height:34px;font-size:12px;">{{ f.libelle.charAt(0) }}</div>
+          <div style="flex:1;min-width:0;">
+            <div class="cpt-frn-n">{{ f.libelle }}</div>
+            <div class="cpt-frn-s">{{ f.nombre }} facture(s) · {{ f.part }} %</div>
+          </div>
+          <div class="gn-serif" style="font-size:15px;color:#2e2024;">{{ formatMontant(f.montant) }}</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== DÉTAIL TRÉSORERIE PAR CAISSE ===== -->
+    <div class="gn-card" style="padding:22px;margin-top:18px;" *ngIf="caisses.length">
+      <div class="cpt-h">
+        <div class="gn-serif cpt-title">Position des caisses</div>
+        <span class="gn-bdg slate">{{ formatMontant(soldeCaisses) }} au total</span>
+      </div>
+      <div class="cpt-caisses">
+        <div class="cpt-caisse" *ngFor="let c of caisses">
+          <div class="cpt-caisse-h">
+            <span class="cpt-caisse-n">{{ c.nom }}</span>
+            <span class="gn-bdg" [ngClass]="c.sessionOuverteId ? 'green' : 'gray'">
+              {{ c.sessionOuverteId ? 'Ouverte' : 'Fermée' }}
+            </span>
+          </div>
+          <div class="gn-serif cpt-caisse-v">{{ formatMontant(c.solde) }}</div>
+          <div class="cpt-caisse-s" *ngIf="c.sessionCaissierNom">Tenue par {{ c.sessionCaissierNom }}</div>
+          <div class="cpt-caisse-s" *ngIf="!c.sessionCaissierNom">Aucune vacation en cours</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="cpt-note" *ngIf="s.coutIncidents > 0">
+      <i class="ti ti-alert-triangle"></i>
+      {{ formatMontant(s.coutIncidents) }} de dégâts et matériel défectueux constatés en chambre sur la période.
+      <a routerLink="/entretien/incidents">Voir les incidents</a>
+    </div>
+
+  </ng-container>
+</div>

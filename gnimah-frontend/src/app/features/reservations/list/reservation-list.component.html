@@ -1,14 +1,22 @@
 <div class="gn-route">
   <div class="gn-resv">
     <div class="gn-card" style="padding:18px;"><div style="display:flex;align-items:center;gap:8px;font-size:13px;color:#8a7a7e;"><span class="gn-dot c-green"></span>Confirmées</div><div class="gn-serif" style="font-size:32px;color:#2e2024;margin-top:8px;">{{ statCount.confirmees }}</div></div>
-    <div class="gn-card" style="padding:18px;"><div style="display:flex;align-items:center;gap:8px;font-size:13px;color:#8a7a7e;"><span class="gn-dot c-gold"></span>En attente</div><div class="gn-serif" style="font-size:32px;color:#2e2024;margin-top:8px;">{{ statCount.enAttente }}</div></div>
+    <div class="gn-card" style="padding:18px;"><div style="display:flex;align-items:center;gap:8px;font-size:13px;color:#8a7a7e;"><span class="gn-dot c-gold"></span>Acompte attendu</div><div class="gn-serif" style="font-size:32px;color:#2e2024;margin-top:8px;">{{ statCount.enAttente }}</div></div>
     <div class="gn-card" style="padding:18px;"><div style="display:flex;align-items:center;gap:8px;font-size:13px;color:#8a7a7e;"><span class="gn-dot c-wine"></span>Arrivées</div><div class="gn-serif" style="font-size:32px;color:#2e2024;margin-top:8px;">{{ statCount.arrivees }}</div></div>
     <div class="gn-card" style="padding:18px;"><div style="display:flex;align-items:center;gap:8px;font-size:13px;color:#8a7a7e;"><span class="gn-dot c-gray"></span>Annulées</div><div class="gn-serif" style="font-size:32px;color:#2e2024;margin-top:8px;">{{ statCount.annulees }}</div></div>
     <div class="gn-card" style="padding:18px;"><div style="display:flex;align-items:center;gap:8px;font-size:13px;color:#8a7a7e;"><span class="gn-dot c-red"></span>Non présenté</div><div class="gn-serif" style="font-size:32px;color:#2e2024;margin-top:8px;">{{ statCount.noShow }}</div></div>
   </div>
 
+  <div class="rsv-regle" *ngIf="acomptesEnAttente > 0">
+    <i class="ti ti-cash"></i>
+    <span>
+      <strong>{{ formatMontant(acomptesEnAttente) }}</strong> d'acomptes restent à encaisser pour confirmer
+      les réservations en attente. Une réservation n'est ferme qu'une fois l'acompte reçu.
+    </span>
+  </div>
+
   <div class="gn-card" style="padding:22px;margin-top:18px;">
-    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;gap:12px;flex-wrap:wrap;">
       <div class="gn-serif" style="font-size:18px;color:#2e2024;">Réservations</div>
       <a routerLink="/reservations/new" class="gn-btn-p" style="padding:9px 16px;font-size:13px;text-decoration:none;">
         <i class="ti ti-plus"></i>Nouvelle réservation
@@ -26,6 +34,7 @@
             <th class="gn-th">Arrivée</th>
             <th class="gn-th">Départ</th>
             <th class="gn-th">Montant / Acompte</th>
+            <th class="gn-th">Annulation</th>
             <th class="gn-th">Statut</th>
             <th class="gn-th">Actions</th>
           </tr>
@@ -35,73 +44,317 @@
             <td>
               <div style="display:flex;align-items:center;gap:11px;">
                 <div class="gn-av deep" style="width:38px;height:38px;font-size:12.5px;">{{ initials(r.clientNom) }}</div>
-                <div><div style="font-weight:600;font-size:14px;color:#3a2c30;">{{ r.clientNom }}</div><div style="font-size:12px;color:#a99a9d;">{{ r.clientTelephone }}</div></div>
+                <div>
+                  <div style="font-weight:600;font-size:14px;color:#3a2c30;">{{ r.clientNom }}</div>
+                  <div style="font-size:12px;color:#a99a9d;">{{ r.clientTelephone }}</div>
+                </div>
               </div>
             </td>
             <td style="font-size:14px;color:#4d3f43;font-weight:500;">{{ r.chambreNumero || r.typeChambre }}</td>
-            <td style="font-size:13.5px;color:#6d585d;">{{ r.dateArrivee | date:'dd/MM/yyyy' }}</td>
+            <td style="font-size:13.5px;color:#6d585d;">
+              {{ r.dateArrivee | date:'dd/MM/yyyy' }}
+              <div class="rsv-urgent" *ngIf="estUrgente(r)">
+                <i class="ti ti-clock-exclamation"></i> dans {{ heuresAvant(r) }} h
+              </div>
+            </td>
             <td style="font-size:13.5px;color:#6d585d;">{{ r.dateDepart | date:'dd/MM/yyyy' }}</td>
-            <td style="font-size:13px;color:#6d585d;">{{ formatMontant(r.montantPrevu) }} <span style="color:#c9b0b6;">/ {{ formatMontant(r.acompte) }}</span></td>
+            <td>
+              <div style="font-size:13px;color:#3a2c30;font-weight:600;">{{ formatMontant(r.montantPrevu) }}</div>
+              <div class="rsv-acompte" [class.ok]="r.acompteSuffisant">
+                <i class="ti" [ngClass]="r.acompteSuffisant ? 'ti-circle-check' : 'ti-clock'"></i>
+                {{ formatMontant(r.acompte) }} / {{ formatMontant(r.acompteRequis) }}
+              </div>
+              <div class="rsv-reste" *ngIf="r.resteAcompte > 0 && r.statut === 'EN_ATTENTE'">
+                reste {{ formatMontant(r.resteAcompte) }}
+              </div>
+              <div class="rsv-remise" *ngIf="r.remiseMontant > 0">
+                remise {{ formatMontant(r.remiseMontant) }}
+              </div>
+            </td>
+            <td>
+              <span class="gn-bdg" [ngClass]="r.annulableSansFrais ? 'green' : 'amber'"
+                    *ngIf="r.statut !== 'ANNULEE' && r.statut !== 'ARRIVEE'">
+                {{ r.annulableSansFrais ? 'Sans frais' : 'Pénalisante' }}
+              </span>
+              <div class="rsv-limite" *ngIf="r.statut !== 'ANNULEE' && r.statut !== 'ARRIVEE'">
+                jusqu'au {{ r.dateLimiteAnnulation | date:'dd/MM à HH:mm' }}
+              </div>
+              <div class="rsv-limite" *ngIf="r.statut === 'ANNULEE' && r.penaliteAnnulation > 0">
+                pénalité {{ formatMontant(r.penaliteAnnulation) }}
+              </div>
+              <div class="rsv-limite" *ngIf="r.statut === 'ANNULEE' && r.montantRembourse > 0">
+                remboursé {{ formatMontant(r.montantRembourse) }}
+              </div>
+            </td>
             <td><span class="gn-bdg" [ngClass]="statutTone(r.statut)">{{ statutLabels[r.statut] }}</span></td>
             <td>
-              <div style="display:flex;gap:6px;">
-                <button class="gn-icobtn" style="width:32px;height:32px;font-size:14px;color:#8c2f4d;" title="Voir les détails" (click)="voirDetails(r)"><i class="ti ti-eye"></i></button>
-                <button *ngIf="r.statut === 'EN_ATTENTE'" class="gn-icobtn" style="width:32px;height:32px;font-size:14px;color:#2f9e6f;" title="Confirmer" (click)="confirmer(r)"><i class="ti ti-check"></i></button>
-                <button *ngIf="r.statut !== 'ANNULEE' && r.statut !== 'ARRIVEE'" class="gn-icobtn" style="width:32px;height:32px;font-size:14px;color:#d0455a;" title="Annuler" (click)="annuler(r)"><i class="ti ti-x"></i></button>
+              <div style="display:flex;gap:6px;flex-wrap:wrap;">
+                <button class="gn-icobtn rsv-a" title="Voir les détails" (click)="voirDetails(r)">
+                  <i class="ti ti-eye"></i>
+                </button>
+                <button *ngIf="r.statut === 'EN_ATTENTE' || (r.statut === 'CONFIRMEE' && r.resteAcompte > 0)"
+                        class="gn-icobtn rsv-a" style="color:#2f9e6f;"
+                        title="Encaisser l'acompte" (click)="ouvrirAcompte(r)">
+                  <i class="ti ti-cash"></i>
+                </button>
+                <button *ngIf="r.statut === 'CONFIRMEE'" class="gn-icobtn rsv-a" style="color:#8c2f4d;"
+                        title="Noter l'arrivée" (click)="marquerArrivee(r)">
+                  <i class="ti ti-login-2"></i>
+                </button>
+                <button *ngIf="r.statut !== 'ANNULEE' && r.statut !== 'ARRIVEE'"
+                        class="gn-icobtn rsv-a" style="color:#d0455a;"
+                        title="Annuler" (click)="ouvrirAnnulation(r)">
+                  <i class="ti ti-x"></i>
+                </button>
               </div>
             </td>
           </tr>
         </ng-template>
         <ng-template pTemplate="emptymessage">
-          <tr><td colspan="7" class="gn-empty" style="text-align:center;">Aucune réservation trouvée</td></tr>
+          <tr><td colspan="8" class="gn-empty" style="text-align:center;">Aucune réservation trouvée</td></tr>
         </ng-template>
       </p-table>
     </div>
   </div>
 </div>
 
+<!-- ===== ACOMPTE ===== -->
+<p-dialog [(visible)]="showAcompte" [modal]="true" [style]="{ width: '500px' }"
+          header="Encaisser l'acompte" [draggable]="false">
+  <div *ngIf="reservationCible as r">
+    <div class="rsv-dlg-h">
+      <div>
+        <div style="font-weight:600;font-size:15px;color:#2e2024;">{{ r.clientNom }}</div>
+        <div style="font-size:12.5px;color:#8a7a7e;margin-top:3px;">
+          {{ r.numeroReservation }} · arrivée le {{ r.dateArrivee | date:'dd/MM/yyyy' }}
+        </div>
+      </div>
+      <div style="text-align:right;">
+        <div class="gn-serif" style="font-size:20px;color:#2e2024;">{{ formatMontant(r.montantPrevu) }}</div>
+        <div style="font-size:11.5px;color:#a99a9d;">montant du séjour</div>
+      </div>
+    </div>
 
-<p-dialog [(visible)]="detailVisible" header="Détails de la réservation" [modal]="true" [style]="{width: '520px'}" [draggable]="false" [resizable]="false">
-  <div *ngIf="selectedReservation" style="padding:4px 0;">
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+    <div class="rsv-acompte-box">
+      <div class="rsv-ab-l"><span>Acompte exigé</span><strong>{{ formatMontant(r.acompteRequis) }}</strong></div>
+      <div class="rsv-ab-l"><span>Déjà versé</span><strong>{{ formatMontant(r.acompte) }}</strong></div>
+      <div class="rsv-ab-l total">
+        <span>Reste à encaisser pour confirmer</span>
+        <strong>{{ formatMontant(r.resteAcompte) }}</strong>
+      </div>
+    </div>
+
+    <form [formGroup]="acompteForm" class="rsv-form">
+      <div class="rsv-f2">
+        <div>
+          <label class="gn-flabel">Montant reçu (FCFA) *</label>
+          <input class="gn-input" type="number" formControlName="montant"
+                 [class.gn-invalid]="isInvalid('montant', acompteForm)" placeholder="0" />
+        </div>
+        <div>
+          <label class="gn-flabel">Mode de règlement *</label>
+          <p-select [options]="modeOptions" formControlName="mode" optionLabel="label"
+                    optionValue="value" styleClass="rsv-select-full" appendTo="body"></p-select>
+        </div>
+      </div>
+
+      <div class="rsv-f2">
+        <div>
+          <label class="gn-flabel">Référence de transaction</label>
+          <input class="gn-input" formControlName="referenceTransaction" placeholder="Facultatif" />
+        </div>
+        <div>
+          <label class="gn-flabel">Caisse</label>
+          <p-select [options]="caisses" formControlName="caisseId" optionLabel="nom" optionValue="id"
+                    placeholder="Caisse par défaut" [showClear]="true"
+                    styleClass="rsv-select-full" appendTo="body"></p-select>
+        </div>
+      </div>
+
+      <div>
+        <label class="gn-flabel">Notes</label>
+        <textarea class="gn-input" rows="2" formControlName="notes"></textarea>
+      </div>
+
+      <p class="rsv-hint">
+        La réservation passera automatiquement en « confirmée » dès que l'acompte
+        atteindra {{ formatMontant(r.acompteRequis) }}.
+      </p>
+    </form>
+  </div>
+
+  <ng-template pTemplate="footer">
+    <button class="gn-btn-o" style="padding:10px 18px;" (click)="showAcompte = false">Annuler</button>
+    <button class="gn-btn-p" style="padding:10px 20px;" [disabled]="saving" (click)="enregistrerAcompte()">
+      <i class="ti ti-loader-2 gn-spin" *ngIf="saving"></i> Encaisser
+    </button>
+  </ng-template>
+</p-dialog>
+
+<!-- ===== ANNULATION ===== -->
+<p-dialog [(visible)]="showAnnulation" [modal]="true" [style]="{ width: '520px' }"
+          header="Annuler la réservation" [draggable]="false">
+  <div *ngIf="reservationCible as r">
+    <div class="rsv-dlg-h">
+      <div>
+        <div style="font-weight:600;font-size:15px;color:#2e2024;">{{ r.clientNom }}</div>
+        <div style="font-size:12.5px;color:#8a7a7e;margin-top:3px;">
+          {{ r.numeroReservation }} · arrivée le {{ r.dateArrivee | date:'dd/MM/yyyy' }}
+        </div>
+      </div>
+    </div>
+
+    <div *ngIf="chargementPolitique" class="gn-empty" style="text-align:center;padding:24px;">
+      <i class="ti ti-loader-2 gn-spin"></i> Calcul des conditions d'annulation…
+    </div>
+
+    <ng-container *ngIf="politique as p">
+      <div class="rsv-politique" [ngClass]="p.dansLesDelais ? 'ok' : 'penalite'">
+        <div class="rsv-pol-h">
+          <i class="ti" [ngClass]="p.dansLesDelais ? 'ti-circle-check' : 'ti-alert-triangle'"></i>
+          <span>{{ p.dansLesDelais ? 'Annulation dans les délais' : 'Annulation tardive' }}</span>
+        </div>
+        <p class="rsv-pol-m">{{ p.message }}</p>
+        <div class="rsv-pol-d">
+          Préavis exigé : {{ preavisHeures }} h avant l'arrivée
+          (jusqu'au {{ p.dateLimiteAnnulation | date:'dd/MM/yyyy à HH:mm' }}).
+          <span *ngIf="p.heuresAvantArrivee > 0">Il reste {{ p.heuresAvantArrivee }} h.</span>
+          <span *ngIf="p.heuresAvantArrivee <= 0">La date d'arrivée est dépassée.</span>
+        </div>
+      </div>
+
+      <div class="rsv-acompte-box" *ngIf="p.acompteVerse > 0">
+        <div class="rsv-ab-l"><span>Acompte versé</span><strong>{{ formatMontant(p.acompteVerse) }}</strong></div>
+        <div class="rsv-ab-l" *ngIf="p.penalite > 0">
+          <span>Pénalité retenue</span><strong class="c-red">− {{ formatMontant(p.penalite) }}</strong>
+        </div>
+        <div class="rsv-ab-l total">
+          <span>À rembourser au client</span>
+          <strong [class.c-green]="p.remboursement > 0">{{ formatMontant(p.remboursement) }}</strong>
+        </div>
+      </div>
+
+      <form [formGroup]="annulationForm" class="rsv-form">
+        <div>
+          <label class="gn-flabel">Motif de l'annulation</label>
+          <textarea class="gn-input" rows="2" formControlName="motif"
+                    placeholder="Raison invoquée par le client, empêchement…"></textarea>
+        </div>
+
+        <label class="rsv-check" *ngIf="p.remboursement > 0">
+          <input type="checkbox" formControlName="rembourser" />
+          <span>
+            <strong>Rembourser {{ formatMontant(p.remboursement) }} maintenant</strong>
+            <small>Une sortie de caisse sera enregistrée. Décochez si vous convenez d'un report ou d'un avoir.</small>
+          </span>
+        </label>
+
+        <div class="rsv-f2" *ngIf="annulationForm.value.rembourser && p.remboursement > 0">
+          <div>
+            <label class="gn-flabel">Caisse</label>
+            <p-select [options]="caisses" formControlName="caisseId" optionLabel="nom" optionValue="id"
+                      placeholder="Caisse par défaut" [showClear]="true"
+                      styleClass="rsv-select-full" appendTo="body"></p-select>
+          </div>
+          <div>
+            <label class="gn-flabel">Mode de remboursement</label>
+            <p-select [options]="modeOptions" formControlName="mode" optionLabel="label"
+                      optionValue="value" styleClass="rsv-select-full" appendTo="body"></p-select>
+          </div>
+        </div>
+      </form>
+    </ng-container>
+  </div>
+
+  <ng-template pTemplate="footer">
+    <button class="gn-btn-o" style="padding:10px 18px;" (click)="showAnnulation = false">Retour</button>
+    <button class="gn-btn-p" style="padding:10px 20px;" [disabled]="saving || chargementPolitique"
+            (click)="confirmerAnnulation()">
+      <i class="ti ti-loader-2 gn-spin" *ngIf="saving"></i> Confirmer l'annulation
+    </button>
+  </ng-template>
+</p-dialog>
+
+<!-- ===== DÉTAIL ===== -->
+<p-dialog [(visible)]="detailVisible" header="Détails de la réservation" [modal]="true"
+          [style]="{width: '560px'}" [draggable]="false" [resizable]="false">
+  <div *ngIf="selectedReservation as r" style="padding:4px 0;">
+    <div class="rsv-det-grid">
       <div>
         <div class="gn-slabel" style="color:#b3a2a6;">Client</div>
-        <div style="font-weight:600;font-size:14px;color:#2e2024;margin-top:4px;">{{ selectedReservation.clientNom }}</div>
-        <div style="font-size:12px;color:#a99a9d;">{{ selectedReservation.clientTelephone }}</div>
+        <div style="font-weight:600;font-size:14px;color:#2e2024;margin-top:4px;">{{ r.clientNom }}</div>
+        <div style="font-size:12px;color:#a99a9d;">{{ r.clientTelephone }}</div>
       </div>
       <div>
         <div class="gn-slabel" style="color:#b3a2a6;">Chambre</div>
-        <div style="font-size:14px;color:#3a2c30;margin-top:4px;">{{ selectedReservation.chambreNumero || selectedReservation.typeChambre }}</div>
+        <div style="font-size:14px;color:#3a2c30;margin-top:4px;">{{ r.chambreNumero || r.typeChambre }}</div>
       </div>
       <div>
         <div class="gn-slabel" style="color:#b3a2a6;">Arrivée</div>
-        <div style="font-size:14px;color:#3a2c30;margin-top:4px;">{{ selectedReservation.dateArrivee | date:'dd/MM/yyyy' }}</div>
+        <div style="font-size:14px;color:#3a2c30;margin-top:4px;">{{ r.dateArrivee | date:'dd/MM/yyyy' }}</div>
       </div>
       <div>
         <div class="gn-slabel" style="color:#b3a2a6;">Départ</div>
-        <div style="font-size:14px;color:#3a2c30;margin-top:4px;">{{ selectedReservation.dateDepart | date:'dd/MM/yyyy' }}</div>
+        <div style="font-size:14px;color:#3a2c30;margin-top:4px;">{{ r.dateDepart | date:'dd/MM/yyyy' }}</div>
       </div>
       <div>
         <div class="gn-slabel" style="color:#b3a2a6;">Durée</div>
-        <div style="font-size:14px;color:#3a2c30;margin-top:4px;">{{ selectedReservation.nbNuits }} nuit(s)</div>
+        <div style="font-size:14px;color:#3a2c30;margin-top:4px;">{{ r.nbNuits }} nuit(s)</div>
       </div>
       <div>
         <div class="gn-slabel" style="color:#b3a2a6;">Statut</div>
-        <div style="margin-top:4px;"><span class="gn-bdg" [ngClass]="statutTone(selectedReservation.statut)">{{ statutLabels[selectedReservation.statut] }}</span></div>
+        <div style="margin-top:4px;">
+          <span class="gn-bdg" [ngClass]="statutTone(r.statut)">{{ statutLabels[r.statut] }}</span>
+        </div>
+      </div>
+      <div *ngIf="r.montantBrut && r.remiseMontant > 0">
+        <div class="gn-slabel" style="color:#b3a2a6;">Montant brut</div>
+        <div style="font-size:14px;color:#3a2c30;margin-top:4px;">{{ formatMontant(r.montantBrut) }}</div>
+      </div>
+      <div *ngIf="r.remiseMontant > 0">
+        <div class="gn-slabel" style="color:#b3a2a6;">Remise consentie</div>
+        <div style="font-size:14px;color:#2f9e6f;margin-top:4px;font-weight:600;">
+          − {{ formatMontant(r.remiseMontant) }}
+        </div>
+        <div style="font-size:11.5px;color:#a99a9d;" *ngIf="r.remiseMotif">{{ r.remiseMotif }}</div>
       </div>
       <div>
         <div class="gn-slabel" style="color:#b3a2a6;">Montant prévu</div>
-        <div style="font-weight:600;font-size:14px;color:#2e2024;margin-top:4px;">{{ formatMontant(selectedReservation.montantPrevu) }}</div>
+        <div style="font-weight:600;font-size:14px;color:#2e2024;margin-top:4px;">{{ formatMontant(r.montantPrevu) }}</div>
       </div>
       <div>
-        <div class="gn-slabel" style="color:#b3a2a6;">Acompte versé</div>
-        <div style="font-size:14px;color:#3a2c30;margin-top:4px;">{{ formatMontant(selectedReservation.acompte) }}</div>
+        <div class="gn-slabel" style="color:#b3a2a6;">Acompte</div>
+        <div style="font-size:14px;color:#3a2c30;margin-top:4px;">
+          {{ formatMontant(r.acompte) }} / {{ formatMontant(r.acompteRequis) }}
+        </div>
+        <div style="font-size:11.5px;color:#a99a9d;" *ngIf="r.dateAcompte">
+          reçu le {{ r.dateAcompte | date:'dd/MM/yyyy' }}
+          <span *ngIf="r.modeAcompte"> · {{ modeLabels[r.modeAcompte] || r.modeAcompte }}</span>
+        </div>
+      </div>
+      <div>
+        <div class="gn-slabel" style="color:#b3a2a6;">Limite d'annulation</div>
+        <div style="font-size:14px;color:#3a2c30;margin-top:4px;">
+          {{ r.dateLimiteAnnulation | date:'dd/MM/yyyy à HH:mm' }}
+        </div>
+        <div style="font-size:11.5px;" [style.color]="r.annulableSansFrais ? '#2f9e6f' : '#c9922f'">
+          {{ r.annulableSansFrais ? 'Annulable sans frais' : 'Annulation désormais pénalisante' }}
+        </div>
+      </div>
+      <div *ngIf="r.statut === 'ANNULEE'">
+        <div class="gn-slabel" style="color:#b3a2a6;">Annulation</div>
+        <div style="font-size:13px;color:#3a2c30;margin-top:4px;">
+          {{ r.dateAnnulation | date:'dd/MM/yyyy' }}
+          <span *ngIf="r.annuleParNom"> · {{ r.annuleParNom }}</span>
+        </div>
+        <div style="font-size:11.5px;color:#a99a9d;" *ngIf="r.motifAnnulation">{{ r.motifAnnulation }}</div>
       </div>
     </div>
+
     <div style="margin-top:18px;">
       <div class="gn-slabel" style="color:#b3a2a6;">Notes</div>
-      <div *ngIf="selectedReservation.notes" style="font-size:13.5px;color:#3a2c30;margin-top:6px;padding:12px;background:#fdf7f5;border-radius:8px;line-height:1.6;">{{ selectedReservation.notes }}</div>
-      <div *ngIf="!selectedReservation.notes" style="font-size:13px;color:#c9b0b6;margin-top:6px;font-style:italic;">Aucune note</div>
+      <div *ngIf="r.notes" style="font-size:13.5px;color:#3a2c30;margin-top:6px;padding:12px;background:#fdf7f5;border-radius:8px;line-height:1.6;white-space:pre-line;">{{ r.notes }}</div>
+      <div *ngIf="!r.notes" style="font-size:13px;color:#c9b0b6;margin-top:6px;font-style:italic;">Aucune note</div>
     </div>
   </div>
   <ng-template pTemplate="footer">

@@ -9,7 +9,7 @@ import { PageHeaderService } from '../../../core/services/page-header.service';
 import { MediaService } from '../../../core/services/media.service';
 import { ClientResponse, ClientRequest } from '../../../core/models/client.model';
 import { ChambreResponse } from '../../../core/models/chambre.model';
-import { SejourRequest, SejourResponse } from '../../../core/models/sejour.model';
+import { SejourRequest, SejourResponse, TYPE_REMISE_OPTIONS } from '../../../core/models/sejour.model';
 import { modePaiementOptions, modePaiementLabel } from '../../../core/models/paiement.model';
 
 @Component({
@@ -43,6 +43,11 @@ export class CheckInComponent implements OnInit {
   loadingChambres = false;
   selectedChambre: ChambreResponse | null = null;
   sejourForm!: FormGroup;
+
+  // Tarification (tarif négocié + remise commerciale)
+  tarifForm!: FormGroup;
+  afficherRemise = false;
+  typeRemiseOptions = TYPE_REMISE_OPTIONS;
 
   // Paiement
   paiementForm!: FormGroup;
@@ -102,6 +107,13 @@ export class CheckInComponent implements OnInit {
       heureEntree: ['', Validators.required],
       heureSortie: [''],
       notes: ['']
+    });
+
+    this.tarifForm = this.fb.group({
+      tarifPersonnalise: [null],
+      remiseType: [null],
+      remiseValeur: [null],
+      remiseMotif: ['']
     });
 
     this.paiementForm = this.fb.group({
@@ -177,9 +189,59 @@ export class CheckInComponent implements OnInit {
     this.selectedChambre = chambre;
   }
 
-  get montantTotal(): number {
+  basculerRemise(): void {
+    this.afficherRemise = !this.afficherRemise;
+  }
+
+  /** Tarif catalogue de la chambre, affiché en filigrane du champ tarif négocié. */
+  get tarifCatalogue(): string {
+    if (!this.selectedChambre) return '0';
+    const t = this.isSejour ? this.selectedChambre.tarifNuitee : this.selectedChambre.tarifPassage;
+    return `${t}`;
+  }
+
+  /** Tarif unitaire réellement appliqué : le négocié s'il existe, sinon le catalogue. */
+  get tarifApplique(): number {
     if (!this.selectedChambre) return 0;
+    const negocie = Number(this.tarifForm?.value?.tarifPersonnalise) || 0;
+    if (negocie > 0) return negocie;
     return this.isSejour ? this.selectedChambre.tarifNuitee : this.selectedChambre.tarifPassage;
+  }
+
+  /**
+   * Nombre d'unités facturées. Un passage est un forfait ; un séjour se compte
+   * en nuitées, au minimum une même si les dates coïncident.
+   */
+  get nbUnites(): number {
+    if (!this.isSejour) return 1;
+    const entree = this.sejourForm?.get('dateEntree')?.value;
+    const sortie = this.sejourForm?.get('dateSortie')?.value;
+    if (!entree || !sortie) return 1;
+    const d1 = new Date(entree).getTime();
+    const d2 = new Date(sortie).getTime();
+    return Math.max(1, Math.round((d2 - d1) / 86_400_000));
+  }
+
+  get montantBrut(): number {
+    return this.tarifApplique * this.nbUnites;
+  }
+
+  /**
+   * Remise en francs. Le calcul est refait côté serveur, qui fait autorité :
+   * ici, il ne sert qu'à annoncer le prix au client avant de valider.
+   */
+  get remiseMontant(): number {
+    const type = this.tarifForm?.value?.remiseType;
+    const valeur = Number(this.tarifForm?.value?.remiseValeur) || 0;
+    if (!type || valeur <= 0) return 0;
+    const remise = type === 'POURCENTAGE'
+      ? Math.round(this.montantBrut * Math.min(valeur, 100) / 100)
+      : valeur;
+    return Math.min(remise, this.montantBrut);
+  }
+
+  get montantTotal(): number {
+    return this.montantBrut - this.remiseMontant;
   }
 
   get resteAPayer(): number {
@@ -201,6 +263,7 @@ export class CheckInComponent implements OnInit {
     const dateEntree = formVal.dateEntree instanceof Date ? formVal.dateEntree.toISOString().split('T')[0] : formVal.dateEntree;
     const dateSortie = formVal.dateSortie instanceof Date ? formVal.dateSortie.toISOString().split('T')[0] : formVal.dateSortie;
 
+    const tarif = this.tarifForm.value;
     const request: SejourRequest = {
       clientId: this.foundClient.id,
       chambreId: this.selectedChambre.id,
@@ -209,6 +272,10 @@ export class CheckInComponent implements OnInit {
       dateSortie,
       heureEntree: formVal.heureEntree,
       heureSortie: formVal.heureSortie,
+      tarifPersonnalise: Number(tarif.tarifPersonnalise) > 0 ? Number(tarif.tarifPersonnalise) : null,
+      remiseType: tarif.remiseType || null,
+      remiseValeur: Number(tarif.remiseValeur) > 0 ? Number(tarif.remiseValeur) : null,
+      remiseMotif: tarif.remiseMotif || null,
       montantPaye: this.paiementForm.get('montantPaye')?.value || 0,
       modePaiement: this.paiementForm.get('modePaiement')?.value || 'ESPECES',
       notes: formVal.notes
@@ -239,6 +306,7 @@ export class CheckInComponent implements OnInit {
     this.searchQuery = '';
     this.success = false;
     this.createdSejour = null;
+    this.afficherRemise = false;
     this.initForms();
     this.loadChambresLibres();
   }

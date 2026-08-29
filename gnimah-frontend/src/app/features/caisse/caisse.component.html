@@ -1,0 +1,267 @@
+<div class="gn-route">
+
+  <!-- ===== SÉLECTION DE CAISSE ===== -->
+  <div class="cai-select">
+    <button class="cai-chip" *ngFor="let c of caisses"
+            [class.on]="caisseActive?.id === c.id" (click)="selectionner(c)">
+      <i class="ti ti-cash-register"></i>
+      <span>{{ c.nom }}</span>
+      <span class="gn-dot" [ngClass]="c.sessionOuverteId ? 'c-green' : 'c-gray'"></span>
+    </button>
+    <span style="flex:1"></span>
+    <a class="gn-btn-o cai-link" routerLink="/caisse/versements">
+      <i class="ti ti-building-bank"></i> Versements
+    </a>
+  </div>
+
+  <div *ngIf="loading && !caisseActive" class="gn-card" style="padding:40px;text-align:center;">
+    <i class="ti ti-loader-2 gn-spin" style="font-size:26px;color:#8c2f4d;"></i>
+    <div class="gn-empty">Chargement des caisses…</div>
+  </div>
+
+  <div *ngIf="!loading && !caisses.length" class="gn-card cai-vide">
+    <i class="ti ti-cash-off"></i>
+    <div>Aucune caisse n'est configurée.</div>
+    <small>Un administrateur doit en créer une avant tout encaissement.</small>
+  </div>
+
+  <ng-container *ngIf="caisseActive as caisse">
+
+    <!-- ===== ÉTAT DE LA CAISSE ===== -->
+    <div class="cai-etat gn-card">
+      <div class="cai-etat-main">
+        <div class="gn-slabel" style="color:#b3a2a6;">Solde de {{ caisse.nom }}</div>
+        <div class="gn-serif cai-solde">{{ formatMontant(caisse.solde) }}</div>
+        <div class="cai-etat-sub">
+          <span class="gn-bdg" [ngClass]="session ? 'green' : 'gray'">
+            <span class="gn-dot"></span>
+            {{ session ? 'Vacation ouverte' : 'Aucune vacation' }}
+          </span>
+          <span *ngIf="session && session.caissierNom" class="cai-caissier">
+            tenue par {{ session.caissierNom }} depuis
+            {{ session.dateOuverture | date:'dd/MM à HH:mm' }}
+          </span>
+        </div>
+      </div>
+
+      <div class="cai-etat-actions">
+        <button class="gn-btn-p" *ngIf="!session" (click)="ouvrirVacation()">
+          <i class="ti ti-lock-open"></i> Ouvrir la vacation
+        </button>
+        <ng-container *ngIf="session">
+          <button class="gn-btn-o" (click)="nouveauMouvement('ENTREE')">
+            <i class="ti ti-arrow-down-left" style="color:#2f9e6f;"></i> Entrée
+          </button>
+          <button class="gn-btn-o" (click)="nouveauMouvement('SORTIE')">
+            <i class="ti ti-arrow-up-right" style="color:#d0455a;"></i> Sortie
+          </button>
+          <button class="gn-btn-p" (click)="fermerVacation()">
+            <i class="ti ti-lock"></i> Fermer et compter
+          </button>
+        </ng-container>
+      </div>
+    </div>
+
+    <!-- ===== POSITION DE LA VACATION ===== -->
+    <div class="gn-kpi cai-kpi" *ngIf="session as s">
+      <div class="gn-card cai-tile">
+        <div class="gn-slabel" style="color:#b3a2a6;">Fond de caisse</div>
+        <div class="gn-serif cai-tile-v">{{ formatMontant(s.fondCaisse) }}</div>
+        <div class="cai-tile-s">mise en place à l'ouverture</div>
+      </div>
+      <div class="gn-card cai-tile">
+        <div class="gn-slabel" style="color:#b3a2a6;">Entrées</div>
+        <div class="gn-serif cai-tile-v" style="color:#2f9e6f;">{{ formatMontant(s.totalEntrees) }}</div>
+        <div class="cai-tile-s">tous modes de règlement</div>
+      </div>
+      <div class="gn-card cai-tile">
+        <div class="gn-slabel" style="color:#b3a2a6;">Sorties</div>
+        <div class="gn-serif cai-tile-v" style="color:#d0455a;">{{ formatMontant(s.totalSorties) }}</div>
+        <div class="cai-tile-s">dépenses et versements</div>
+      </div>
+      <div class="gn-card cai-tile cai-tile-hi">
+        <div class="gn-slabel" style="color:#b3a2a6;">Espèces attendues</div>
+        <div class="gn-serif cai-tile-v" style="color:#8c2f4d;">{{ formatMontant(s.montantTheorique) }}</div>
+        <div class="cai-tile-s">à compter dans le tiroir</div>
+      </div>
+    </div>
+
+    <!-- ===== MOUVEMENTS ===== -->
+    <div class="gn-card" style="padding:22px;margin-top:18px;">
+      <div class="cai-h">
+        <div class="gn-serif cai-title">
+          {{ session ? 'Mouvements de la vacation' : 'Derniers mouvements' }}
+        </div>
+        <div class="cai-h-tot" *ngIf="mouvements.length">
+          <span class="gn-bdg green">+ {{ formatMontant(totalEntrees) }}</span>
+          <span class="gn-bdg red">− {{ formatMontant(totalSorties) }}</span>
+        </div>
+      </div>
+
+      <div *ngIf="loadingMouvements" class="gn-empty" style="text-align:center;">
+        <i class="ti ti-loader-2 gn-spin"></i> Chargement…
+      </div>
+
+      <div *ngIf="!loadingMouvements && !mouvements.length" class="cai-vide">
+        <i class="ti ti-receipt-off"></i>
+        <div>Aucun mouvement enregistré.</div>
+        <small *ngIf="!session">Ouvrez une vacation pour commencer à encaisser.</small>
+      </div>
+
+      <div class="cai-mvts" *ngIf="!loadingMouvements && mouvements.length">
+        <div class="cai-mvt" *ngFor="let m of mouvements">
+          <div class="cai-mvt-ico" [ngClass]="m.sens === 'ENTREE' ? 'in' : 'out'">
+            <i class="ti" [ngClass]="m.sens === 'ENTREE' ? 'ti-arrow-down-left' : 'ti-arrow-up-right'"></i>
+          </div>
+          <div class="cai-mvt-b">
+            <div class="cai-mvt-lb">{{ m.libelle }}</div>
+            <div class="cai-mvt-s">
+              {{ typeLabels[m.type] || m.type }}
+              · {{ modeLabels[m.mode] || m.mode }}
+              · {{ m.dateMouvement | date:'dd/MM HH:mm' }}
+              <span *ngIf="m.agentNom"> · {{ m.agentNom }}</span>
+            </div>
+            <div class="cai-mvt-r" *ngIf="m.reference">Réf. {{ m.reference }}</div>
+          </div>
+          <div class="cai-mvt-m" [ngClass]="m.sens === 'ENTREE' ? 'in' : 'out'">
+            {{ m.sens === 'ENTREE' ? '+' : '−' }} {{ formatMontant(m.montant) }}
+            <div class="cai-mvt-solde" *ngIf="m.soldeApres !== null">
+              solde {{ formatMontant(m.soldeApres) }}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </ng-container>
+</div>
+
+<!-- ===== OUVERTURE ===== -->
+<p-dialog [(visible)]="showOuverture" [modal]="true" [style]="{ width: '460px' }"
+          header="Ouvrir la vacation" [draggable]="false">
+  <form [formGroup]="ouvertureForm" class="cai-form">
+    <p class="cai-hint">
+      Le fond de caisse est la somme physiquement présente dans le tiroir au moment
+      de l'ouverture. Il sert de base au comptage de fermeture.
+    </p>
+    <div>
+      <label class="gn-flabel">Fond de caisse (FCFA)</label>
+      <input class="gn-input" type="number" formControlName="fondCaisse"
+             [class.gn-invalid]="isInvalid('fondCaisse', ouvertureForm)" placeholder="0" />
+    </div>
+    <div>
+      <label class="gn-flabel">Notes</label>
+      <textarea class="gn-input" rows="2" formControlName="notes"
+                placeholder="Observation à l'ouverture (facultatif)"></textarea>
+    </div>
+  </form>
+  <ng-template pTemplate="footer">
+    <button class="gn-btn-o" style="padding:10px 18px;" (click)="showOuverture = false">Annuler</button>
+    <button class="gn-btn-p" style="padding:10px 20px;" [disabled]="saving" (click)="confirmerOuverture()">
+      <i class="ti ti-loader-2 gn-spin" *ngIf="saving"></i> Ouvrir
+    </button>
+  </ng-template>
+</p-dialog>
+
+<!-- ===== FERMETURE ===== -->
+<p-dialog [(visible)]="showFermeture" [modal]="true" [style]="{ width: '480px' }"
+          header="Fermer la vacation" [draggable]="false">
+  <form [formGroup]="fermetureForm" class="cai-form" *ngIf="session as s">
+    <div class="cai-compte">
+      <div class="cai-compte-l">
+        <span>Fond de caisse</span><strong>{{ formatMontant(s.fondCaisse) }}</strong>
+      </div>
+      <div class="cai-compte-l">
+        <span>Entrées en espèces</span><strong class="c-green">+ {{ formatMontant(s.totalEntrees) }}</strong>
+      </div>
+      <div class="cai-compte-l">
+        <span>Sorties</span><strong class="c-red">− {{ formatMontant(s.totalSorties) }}</strong>
+      </div>
+      <div class="cai-compte-l total">
+        <span>Espèces attendues</span>
+        <strong class="gn-serif">{{ formatMontant(s.montantTheorique) }}</strong>
+      </div>
+    </div>
+
+    <div>
+      <label class="gn-flabel">Montant réellement compté (FCFA) *</label>
+      <input class="gn-input" type="number" formControlName="montantCompte"
+             [class.gn-invalid]="isInvalid('montantCompte', fermetureForm)" placeholder="0" />
+    </div>
+
+    <div class="cai-ecart" [ngClass]="ecartSimule === 0 ? 'ok' : (ecartSimule > 0 ? 'plus' : 'moins')">
+      <i class="ti" [ngClass]="ecartSimule === 0 ? 'ti-circle-check' : 'ti-alert-triangle'"></i>
+      <span *ngIf="ecartSimule === 0">Caisse juste — aucun écart.</span>
+      <span *ngIf="ecartSimule > 0">Excédent de {{ formatMontant(ecartSimule) }}.</span>
+      <span *ngIf="ecartSimule < 0">Manquant de {{ formatMontant(-ecartSimule) }}.</span>
+    </div>
+
+    <div>
+      <label class="gn-flabel">Observations</label>
+      <textarea class="gn-input" rows="2" formControlName="notes"
+                placeholder="Explication de l'écart, incidents de la vacation…"></textarea>
+    </div>
+  </form>
+  <ng-template pTemplate="footer">
+    <button class="gn-btn-o" style="padding:10px 18px;" (click)="showFermeture = false">Annuler</button>
+    <button class="gn-btn-p" style="padding:10px 20px;" [disabled]="saving" (click)="confirmerFermeture()">
+      <i class="ti ti-loader-2 gn-spin" *ngIf="saving"></i> Fermer la caisse
+    </button>
+  </ng-template>
+</p-dialog>
+
+<!-- ===== MOUVEMENT MANUEL ===== -->
+<p-dialog [(visible)]="showMouvement" [modal]="true" [style]="{ width: '520px' }"
+          [header]="mouvementForm.value.sens === 'ENTREE' ? 'Entrée de caisse' : 'Sortie de caisse'"
+          [draggable]="false">
+  <form [formGroup]="mouvementForm" class="cai-form">
+    <div class="cai-f2">
+      <div>
+        <label class="gn-flabel">Sens</label>
+        <p-select [options]="[{label:'Entrée', value:'ENTREE'},{label:'Sortie', value:'SORTIE'}]"
+                  formControlName="sens" optionLabel="label" optionValue="value"
+                  (onChange)="onSensChange()" styleClass="cai-select-full" appendTo="body"></p-select>
+      </div>
+      <div>
+        <label class="gn-flabel">Nature</label>
+        <p-select [options]="typesDisponibles" formControlName="type" optionLabel="label"
+                  optionValue="value" styleClass="cai-select-full" appendTo="body"></p-select>
+      </div>
+    </div>
+
+    <div class="cai-f2">
+      <div>
+        <label class="gn-flabel">Montant (FCFA) *</label>
+        <input class="gn-input" type="number" formControlName="montant"
+               [class.gn-invalid]="isInvalid('montant', mouvementForm)" placeholder="0" />
+      </div>
+      <div>
+        <label class="gn-flabel">Mode</label>
+        <p-select [options]="modeOptions" formControlName="mode" optionLabel="label"
+                  optionValue="value" styleClass="cai-select-full" appendTo="body"></p-select>
+      </div>
+    </div>
+
+    <div>
+      <label class="gn-flabel">Libellé *</label>
+      <input class="gn-input" formControlName="libelle"
+             [class.gn-invalid]="isInvalid('libelle', mouvementForm)"
+             placeholder="Motif du mouvement" />
+    </div>
+
+    <div>
+      <label class="gn-flabel">Référence</label>
+      <input class="gn-input" formControlName="reference" placeholder="N° de pièce (facultatif)" />
+    </div>
+
+    <div>
+      <label class="gn-flabel">Notes</label>
+      <textarea class="gn-input" rows="2" formControlName="notes"></textarea>
+    </div>
+  </form>
+  <ng-template pTemplate="footer">
+    <button class="gn-btn-o" style="padding:10px 18px;" (click)="showMouvement = false">Annuler</button>
+    <button class="gn-btn-p" style="padding:10px 20px;" [disabled]="saving" (click)="enregistrerMouvement()">
+      <i class="ti ti-loader-2 gn-spin" *ngIf="saving"></i> Enregistrer
+    </button>
+  </ng-template>
+</p-dialog>

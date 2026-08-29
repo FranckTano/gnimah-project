@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { SejourRequest, SejourResponse } from '../models/sejour.model';
+import { RemiseSejourRequest, SejourRequest, SejourResponse } from '../models/sejour.model';
 import { PageResponse } from '../models/client.model';
 import { environment } from '../../../environments/environment';
 
@@ -17,6 +17,11 @@ export class SejourService {
 
   checkOut(id: number): Observable<SejourResponse> {
     return this.http.post<SejourResponse>(`${this.API}/${id}/check-out`, {});
+  }
+
+  /** Révise le prix d'un séjour en cours (tarif négocié et/ou remise). */
+  appliquerRemise(id: number, request: RemiseSejourRequest): Observable<SejourResponse> {
+    return this.http.patch<SejourResponse>(`${this.API}/${id}/remise`, request);
   }
 
   getById(id: number): Observable<SejourResponse> {

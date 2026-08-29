@@ -1,9 +1,24 @@
 import { Component, OnInit } from '@angular/core';
+import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { ReservationService } from '../../../core/services/reservation.service';
-import { ReservationResponse, STATUT_RESERVATION_LABELS } from '../../../core/models/reservation.model';
-import { MessageService, ConfirmationService } from 'primeng/api';
+import { CaisseService } from '../../../core/services/caisse.service';
+import {
+  PolitiqueAnnulation, PREAVIS_ANNULATION_HEURES,
+  ReservationResponse, STATUT_RESERVATION_LABELS
+} from '../../../core/models/reservation.model';
+import { CaisseResponse } from '../../../core/models/caisse.model';
+import { modePaiementLabel, modePaiementOptions } from '../../../core/models/paiement.model';
+import { MessageService } from 'primeng/api';
 import { PageHeaderService } from '../../../core/services/page-header.service';
 
+/**
+ * Planning des réservations.
+ *
+ * Deux règles de maison pilotent cet écran : une réservation ne se confirme que
+ * par un acompte encaissé, et l'annulation doit être annoncée au moins 48 h
+ * avant l'arrivée sous peine de perdre cet acompte. L'agent voit donc, avant de
+ * valider quoi que ce soit, ce que la décision coûte au client.
+ */
 @Component({
   selector: 'app-reservation-list',
   standalone: false,
@@ -12,25 +27,62 @@ import { PageHeaderService } from '../../../core/services/page-header.service';
 })
 export class ReservationListComponent implements OnInit {
   reservations: ReservationResponse[] = [];
+  caisses: CaisseResponse[] = [];
   loading = false;
+  saving = false;
   totalRecords = 0;
   page = 0;
   rows = 20;
   statutLabels: Record<string, string> = STATUT_RESERVATION_LABELS;
+  preavisHeures = PREAVIS_ANNULATION_HEURES;
 
   detailVisible = false;
   selectedReservation: ReservationResponse | null = null;
 
+  // ---- Acompte ----
+  showAcompte = false;
+  reservationCible: ReservationResponse | null = null;
+  acompteForm!: FormGroup;
+
+  // ---- Annulation ----
+  showAnnulation = false;
+  politique: PolitiqueAnnulation | null = null;
+  annulationForm!: FormGroup;
+  chargementPolitique = false;
+
+  modeOptions = modePaiementOptions;
+  modeLabels = modePaiementLabel;
+
   constructor(
+    private fb: FormBuilder,
     private reservationService: ReservationService,
+    private caisseService: CaisseService,
     private messageService: MessageService,
-    private confirmationService: ConfirmationService,
     private pageHeaderService: PageHeaderService
   ) {}
 
   ngOnInit(): void {
-    this.pageHeaderService.set('Réservations', 'Planning des arrivées et statuts');
+    this.pageHeaderService.set('Réservations', 'Acomptes, confirmations et annulations');
+    this.initForms();
     this.load();
+    this.caisseService.findAll().subscribe({ next: (d) => { this.caisses = d; } });
+  }
+
+  private initForms(): void {
+    this.acompteForm = this.fb.group({
+      montant: [null, [Validators.required, Validators.min(1)]],
+      mode: ['ESPECES', Validators.required],
+      referenceTransaction: [''],
+      caisseId: [null],
+      notes: ['']
+    });
+
+    this.annulationForm = this.fb.group({
+      motif: [''],
+      rembourser: [false],
+      caisseId: [null],
+      mode: ['ESPECES']
+    });
   }
 
   get statCount() {
@@ -42,6 +94,13 @@ export class ReservationListComponent implements OnInit {
       annulees: r.filter(x => x.statut === 'ANNULEE').length,
       noShow: r.filter(x => x.statut === 'NO_SHOW').length
     };
+  }
+
+  /** Acomptes encore attendus sur les réservations non confirmées. */
+  get acomptesEnAttente(): number {
+    return this.reservations
+      .filter(r => r.statut === 'EN_ATTENTE')
+      .reduce((t, r) => t + (r.resteAcompte || 0), 0);
   }
 
   statutTone(s: string): string {
@@ -68,39 +127,146 @@ export class ReservationListComponent implements OnInit {
     });
   }
 
-  confirmer(r: ReservationResponse): void {
-    this.reservationService.confirmer(r.id).subscribe({
-      next: () => { this.messageService.add({ severity: 'success', summary: 'Confirmée', detail: 'Réservation confirmée' }); this.load(); },
-      error: () => this.messageService.add({ severity: 'error', summary: 'Erreur', detail: 'Confirmation impossible' })
+  // ------------------------------------------------------------------
+  // Acompte
+  // ------------------------------------------------------------------
+
+  /** Une réservation ne se confirme que par l'argent : le bouton mène à l'acompte. */
+  ouvrirAcompte(r: ReservationResponse): void {
+    this.reservationCible = r;
+    this.acompteForm.reset({
+      montant: r.resteAcompte > 0 ? r.resteAcompte : null,
+      mode: 'ESPECES',
+      caisseId: null
     });
+    this.showAcompte = true;
   }
 
-  annuler(r: ReservationResponse): void {
-    this.confirmationService.confirm({
-      message: `Annuler la réservation de ${r.clientNom} ? Cette action est irréversible.`,
-      header: 'Annulation de réservation',
-      icon: 'pi pi-times',
-      acceptLabel: 'Oui, annuler',
-      rejectLabel: 'Non',
-      accept: () => {
-        this.reservationService.annuler(r.id).subscribe({
-          next: () => { this.messageService.add({ severity: 'warn', summary: 'Annulée', detail: 'Réservation annulée' }); this.load(); },
-          error: () => this.messageService.add({ severity: 'error', summary: 'Erreur', detail: 'Annulation impossible' })
+  enregistrerAcompte(): void {
+    if (!this.reservationCible || this.acompteForm.invalid) {
+      this.acompteForm.markAllAsTouched();
+      return;
+    }
+    this.saving = true;
+    this.reservationService.enregistrerAcompte(this.reservationCible.id, this.acompteForm.value).subscribe({
+      next: (r) => {
+        this.saving = false;
+        this.showAcompte = false;
+        this.messageService.add({
+          severity: 'success',
+          summary: r.statut === 'CONFIRMEE' ? 'Réservation confirmée' : 'Acompte encaissé',
+          detail: r.statut === 'CONFIRMEE'
+            ? `${r.clientNom} — acompte de ${this.formatMontant(r.acompte)} reçu`
+            : `Il reste ${this.formatMontant(r.resteAcompte)} pour confirmer`
+        });
+        this.load();
+      },
+      error: (err) => {
+        this.saving = false;
+        this.messageService.add({
+          severity: 'error', summary: 'Erreur',
+          detail: err?.error?.message || "L'encaissement de l'acompte a échoué"
         });
       }
     });
   }
+
+  // ------------------------------------------------------------------
+  // Annulation
+  // ------------------------------------------------------------------
+
+  /**
+   * Interroge le backend sur les conséquences de l'annulation avant de la
+   * proposer : l'agent doit pouvoir annoncer la pénalité au client au téléphone,
+   * pas la découvrir après coup.
+   */
+  ouvrirAnnulation(r: ReservationResponse): void {
+    this.reservationCible = r;
+    this.politique = null;
+    this.chargementPolitique = true;
+    this.annulationForm.reset({ motif: '', rembourser: false, mode: 'ESPECES', caisseId: null });
+    this.showAnnulation = true;
+
+    this.reservationService.politiqueAnnulation(r.id).subscribe({
+      next: (p) => {
+        this.politique = p;
+        this.chargementPolitique = false;
+        // Un remboursement dû est proposé par défaut : c'est le cas normal
+        // d'une annulation prévenue dans les délais.
+        this.annulationForm.patchValue({ rembourser: p.remboursement > 0 });
+      },
+      error: () => { this.chargementPolitique = false; }
+    });
+  }
+
+  confirmerAnnulation(): void {
+    if (!this.reservationCible) return;
+    this.saving = true;
+    this.reservationService.annuler(this.reservationCible.id, this.annulationForm.value).subscribe({
+      next: (r) => {
+        this.saving = false;
+        this.showAnnulation = false;
+        this.messageService.add({
+          severity: r.penaliteAnnulation > 0 ? 'warn' : 'success',
+          summary: 'Réservation annulée',
+          detail: r.penaliteAnnulation > 0
+            ? `Pénalité de ${this.formatMontant(r.penaliteAnnulation)} retenue`
+            : (r.montantRembourse > 0
+                ? `${this.formatMontant(r.montantRembourse)} remboursés au client`
+                : 'Annulation sans frais')
+        });
+        this.load();
+      },
+      error: (err) => {
+        this.saving = false;
+        this.messageService.add({
+          severity: 'error', summary: 'Erreur',
+          detail: err?.error?.message || "L'annulation a échoué"
+        });
+      }
+    });
+  }
+
+  // ------------------------------------------------------------------
+  // Divers
+  // ------------------------------------------------------------------
 
   voirDetails(r: ReservationResponse): void {
     this.selectedReservation = r;
     this.detailVisible = true;
   }
 
-  getStatutSeverity(s: string): string {
-    return { EN_ATTENTE: 'warn', CONFIRMEE: 'success', ARRIVEE: 'info', ANNULEE: 'danger', NO_SHOW: 'secondary' }[s] || 'secondary';
+  marquerArrivee(r: ReservationResponse): void {
+    this.reservationService.updateStatut(r.id, 'ARRIVEE').subscribe({
+      next: () => {
+        this.messageService.add({ severity: 'success', summary: 'Arrivée notée', detail: r.clientNom });
+        this.load();
+      },
+      error: (err) => this.messageService.add({
+        severity: 'error', summary: 'Erreur',
+        detail: err?.error?.message || 'Changement de statut impossible'
+      })
+    });
   }
 
-  formatMontant(v: number): string {
-    return new Intl.NumberFormat('fr-CI', { style: 'currency', currency: 'XOF', maximumFractionDigits: 0 }).format(v || 0);
+  /** Heures restantes avant l'arrivée — sert au bandeau d'alerte de la liste. */
+  heuresAvant(r: ReservationResponse): number {
+    return Math.round((new Date(r.dateArrivee).getTime() - Date.now()) / 3_600_000);
+  }
+
+  estUrgente(r: ReservationResponse): boolean {
+    const h = this.heuresAvant(r);
+    return r.statut === 'EN_ATTENTE' && h > 0 && h <= this.preavisHeures;
+  }
+
+  isInvalid(champ: string, form: FormGroup): boolean {
+    const c = form.get(champ);
+    return !!(c && c.invalid && c.touched);
+  }
+
+  formatMontant(v: number | null | undefined): string {
+    return new Intl.NumberFormat('fr-CI', {
+      style: 'currency', currency: 'XOF', maximumFractionDigits: 0
+    }).format(v || 0);
   }
 }

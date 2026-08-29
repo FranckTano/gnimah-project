@@ -36,6 +36,23 @@ public interface SejourRepository extends JpaRepository<Sejour, Long> {
     @Query("SELECT COALESCE(SUM(s.montantPaye), 0) FROM Sejour s WHERE s.dateEntree BETWEEN :debut AND :fin")
     BigDecimal sumEncaissements(@Param("debut") LocalDateTime debut, @Param("fin") LocalDateTime fin);
 
+    /**
+     * Recette de l'hébergement seul. Le total d'un séjour englobe désormais les
+     * consommations annexes (restauration portée à la chambre, dégâts facturés) ;
+     * les retrancher évite de compter deux fois ce que le module restauration
+     * comptabilise déjà de son côté.
+     */
+    @Query("SELECT COALESCE(SUM(s.montantTotal - s.montantExtras), 0) FROM Sejour s " +
+           "WHERE s.dateEntree BETWEEN :debut AND :fin")
+    BigDecimal sumRecetteHebergement(@Param("debut") LocalDateTime debut, @Param("fin") LocalDateTime fin);
+
+    @Query("SELECT COALESCE(SUM(s.remiseMontant), 0) FROM Sejour s WHERE s.dateEntree BETWEEN :debut AND :fin")
+    BigDecimal sumRemises(@Param("debut") LocalDateTime debut, @Param("fin") LocalDateTime fin);
+
+    /** Créances : ce que les clients encore présents restent devoir. */
+    @Query("SELECT COALESCE(SUM(s.resteAPayer), 0) FROM Sejour s WHERE s.statut = 'EN_COURS'")
+    BigDecimal sumCreancesEnCours();
+
     @Query("SELECT COUNT(s) FROM Sejour s WHERE s.dateEntree BETWEEN :debut AND :fin")
     long countSejoursPeriode(@Param("debut") LocalDateTime debut, @Param("fin") LocalDateTime fin);
 

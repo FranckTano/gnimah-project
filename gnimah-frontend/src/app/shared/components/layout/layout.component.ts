@@ -125,19 +125,34 @@ export class LayoutComponent implements OnInit, OnDestroy {
       { label: 'Réservations', icon: 'ti-calendar-check', link: '/reservations' },
       { label: 'Plan des chambres', icon: 'ti-layout-grid', link: '/chambres', exact: true },
       { label: 'Chambres', icon: 'ti-door', link: '/chambres/liste' },
-      { label: 'Entretien', icon: 'ti-spray', link: '/entretien' },
+      { label: 'Entretien', icon: 'ti-spray', link: '/entretien', exact: true },
+      { label: 'Matériel & incidents', icon: 'ti-alert-triangle', link: '/entretien/incidents' },
       { label: 'Calendrier & événements', icon: 'ti-calendar-event', link: '/evenements' },
       { label: 'Fiches clients', icon: 'ti-users', link: '/clients' }
     ];
 
-    const facturation: NavItem[] = [
-      { label: 'Reçus & Caisse', icon: 'ti-receipt-2', link: '/paiements' }
+    // La restauration et le stock sont un métier à part entière : ils vivent
+    // dans leur propre section plutôt que noyés dans les opérations hôtelières.
+    const exploitation: NavItem[] = [
+      { label: 'Restauration', icon: 'ti-tools-kitchen-2', link: '/restauration' },
+      { label: 'Stock & provisions', icon: 'ti-package', link: '/stock' }
     ];
+
+    const finances: NavItem[] = [
+      { label: 'Reçus & paiements', icon: 'ti-receipt-2', link: '/paiements' },
+      { label: 'Caisse', icon: 'ti-cash-register', link: '/caisse', exact: true },
+      { label: 'Versements', icon: 'ti-building-bank', link: '/caisse/versements' },
+      { label: 'Dépenses', icon: 'ti-shopping-cart', link: '/comptabilite/depenses' }
+    ];
+    if (isDirecteur) {
+      finances.push({ label: 'Comptabilité', icon: 'ti-chart-pie', link: '/comptabilite', exact: true });
+    }
 
     this.navSections = [
       { label: 'GÉNÉRAL', items: general },
       { label: 'OPÉRATIONS', items: operations },
-      { label: 'FACTURATION', items: facturation }
+      { label: 'EXPLOITATION', items: exploitation },
+      { label: 'FINANCES', items: finances }
     ];
 
     const administration: NavItem[] = [];

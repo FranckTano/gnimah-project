@@ -1,5 +1,5 @@
 <div class="gn-route">
-  <div class="gn-card" style="padding:28px;max-width:640px;margin:0 auto;">
+  <div class="gn-card" style="padding:28px;max-width:680px;margin:0 auto;">
     <form [formGroup]="form" (ngSubmit)="save()">
       <label class="gn-flabel">Client *</label>
       <select class="gn-input" formControlName="clientId" style="margin-top:6px;margin-bottom:14px;" [class.gn-invalid]="isInvalid('clientId')">
@@ -10,7 +10,7 @@
       <div class="resv-grid-2">
         <div>
           <label class="gn-flabel">Chambre spécifique</label>
-          <select class="gn-input" formControlName="chambreId" style="margin-top:6px;">
+          <select class="gn-input" formControlName="chambreId" style="margin-top:6px;" (change)="onChambreChange()">
             <option [ngValue]="null">Choisir une chambre</option>
             <option *ngFor="let c of chambres" [ngValue]="c.id">{{ c.numero }} · {{ c.type }}</option>
           </select>
@@ -27,22 +27,109 @@
       <div class="resv-grid-2" style="margin-top:14px;">
         <div>
           <label class="gn-flabel">Date d'arrivée *</label>
-          <input class="gn-input" type="date" formControlName="dateArrivee" [min]="today" style="margin-top:6px;" [class.gn-invalid]="isInvalid('dateArrivee')" />
+          <input class="gn-input" type="date" formControlName="dateArrivee" [min]="today"
+                 style="margin-top:6px;" [class.gn-invalid]="isInvalid('dateArrivee')" />
         </div>
         <div>
           <label class="gn-flabel">Date de départ *</label>
-          <input class="gn-input" type="date" formControlName="dateDepart" style="margin-top:6px;" [class.gn-invalid]="isInvalid('dateDepart')" />
+          <input class="gn-input" type="date" formControlName="dateDepart"
+                 style="margin-top:6px;" [class.gn-invalid]="isInvalid('dateDepart')" />
         </div>
       </div>
 
-      <div style="margin-top:14px;">
-        <label class="gn-flabel">Acompte (XOF)</label>
-        <input class="gn-input" type="number" min="0" formControlName="acompte" style="margin-top:6px;" />
+      <!-- ===== TARIF & REMISE ===== -->
+      <div class="resv-section">
+        <div class="resv-section-t"><i class="ti ti-tag"></i> Tarif & remise</div>
+
+        <div class="resv-grid-2">
+          <div>
+            <label class="gn-flabel">Tarif par nuit négocié</label>
+            <input class="gn-input" type="number" formControlName="tarifPersonnalise"
+                   [placeholder]="tarifChambre ? tarifChambre : 'Tarif de la chambre'" style="margin-top:6px;" />
+          </div>
+          <div>
+            <label class="gn-flabel">Type de remise</label>
+            <select class="gn-input" formControlName="remiseType" style="margin-top:6px;">
+              <option [ngValue]="null">Aucune remise</option>
+              <option *ngFor="let t of typeRemiseOptions" [ngValue]="t.value">{{ t.label }}</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="resv-grid-2" style="margin-top:12px;" *ngIf="form.value.remiseType">
+          <div>
+            <label class="gn-flabel">Valeur de la remise</label>
+            <input class="gn-input" type="number" formControlName="remiseValeur"
+                   [placeholder]="form.value.remiseType === 'POURCENTAGE' ? 'en %' : 'en FCFA'"
+                   style="margin-top:6px;" />
+          </div>
+          <div>
+            <label class="gn-flabel">Motif</label>
+            <input class="gn-input" formControlName="remiseMotif"
+                   placeholder="Client fidèle, groupe…" style="margin-top:6px;" />
+          </div>
+        </div>
+      </div>
+
+      <!-- ===== ACOMPTE ===== -->
+      <div class="resv-section">
+        <div class="resv-section-t"><i class="ti ti-cash"></i> Acompte de confirmation</div>
+        <p class="resv-regle">
+          La réservation n'est confirmée qu'une fois l'acompte encaissé. Sans acompte,
+          elle reste en attente et la chambre n'est pas tenue.
+          <br>
+          L'annulation doit être annoncée au moins <strong>{{ preavisHeures }} h</strong> avant
+          l'arrivée&nbsp;: passé ce délai, l'acompte reste acquis à la résidence.
+        </p>
+
+        <div class="resv-grid-2">
+          <div>
+            <label class="gn-flabel">Acompte exigé (FCFA)</label>
+            <input class="gn-input" type="number" formControlName="acompteRequis"
+                   [placeholder]="acompteParDefaut" style="margin-top:6px;" />
+            <small class="resv-note">Vide = 30 % du montant prévu.</small>
+          </div>
+          <div>
+            <label class="gn-flabel">Acompte reçu maintenant (FCFA)</label>
+            <input class="gn-input" type="number" min="0" formControlName="acompte" style="margin-top:6px;" />
+            <small class="resv-note">Laisser à 0 si le client paiera plus tard.</small>
+          </div>
+        </div>
+
+        <div class="resv-grid-2" style="margin-top:12px;" *ngIf="form.value.acompte > 0">
+          <div>
+            <label class="gn-flabel">Mode de règlement</label>
+            <select class="gn-input" formControlName="modeAcompte" style="margin-top:6px;">
+              <option *ngFor="let m of modeOptions" [value]="m.value">{{ m.label }}</option>
+            </select>
+          </div>
+          <div>
+            <label class="gn-flabel">Référence de transaction</label>
+            <input class="gn-input" formControlName="referenceAcompte"
+                   placeholder="Facultatif" style="margin-top:6px;" />
+          </div>
+        </div>
+      </div>
+
+      <!-- ===== RÉCAPITULATIF ===== -->
+      <div class="resv-recap" *ngIf="montantBrut > 0">
+        <div class="resv-recap-l"><span>{{ nbNuits }} nuit(s) × {{ formatMontant(tarifApplique) }}</span><strong>{{ formatMontant(montantBrut) }}</strong></div>
+        <div class="resv-recap-l" *ngIf="remiseMontant > 0">
+          <span>Remise</span><strong class="c-green">− {{ formatMontant(remiseMontant) }}</strong>
+        </div>
+        <div class="resv-recap-l total">
+          <span>Montant prévu</span><strong>{{ formatMontant(montantPrevu) }}</strong>
+        </div>
+        <div class="resv-recap-l">
+          <span>Acompte à encaisser pour confirmer</span>
+          <strong class="c-deep">{{ formatMontant(acompteAttendu) }}</strong>
+        </div>
       </div>
 
       <div style="margin-top:14px;">
         <label class="gn-flabel">Notes</label>
-        <textarea class="gn-input" formControlName="notes" rows="3" placeholder="Demandes spéciales…" style="margin-top:6px;resize:vertical;"></textarea>
+        <textarea class="gn-input" formControlName="notes" rows="3" placeholder="Demandes spéciales…"
+                  style="margin-top:6px;resize:vertical;"></textarea>
       </div>
 
       <div style="display:flex;gap:10px;margin-top:22px;">
@@ -54,4 +141,3 @@
     </form>
   </div>
 </div>
-
