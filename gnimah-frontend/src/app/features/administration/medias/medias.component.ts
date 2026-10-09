@@ -202,7 +202,7 @@ export class MediasComponent implements OnInit {
       titre: m.titre, categorie: m.categorie, actif: !m.actif, misEnAvant: m.misEnAvant
     }).subscribe({
       next: () => this.charger(),
-      error: () => this.messageService.add({ severity: 'error', summary: 'Erreur', detail: 'Modification impossible.' })
+      error: (err) => this.messageService.add({ severity: 'error', summary: 'Erreur', detail: err?.error?.message || 'Modification impossible.' })
     });
   }
 
@@ -228,7 +228,7 @@ export class MediasComponent implements OnInit {
   deplacer(m: MediaResidenceResponse, sens: -1 | 1): void {
     this.api.deplacer(m.id, sens).subscribe({
       next: (liste) => { this.medias = liste; this.media.appliquer(liste); },
-      error: () => this.messageService.add({ severity: 'error', summary: 'Erreur', detail: 'Déplacement impossible.' })
+      error: (err) => this.messageService.add({ severity: 'error', summary: 'Erreur', detail: err?.error?.message || 'Déplacement impossible.' })
     });
   }
 
@@ -244,7 +244,7 @@ export class MediasComponent implements OnInit {
             this.messageService.add({ severity: 'success', summary: 'Supprimé', detail: 'Le visuel a été retiré.' });
             this.charger();
           },
-          error: () => this.messageService.add({ severity: 'error', summary: 'Erreur', detail: 'Suppression impossible.' })
+          error: (err) => this.messageService.add({ severity: 'error', summary: 'Erreur', detail: err?.error?.message || 'Suppression impossible.' })
         });
       }
     });

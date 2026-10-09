@@ -96,12 +96,6 @@ export class ComptabiliteComponent implements OnInit {
     return Math.max(3, Math.round((valeur / max) * 100));
   }
 
-  formatMontant(v: number | null | undefined): string {
-    return new Intl.NumberFormat('fr-CI', {
-      style: 'currency', currency: 'XOF', maximumFractionDigits: 0
-    }).format(v || 0);
-  }
-
   formatCourt(v: number | null | undefined): string {
     const n = v || 0;
     if (Math.abs(n) >= 1_000_000) return `${(n / 1_000_000).toFixed(1).replace('.0', '')} M`;

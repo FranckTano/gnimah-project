@@ -269,7 +269,7 @@ export class ChambreListComponent implements OnInit {
             this.messageService.add({ severity: 'success', summary: 'Succès', detail: chambre.actif ? 'Chambre désactivée' : 'Chambre réactivée' });
             this.loadChambres();
           },
-          error: () => this.messageService.add({ severity: 'error', summary: 'Erreur', detail: 'Opération impossible' })
+          error: (err) => this.messageService.add({ severity: 'error', summary: 'Erreur', detail: err?.error?.message || 'Opération impossible' })
         });
       }
     });
@@ -278,12 +278,6 @@ export class ChambreListComponent implements OnInit {
   isFieldInvalid(field: string): boolean {
     const ctrl = this.form.get(field);
     return !!(ctrl && ctrl.invalid && ctrl.touched);
-  }
-
-  formatCurrency(amount: number): string {
-    return new Intl.NumberFormat('fr-CI', {
-      style: 'currency', currency: 'XOF', maximumFractionDigits: 0
-    }).format(amount || 0);
   }
 
   stateTone(etat: EtatChambre): string {

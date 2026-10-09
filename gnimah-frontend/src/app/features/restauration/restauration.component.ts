@@ -12,6 +12,7 @@ import {
 } from '../../core/models/restauration.model';
 import { SejourResponse, TYPE_REMISE_OPTIONS } from '../../core/models/sejour.model';
 import { modePaiementLabel, modePaiementOptions } from '../../core/models/paiement.model';
+import { formatMontant } from '../../core/i18n/devise';
 
 type Onglet = 'SERVICE' | 'ADDITIONS' | 'CARTE';
 
@@ -270,7 +271,7 @@ export class RestaurationComponent implements OnInit {
         this.chargerCommandes();
         this.messageService.add({
           severity: 'success', summary: 'Addition ouverte',
-          detail: `${c.numero} — ${this.formatMontant(c.montantNet)}`
+          detail: `${c.numero} — ${formatMontant(c.montantNet)}`
         });
       },
       error: (err) => {
@@ -328,7 +329,7 @@ export class RestaurationComponent implements OnInit {
         this.messageService.add({
           severity: 'success',
           summary: c.imputeSejour ? 'Portée à la chambre' : 'Addition encaissée',
-          detail: `${c.numero} — ${this.formatMontant(c.montantNet)}`
+          detail: `${c.numero} — ${formatMontant(c.montantNet)}`
         });
         this.chargerCommandes();
       },
@@ -345,7 +346,7 @@ export class RestaurationComponent implements OnInit {
   annulerCommande(c: CommandeResponse): void {
     this.confirmationService.confirm({
       header: 'Annuler l\'addition',
-      message: `Annuler ${c.numero} (${this.formatMontant(c.montantNet)}) ?`,
+      message: `Annuler ${c.numero} (${formatMontant(c.montantNet)}) ?`,
       icon: 'pi pi-times',
       acceptLabel: 'Annuler l\'addition',
       rejectLabel: 'Retour',
@@ -449,11 +450,5 @@ export class RestaurationComponent implements OnInit {
   isInvalid(champ: string, form: FormGroup): boolean {
     const c = form.get(champ);
     return !!(c && c.invalid && c.touched);
-  }
-
-  formatMontant(v: number | null | undefined): string {
-    return new Intl.NumberFormat('fr-CI', {
-      style: 'currency', currency: 'XOF', maximumFractionDigits: 0
-    }).format(v || 0);
   }
 }

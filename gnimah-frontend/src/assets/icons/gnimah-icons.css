@@ -1,5 +1,5 @@
 /* Police d'icônes réduite — générée par scripts/build-icons.mjs, ne pas éditer.
- * 145 icônes retenues sur 5936 disponibles.
+ * 146 icônes retenues sur 5936 disponibles.
  * Servie par l'application : aucune dépendance à un CDN externe, dont
  * l'indisponibilité ferait disparaître toutes les icônes de l'interface. */
 @font-face {
@@ -83,6 +83,7 @@
 .ti-dots:before { content: "\ea95"; }
 .ti-eye:before { content: "\ea9a"; }
 .ti-eye-off:before { content: "\ecf0"; }
+.ti-file-download:before { content: "\ea9d"; }
 .ti-file-text:before { content: "\eaa2"; }
 .ti-file-type-pdf:before { content: "\fb10"; }
 .ti-filter-x:before { content: "\fa04"; }

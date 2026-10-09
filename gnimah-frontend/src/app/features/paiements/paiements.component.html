@@ -38,14 +38,14 @@
         <tbody><tr style="border-top:1px solid #f2e8e4;">
           <td style="padding:14px 0;font-size:14px;color:#3a2c30;">Paiement séjour — chambre {{ selectedPaiement.numeroChambre }}</td>
           <td style="text-align:right;font-size:14px;color:#4d3f43;">{{ modeLabels[selectedPaiement.modePaiement] || selectedPaiement.modePaiement }}</td>
-          <td style="text-align:right;font-size:14px;font-weight:600;color:#3a2c30;">{{ formatMontant(selectedPaiement.montant) }}</td>
+          <td style="text-align:right;font-size:14px;font-weight:600;color:#3a2c30;">{{ selectedPaiement.montant | currency }}</td>
         </tr></tbody>
       </table>
 
       <div style="margin-top:20px;margin-left:auto;max-width:300px;" *ngIf="selectedSejour">
-        <div style="display:flex;justify-content:space-between;padding:8px 0;font-size:14px;color:#6d585d;"><span>Montant total séjour</span><span style="font-weight:600;">{{ formatMontant(selectedSejour.montantTotal) }}</span></div>
-        <div style="display:flex;justify-content:space-between;padding:8px 0;font-size:14px;color:#6d585d;border-bottom:1px solid #f2e8e4;"><span>Payé à ce jour</span><span style="font-weight:600;">{{ formatMontant(selectedSejour.montantPaye) }}</span></div>
-        <div style="display:flex;justify-content:space-between;padding:12px 0 0;font-size:16px;font-weight:700;color:#2e2024;"><span>Reste à payer</span><span class="gn-serif" style="font-size:20px;color:#8c2f4d;">{{ formatMontant(selectedSejour.resteAPayer) }}</span></div>
+        <div style="display:flex;justify-content:space-between;padding:8px 0;font-size:14px;color:#6d585d;"><span>Montant total séjour</span><span style="font-weight:600;">{{ selectedSejour.montantTotal | currency }}</span></div>
+        <div style="display:flex;justify-content:space-between;padding:8px 0;font-size:14px;color:#6d585d;border-bottom:1px solid #f2e8e4;"><span>Payé à ce jour</span><span style="font-weight:600;">{{ selectedSejour.montantPaye | currency }}</span></div>
+        <div style="display:flex;justify-content:space-between;padding:12px 0 0;font-size:16px;font-weight:700;color:#2e2024;"><span>Reste à payer</span><span class="gn-serif" style="font-size:20px;color:#8c2f4d;">{{ selectedSejour.resteAPayer | currency }}</span></div>
       </div>
 
       <div style="display:flex;justify-content:space-between;align-items:flex-end;margin-top:30px;padding-top:18px;border-top:1px solid #f2e8e4;">
@@ -95,7 +95,7 @@
             <td style="font-size:13.5px;color:#6d585d;">{{ p.numeroChambre }}</td>
             <td><span class="gn-bdg slate">{{ modeLabels[p.modePaiement] || p.modePaiement }}</span></td>
             <td style="font-size:13.5px;color:#6d585d;">{{ p.dateHeure | date:'dd/MM/yyyy HH:mm' }}</td>
-            <td class="gn-serif" style="font-size:15px;color:#2f9e6f;">{{ formatMontant(p.montant) }}</td>
+            <td class="gn-serif" style="font-size:15px;color:#2f9e6f;">{{ p.montant | currency }}</td>
             <td>
               <button class="gn-btn-o" style="padding:7px 14px;font-size:12.5px;" (click)="voirRecu(p)"><i class="ti ti-receipt"></i> Voir</button>
             </td>

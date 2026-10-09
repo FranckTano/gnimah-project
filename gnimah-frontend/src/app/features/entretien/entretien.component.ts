@@ -172,9 +172,9 @@ export class EntretienComponent implements OnInit {
         this.loadingTaskId = null;
         this.load();
       },
-      error: () => {
+      error: (err) => {
         this.loadingTaskId = null;
-        this.messageService.add({ severity: 'error', summary: 'Erreur', detail: 'Changement de statut impossible' });
+        this.messageService.add({ severity: 'error', summary: 'Erreur', detail: err?.error?.message || 'Changement de statut impossible' });
       }
     });
   }

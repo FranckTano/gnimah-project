@@ -15,13 +15,13 @@
         <div style="font-size:13px;color:#6d585d;margin-top:4px;">{{ createdSejour.dateEntree | date:'dd/MM/yyyy' }} à {{ createdSejour.heureEntree }}</div></div>
     </div>
     <div style="margin-top:20px;margin-left:auto;max-width:300px;">
-      <div style="display:flex;justify-content:space-between;padding:8px 0;font-size:14px;color:#6d585d;"><span>Montant total</span><span style="font-weight:600;">{{ formatCurrency(createdSejour.montantTotal) }}</span></div>
-      <div style="display:flex;justify-content:space-between;padding:8px 0;font-size:14px;color:#6d585d;"><span>Payé</span><span style="font-weight:600;">{{ formatCurrency(createdSejour.montantPaye) }}</span></div>
+      <div style="display:flex;justify-content:space-between;padding:8px 0;font-size:14px;color:#6d585d;"><span>Montant total</span><span style="font-weight:600;">{{ createdSejour.montantTotal | currency }}</span></div>
+      <div style="display:flex;justify-content:space-between;padding:8px 0;font-size:14px;color:#6d585d;"><span>Payé</span><span style="font-weight:600;">{{ createdSejour.montantPaye | currency }}</span></div>
       <div style="display:flex;justify-content:space-between;padding:8px 0;font-size:13px;color:#6d585d;border-bottom:1px solid #f2e8e4;">
         <span>Mode de paiement</span>
         <span style="font-weight:600;">{{ modePaiementLabel[paiementForm.get('modePaiement')?.value] || 'Espèces' }}</span>
       </div>
-      <div style="display:flex;justify-content:space-between;padding:12px 0 0;font-size:16px;font-weight:700;color:#2e2024;"><span>Reste à payer</span><span class="gn-serif" style="font-size:20px;color:#8c2f4d;">{{ formatCurrency(createdSejour.resteAPayer) }}</span></div>
+      <div style="display:flex;justify-content:space-between;padding:12px 0 0;font-size:16px;font-weight:700;color:#2e2024;"><span>Reste à payer</span><span class="gn-serif" style="font-size:20px;color:#8c2f4d;">{{ createdSejour.resteAPayer | currency }}</span></div>
     </div>
   </div>
   <div>
@@ -37,6 +37,20 @@
 <!-- FORM -->
 <div class="gn-route gn-ck" *ngIf="!success">
   <div class="gn-card" style="padding:24px;">
+    <div class="ck-resa" *ngIf="reservation as r">
+      <i class="ti ti-calendar-check"></i>
+      <div>
+        <strong>Arrivée de la réservation {{ r.numeroReservation }}</strong>
+        <span>
+          Prévue du {{ r.dateArrivee | date:'dd/MM' }} au {{ r.dateDepart | date:'dd/MM/yyyy' }}
+          <ng-container *ngIf="acompteReservation > 0"> · acompte de {{ acompteReservation | currency }} déjà versé, déduit de la note</ng-container>
+        </span>
+      </div>
+    </div>
+    <div class="gn-notfound" *ngIf="chambreReserveeIndisponible && reservation">
+      <i class="ti ti-alert-triangle"></i> La chambre réservée ({{ reservation.chambreNumero }}) n'est pas libre : attribuez-en une autre.
+    </div>
+
     <div class="ck-grid-2">
       <button type="button" class="gn-ckmode" [class.gn-ckon]="isSejour" [class.gn-ckoff]="!isSejour" (click)="setMode('SEJOUR')">
         <div class="gn-ckmode-title"><i class="ti ti-moon"></i>Séjour</div>
@@ -51,9 +65,17 @@
     <div class="gn-slabel" style="color:#b3a2a6;margin:24px 0 12px;">Client</div>
 
     <div *ngIf="!foundClient" class="gn-searchrow">
-      <input class="gn-input" [(ngModel)]="searchQuery" placeholder="Téléphone ou N° de pièce déjà enregistré…" (keyup.enter)="searchClient()" />
+      <input class="gn-input" [(ngModel)]="searchQuery" placeholder="Nom, téléphone ou N° de pièce…" (keyup.enter)="searchClient()" />
       <button type="button" class="gn-btn-o" (click)="searchClient()" [disabled]="searchingClient">
         <i class="ti" [class.ti-search]="!searchingClient" [class.ti-loader-2]="searchingClient" [class.gn-spin]="searchingClient"></i> Rechercher
+      </button>
+    </div>
+
+    <div *ngIf="resultatsClient.length && !foundClient" class="ck-resultats">
+      <div class="ck-resultats-t">{{ resultatsClient.length }} fiches correspondent — choisissez le client :</div>
+      <button type="button" class="ck-resultat" *ngFor="let c of resultatsClient" (click)="choisirClient(c)">
+        <strong>{{ c.nomComplet }}</strong>
+        <span>{{ c.telephone }} · {{ c.typePiece }} {{ c.numeroPiece }}</span>
       </button>
     </div>
 
@@ -154,7 +176,7 @@
       <button type="button" class="ck-remise-toggle" (click)="basculerRemise()">
         <i class="ti" [ngClass]="afficherRemise ? 'ti-chevron-down' : 'ti-chevron-right'"></i>
         <span>Tarif & remise</span>
-        <span class="ck-remise-badge" *ngIf="remiseMontant > 0">− {{ formatCurrency(remiseMontant) }}</span>
+        <span class="ck-remise-badge" *ngIf="remiseMontant > 0">− {{ remiseMontant | currency }}</span>
       </button>
 
       <div class="ck-remise" *ngIf="afficherRemise">
@@ -187,19 +209,22 @@
     </form>
 
     <div class="ck-recap" *ngIf="remiseMontant > 0">
-      <div class="ck-recap-l"><span>Montant brut</span><span>{{ formatCurrency(montantBrut) }}</span></div>
+      <div class="ck-recap-l"><span>Montant brut</span><span>{{ montantBrut | currency }}</span></div>
       <div class="ck-recap-l remise">
         <span>Remise{{ tarifForm.value.remiseType === 'POURCENTAGE' ? ' (' + tarifForm.value.remiseValeur + ' %)' : '' }}</span>
-        <span>− {{ formatCurrency(remiseMontant) }}</span>
+        <span>− {{ remiseMontant | currency }}</span>
       </div>
     </div>
 
     <div style="display:flex;justify-content:space-between;align-items:baseline;margin-top:16px;">
       <span style="color:#bfa4aa;font-size:13.5px;">Montant total</span>
-      <span class="gn-serif" style="font-size:30px;color:#fff;">{{ formatCurrency(montantTotal) }}</span>
+      <span class="gn-serif" style="font-size:30px;color:#fff;">{{ montantTotal | currency }}</span>
+    </div>
+    <div class="gn-railrow" *ngIf="acompteReservation > 0" style="margin-top:12px;">
+      <span>Acompte versé à la réservation</span><span>− {{ acompteReservation | currency }}</span>
     </div>
     <form [formGroup]="paiementForm">
-      <label style="font-size:12px;color:#bfa4aa;margin-top:16px;display:block;">Acompte / arrhes reçu</label>
+      <label style="font-size:12px;color:#bfa4aa;margin-top:16px;display:block;">Montant encaissé maintenant</label>
       <input class="gn-input gn-railinput" type="number" formControlName="montantPaye" style="margin-top:6px;" />
       <label style="font-size:12px;color:#bfa4aa;margin-top:12px;display:block;">Mode de paiement</label>
       <select class="gn-input gn-railinput" formControlName="modePaiement" style="margin-top:6px;">
@@ -208,7 +233,7 @@
     </form>
     <div class="gn-railtotal">
       <span>Reste à payer</span>
-      <span class="gn-serif" style="font-size:19px;color:#f0b6c4;">{{ formatCurrency(resteAPayer) }}</span>
+      <span class="gn-serif" style="font-size:19px;color:#f0b6c4;">{{ resteAPayer | currency }}</span>
     </div>
     <button class="gn-btn-p" style="width:100%;padding:14px;margin-top:16px;font-size:14.5px;" [disabled]="checkingIn" (click)="confirmCheckIn()">
       <i class="ti ti-loader-2 gn-spin" *ngIf="checkingIn"></i>

@@ -48,7 +48,7 @@
             </td>
             <td style="font-size:13.5px;color:#6d585d;">{{ floorLabel(c.etage) }}</td>
             <td style="font-size:13.5px;color:#6d585d;">{{ c.capacite }} pers.<span *ngIf="c.vue"> · vue {{ c.vue | lowercase }}</span></td>
-            <td style="font-size:13px;color:#6d585d;">Passage {{ formatCurrency(c.tarifPassage) }}<br>Nuitée {{ formatCurrency(c.tarifNuitee) }}</td>
+            <td style="font-size:13px;color:#6d585d;">Passage {{ c.tarifPassage | currency }}<br>Nuitée {{ c.tarifNuitee | currency }}</td>
             <td><span class="gn-bdg" [ngClass]="stateTone(c.etat)">{{ etatLabels[c.etat] }}</span></td>
             <td><span class="gn-bdg" [ngClass]="c.actif ? 'green' : 'gray'">{{ c.actif ? 'Actif' : 'Désactivé' }}</span></td>
             <td>
@@ -94,11 +94,11 @@
     </div>
     <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-top:12px;">
       <div>
-        <label class="gn-flabel">Tarif passage (XOF) *</label>
+        <label class="gn-flabel">Tarif passage (FCFA) *</label>
         <input class="gn-input" type="number" min="0" formControlName="tarifPassage" style="margin-top:6px;" />
       </div>
       <div>
-        <label class="gn-flabel">Tarif nuitée (XOF) *</label>
+        <label class="gn-flabel">Tarif nuitée (FCFA) *</label>
         <input class="gn-input" type="number" min="0" formControlName="tarifNuitee" style="margin-top:6px;" />
       </div>
       <div>

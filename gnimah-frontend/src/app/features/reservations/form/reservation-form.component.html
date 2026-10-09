@@ -113,16 +113,16 @@
 
       <!-- ===== RÉCAPITULATIF ===== -->
       <div class="resv-recap" *ngIf="montantBrut > 0">
-        <div class="resv-recap-l"><span>{{ nbNuits }} nuit(s) × {{ formatMontant(tarifApplique) }}</span><strong>{{ formatMontant(montantBrut) }}</strong></div>
+        <div class="resv-recap-l"><span>{{ nbNuits }} nuit(s) × {{ tarifApplique | currency }}</span><strong>{{ montantBrut | currency }}</strong></div>
         <div class="resv-recap-l" *ngIf="remiseMontant > 0">
-          <span>Remise</span><strong class="c-green">− {{ formatMontant(remiseMontant) }}</strong>
+          <span>Remise</span><strong class="c-green">− {{ remiseMontant | currency }}</strong>
         </div>
         <div class="resv-recap-l total">
-          <span>Montant prévu</span><strong>{{ formatMontant(montantPrevu) }}</strong>
+          <span>Montant prévu</span><strong>{{ montantPrevu | currency }}</strong>
         </div>
         <div class="resv-recap-l">
           <span>Acompte à encaisser pour confirmer</span>
-          <strong class="c-deep">{{ formatMontant(acompteAttendu) }}</strong>
+          <strong class="c-deep">{{ acompteAttendu | currency }}</strong>
         </div>
       </div>
 

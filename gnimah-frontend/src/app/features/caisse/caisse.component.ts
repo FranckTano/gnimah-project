@@ -9,6 +9,7 @@ import {
   TYPE_MOUVEMENT_LABELS, TYPES_ENTREE_MANUELS, TYPES_SORTIE_MANUELS
 } from '../../core/models/caisse.model';
 import { modePaiementLabel, modePaiementOptions } from '../../core/models/paiement.model';
+import { formatMontant } from '../../core/i18n/devise';
 
 /**
  * Tenue de caisse au quotidien : ouverture de vacation avec fond de caisse,
@@ -138,9 +139,20 @@ export class CaisseComponent implements OnInit {
   // Vacation
   // ------------------------------------------------------------------
 
+  /**
+   * Le fond proposé est le solde théorique : c'est ce que le tiroir doit
+   * contenir. La caissière corrige si son comptage diffère ; l'écart est alors
+   * enregistré à l'ouverture.
+   */
   ouvrirVacation(): void {
-    this.ouvertureForm.reset({ fondCaisse: 0 });
+    this.ouvertureForm.reset({ fondCaisse: this.caisseActive?.solde ?? 0 });
     this.showOuverture = true;
+  }
+
+  get ecartOuverture(): number {
+    const fond = this.ouvertureForm?.value?.fondCaisse;
+    if (fond === null || fond === undefined || fond === '' || !this.caisseActive) return 0;
+    return Number(fond) - this.caisseActive.solde;
   }
 
   confirmerOuverture(): void {
@@ -199,7 +211,7 @@ export class CaisseComponent implements OnInit {
             summary: 'Vacation fermée',
             detail: s.ecart === 0
               ? 'Caisse juste, aucun écart'
-              : `Écart de ${this.formatMontant(s.ecart)} enregistré`
+              : `Écart de ${formatMontant(s.ecart)} enregistré`
           });
           this.charger();
         },
@@ -212,7 +224,7 @@ export class CaisseComponent implements OnInit {
     if (ecart !== 0) {
       this.confirmationService.confirm({
         header: 'Écart de caisse',
-        message: `Le comptage laisse un écart de ${this.formatMontant(ecart)} `
+        message: `Le comptage laisse un écart de ${formatMontant(ecart)} `
           + `(${ecart > 0 ? 'excédent' : 'manquant'}). Confirmer la fermeture ?`,
         icon: 'pi pi-exclamation-triangle',
         acceptLabel: 'Confirmer',
@@ -296,11 +308,5 @@ export class CaisseComponent implements OnInit {
   isInvalid(champ: string, form: FormGroup): boolean {
     const c = form.get(champ);
     return !!(c && c.invalid && c.touched);
-  }
-
-  formatMontant(v: number | null | undefined): string {
-    return new Intl.NumberFormat('fr-CI', {
-      style: 'currency', currency: 'XOF', maximumFractionDigits: 0
-    }).format(v || 0);
   }
 }

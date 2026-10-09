@@ -10,7 +10,7 @@
   <div class="rsv-regle" *ngIf="acomptesEnAttente > 0">
     <i class="ti ti-cash"></i>
     <span>
-      <strong>{{ formatMontant(acomptesEnAttente) }}</strong> d'acomptes restent à encaisser pour confirmer
+      <strong>{{ acomptesEnAttente | currency }}</strong> d'acomptes restent à encaisser pour confirmer
       les réservations en attente. Une réservation n'est ferme qu'une fois l'acompte reçu.
     </span>
   </div>
@@ -59,16 +59,16 @@
             </td>
             <td style="font-size:13.5px;color:#6d585d;">{{ r.dateDepart | date:'dd/MM/yyyy' }}</td>
             <td>
-              <div style="font-size:13px;color:#3a2c30;font-weight:600;">{{ formatMontant(r.montantPrevu) }}</div>
+              <div style="font-size:13px;color:#3a2c30;font-weight:600;">{{ r.montantPrevu | currency }}</div>
               <div class="rsv-acompte" [class.ok]="r.acompteSuffisant">
                 <i class="ti" [ngClass]="r.acompteSuffisant ? 'ti-circle-check' : 'ti-clock'"></i>
-                {{ formatMontant(r.acompte) }} / {{ formatMontant(r.acompteRequis) }}
+                {{ r.acompte | currency }} / {{ r.acompteRequis | currency }}
               </div>
               <div class="rsv-reste" *ngIf="r.resteAcompte > 0 && r.statut === 'EN_ATTENTE'">
-                reste {{ formatMontant(r.resteAcompte) }}
+                reste {{ r.resteAcompte | currency }}
               </div>
               <div class="rsv-remise" *ngIf="r.remiseMontant > 0">
-                remise {{ formatMontant(r.remiseMontant) }}
+                remise {{ r.remiseMontant | currency }}
               </div>
             </td>
             <td>
@@ -80,10 +80,10 @@
                 jusqu'au {{ r.dateLimiteAnnulation | date:'dd/MM à HH:mm' }}
               </div>
               <div class="rsv-limite" *ngIf="r.statut === 'ANNULEE' && r.penaliteAnnulation > 0">
-                pénalité {{ formatMontant(r.penaliteAnnulation) }}
+                pénalité {{ r.penaliteAnnulation | currency }}
               </div>
               <div class="rsv-limite" *ngIf="r.statut === 'ANNULEE' && r.montantRembourse > 0">
-                remboursé {{ formatMontant(r.montantRembourse) }}
+                remboursé {{ r.montantRembourse | currency }}
               </div>
             </td>
             <td><span class="gn-bdg" [ngClass]="statutTone(r.statut)">{{ statutLabels[r.statut] }}</span></td>
@@ -97,8 +97,8 @@
                         title="Encaisser l'acompte" (click)="ouvrirAcompte(r)">
                   <i class="ti ti-cash"></i>
                 </button>
-                <button *ngIf="r.statut === 'CONFIRMEE'" class="gn-icobtn rsv-a" style="color:#8c2f4d;"
-                        title="Noter l'arrivée" (click)="marquerArrivee(r)">
+                <button *ngIf="r.statut === 'CONFIRMEE' || r.statut === 'EN_ATTENTE'" class="gn-icobtn rsv-a" style="color:#8c2f4d;"
+                        title="Enregistrer l'arrivée (séjour)" (click)="marquerArrivee(r)">
                   <i class="ti ti-login-2"></i>
                 </button>
                 <button *ngIf="r.statut !== 'ANNULEE' && r.statut !== 'ARRIVEE'"
@@ -130,17 +130,17 @@
         </div>
       </div>
       <div style="text-align:right;">
-        <div class="gn-serif" style="font-size:20px;color:#2e2024;">{{ formatMontant(r.montantPrevu) }}</div>
+        <div class="gn-serif" style="font-size:20px;color:#2e2024;">{{ r.montantPrevu | currency }}</div>
         <div style="font-size:11.5px;color:#a99a9d;">montant du séjour</div>
       </div>
     </div>
 
     <div class="rsv-acompte-box">
-      <div class="rsv-ab-l"><span>Acompte exigé</span><strong>{{ formatMontant(r.acompteRequis) }}</strong></div>
-      <div class="rsv-ab-l"><span>Déjà versé</span><strong>{{ formatMontant(r.acompte) }}</strong></div>
+      <div class="rsv-ab-l"><span>Acompte exigé</span><strong>{{ r.acompteRequis | currency }}</strong></div>
+      <div class="rsv-ab-l"><span>Déjà versé</span><strong>{{ r.acompte | currency }}</strong></div>
       <div class="rsv-ab-l total">
         <span>Reste à encaisser pour confirmer</span>
-        <strong>{{ formatMontant(r.resteAcompte) }}</strong>
+        <strong>{{ r.resteAcompte | currency }}</strong>
       </div>
     </div>
 
@@ -178,7 +178,7 @@
 
       <p class="rsv-hint">
         La réservation passera automatiquement en « confirmée » dès que l'acompte
-        atteindra {{ formatMontant(r.acompteRequis) }}.
+        atteindra {{ r.acompteRequis | currency }}.
       </p>
     </form>
   </div>
@@ -224,13 +224,13 @@
       </div>
 
       <div class="rsv-acompte-box" *ngIf="p.acompteVerse > 0">
-        <div class="rsv-ab-l"><span>Acompte versé</span><strong>{{ formatMontant(p.acompteVerse) }}</strong></div>
+        <div class="rsv-ab-l"><span>Acompte versé</span><strong>{{ p.acompteVerse | currency }}</strong></div>
         <div class="rsv-ab-l" *ngIf="p.penalite > 0">
-          <span>Pénalité retenue</span><strong class="c-red">− {{ formatMontant(p.penalite) }}</strong>
+          <span>Pénalité retenue</span><strong class="c-red">− {{ p.penalite | currency }}</strong>
         </div>
         <div class="rsv-ab-l total">
           <span>À rembourser au client</span>
-          <strong [class.c-green]="p.remboursement > 0">{{ formatMontant(p.remboursement) }}</strong>
+          <strong [class.c-green]="p.remboursement > 0">{{ p.remboursement | currency }}</strong>
         </div>
       </div>
 
@@ -244,7 +244,7 @@
         <label class="rsv-check" *ngIf="p.remboursement > 0">
           <input type="checkbox" formControlName="rembourser" />
           <span>
-            <strong>Rembourser {{ formatMontant(p.remboursement) }} maintenant</strong>
+            <strong>Rembourser {{ p.remboursement | currency }} maintenant</strong>
             <small>Une sortie de caisse sera enregistrée. Décochez si vous convenez d'un report ou d'un avoir.</small>
           </span>
         </label>
@@ -309,23 +309,23 @@
       </div>
       <div *ngIf="r.montantBrut && r.remiseMontant > 0">
         <div class="gn-slabel" style="color:#b3a2a6;">Montant brut</div>
-        <div style="font-size:14px;color:#3a2c30;margin-top:4px;">{{ formatMontant(r.montantBrut) }}</div>
+        <div style="font-size:14px;color:#3a2c30;margin-top:4px;">{{ r.montantBrut | currency }}</div>
       </div>
       <div *ngIf="r.remiseMontant > 0">
         <div class="gn-slabel" style="color:#b3a2a6;">Remise consentie</div>
         <div style="font-size:14px;color:#2f9e6f;margin-top:4px;font-weight:600;">
-          − {{ formatMontant(r.remiseMontant) }}
+          − {{ r.remiseMontant | currency }}
         </div>
         <div style="font-size:11.5px;color:#a99a9d;" *ngIf="r.remiseMotif">{{ r.remiseMotif }}</div>
       </div>
       <div>
         <div class="gn-slabel" style="color:#b3a2a6;">Montant prévu</div>
-        <div style="font-weight:600;font-size:14px;color:#2e2024;margin-top:4px;">{{ formatMontant(r.montantPrevu) }}</div>
+        <div style="font-weight:600;font-size:14px;color:#2e2024;margin-top:4px;">{{ r.montantPrevu | currency }}</div>
       </div>
       <div>
         <div class="gn-slabel" style="color:#b3a2a6;">Acompte</div>
         <div style="font-size:14px;color:#3a2c30;margin-top:4px;">
-          {{ formatMontant(r.acompte) }} / {{ formatMontant(r.acompteRequis) }}
+          {{ r.acompte | currency }} / {{ r.acompteRequis | currency }}
         </div>
         <div style="font-size:11.5px;color:#a99a9d;" *ngIf="r.dateAcompte">
           reçu le {{ r.dateAcompte | date:'dd/MM/yyyy' }}

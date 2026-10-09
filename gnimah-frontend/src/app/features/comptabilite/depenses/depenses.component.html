@@ -33,15 +33,15 @@
     <div class="gn-kpi dep-kpi">
       <div class="gn-card dep-tile">
         <div class="gn-slabel" style="color:#b3a2a6;">Total · {{ libelle }}</div>
-        <div class="gn-serif dep-tile-v">{{ formatMontant(totaux.total) }}</div>
+        <div class="gn-serif dep-tile-v">{{ totaux.total | currency }}</div>
       </div>
       <div class="gn-card dep-tile">
         <div class="gn-slabel" style="color:#b3a2a6;">Réglé</div>
-        <div class="gn-serif dep-tile-v" style="color:#2f9e6f;">{{ formatMontant(totaux.payees) }}</div>
+        <div class="gn-serif dep-tile-v" style="color:#2f9e6f;">{{ totaux.payees | currency }}</div>
       </div>
       <div class="gn-card dep-tile">
         <div class="gn-slabel" style="color:#b3a2a6;">En attente</div>
-        <div class="gn-serif dep-tile-v" style="color:#c9922f;">{{ formatMontant(totaux.enAttente) }}</div>
+        <div class="gn-serif dep-tile-v" style="color:#c9922f;">{{ totaux.enAttente | currency }}</div>
         <div class="dep-tile-s">{{ totaux.nbEnAttente }} à valider</div>
       </div>
       <div class="gn-card dep-tile">
@@ -93,7 +93,7 @@
               </td>
               <td style="font-size:13px;color:#6d585d;">{{ d.fournisseurNom || '—' }}</td>
               <td class="gn-serif" style="font-size:15px;color:#b23a55;white-space:nowrap;">
-                {{ formatMontant(d.montant) }}
+                {{ d.montant | currency }}
                 <div class="dep-sub">{{ modeLabels[d.modeReglement] || d.modeReglement }}</div>
               </td>
               <td>

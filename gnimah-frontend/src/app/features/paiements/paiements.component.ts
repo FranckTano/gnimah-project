@@ -89,8 +89,4 @@ export class PaiementsComponent implements OnInit {
       }
     });
   }
-
-  formatMontant(v: number): string {
-    return new Intl.NumberFormat('fr-CI', { style: 'currency', currency: 'XOF', maximumFractionDigits: 0 }).format(v || 0);
-  }
 }

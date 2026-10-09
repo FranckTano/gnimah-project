@@ -14,6 +14,7 @@ import { CaisseResponse } from '../../../core/models/caisse.model';
 import { ChambreResponse } from '../../../core/models/chambre.model';
 import { modePaiementOptions, modePaiementLabel } from '../../../core/models/paiement.model';
 import { Periode, libellePeriode } from '../../../shared/periode';
+import { formatMontant } from '../../../core/i18n/devise';
 
 type Onglet = 'DEPENSES' | 'FOURNISSEURS';
 
@@ -266,7 +267,7 @@ export class DepensesComponent implements OnInit {
   rejeter(d: DepenseResponse): void {
     this.confirmationService.confirm({
       header: 'Rejeter la dépense',
-      message: `Rejeter « ${d.libelle} » (${this.formatMontant(d.montant)}) ? Elle ne sera pas comptée dans les charges.`,
+      message: `Rejeter « ${d.libelle} » (${formatMontant(d.montant)}) ? Elle ne sera pas comptée dans les charges.`,
       icon: 'pi pi-times',
       acceptLabel: 'Rejeter',
       rejectLabel: 'Annuler',
@@ -288,7 +289,7 @@ export class DepensesComponent implements OnInit {
     const caisse = this.caisses[0];
     this.confirmationService.confirm({
       header: 'Régler la dépense',
-      message: `Sortir ${this.formatMontant(d.montant)} de la caisse pour « ${d.libelle} » ?`
+      message: `Sortir ${formatMontant(d.montant)} de la caisse pour « ${d.libelle} » ?`
         + (caisse ? ` Le décaissement sera porté sur « ${caisse.nom} ».` : ''),
       icon: 'pi pi-wallet',
       acceptLabel: 'Régler',
@@ -300,7 +301,7 @@ export class DepensesComponent implements OnInit {
             this.actionId = null;
             this.messageService.add({
               severity: 'success', summary: 'Dépense réglée',
-              detail: `${this.formatMontant(d.montant)} décaissés`
+              detail: `${formatMontant(d.montant)} décaissés`
             });
             this.charger();
           },
@@ -403,11 +404,5 @@ export class DepensesComponent implements OnInit {
   isInvalid(champ: string, form: FormGroup = this.form): boolean {
     const c = form.get(champ);
     return !!(c && c.invalid && c.touched);
-  }
-
-  formatMontant(v: number | null | undefined): string {
-    return new Intl.NumberFormat('fr-CI', {
-      style: 'currency', currency: 'XOF', maximumFractionDigits: 0
-    }).format(v || 0);
   }
 }

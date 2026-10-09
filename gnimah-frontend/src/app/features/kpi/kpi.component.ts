@@ -7,6 +7,7 @@ import { KpiResponse, MODE_PAIEMENT_LABELS } from '../../core/models/kpi.model';
 import { SERIES, ETAT_SERIES, RAMPE_BORDEAUX, labelJourLong, montantComplet } from '../../shared/chart-theme';
 import { PLUGIN_CURSEUR, courbeMontantsParJour, colonnesParJour } from '../../shared/chart-builders';
 import { Periode, libellePeriode, nbJours } from '../../shared/periode';
+import { formatMontant } from '../../core/i18n/devise';
 
 /** Une ligne de la barre empilée « état du parc ». */
 interface SegmentEtat {
@@ -253,12 +254,12 @@ export class KpiComponent implements OnInit {
       },
       {
         label: 'Tarif moyen par chambre occupée',
-        valeur: this.formatMontant(data.adr),
+        valeur: formatMontant(data.adr),
         aide: "Ce que rapporte en moyenne une chambre effectivement louée (ADR)."
       },
       {
         label: 'Revenu par chambre disponible',
-        valeur: this.formatMontant(data.revPar),
+        valeur: formatMontant(data.revPar),
         aide: "Chiffre d'affaires ramené à toutes les chambres, occupées ou non (RevPAR)."
       },
       {
@@ -268,7 +269,7 @@ export class KpiComponent implements OnInit {
       },
       {
         label: 'Panier moyen par séjour',
-        valeur: this.formatMontant(data.panierMoyen),
+        valeur: formatMontant(data.panierMoyen),
         aide: 'Montant facturé en moyenne pour un séjour.'
       },
       {
@@ -318,10 +319,6 @@ export class KpiComponent implements OnInit {
 
   agentInitials(id: number): string {
     return this.agentName(id).split(' ').filter(Boolean).map(p => p.charAt(0)).join('').slice(0, 2).toUpperCase();
-  }
-
-  formatMontant(v: number): string {
-    return montantComplet(Number(v) || 0);
   }
 
   formatPct(v: number): string {

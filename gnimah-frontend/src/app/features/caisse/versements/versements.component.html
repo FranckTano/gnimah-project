@@ -17,7 +17,7 @@
     <div class="gn-kpi ver-kpi">
       <div class="gn-card ver-tile">
         <div class="gn-slabel" style="color:#b3a2a6;">Total versé</div>
-        <div class="gn-serif ver-tile-v">{{ formatMontant(totaux.total) }}</div>
+        <div class="gn-serif ver-tile-v">{{ totaux.total | currency }}</div>
       </div>
       <div class="gn-card ver-tile">
         <div class="gn-slabel" style="color:#b3a2a6;">Préparés</div>
@@ -94,7 +94,7 @@
           </div>
 
           <div class="ver-item-r">
-            <div class="gn-serif ver-montant">{{ formatMontant(v.montant) }}</div>
+            <div class="gn-serif ver-montant">{{ v.montant | currency }}</div>
             <div class="ver-actions">
               <button class="gn-btn-o ver-a" (click)="voirDetail(v)" title="Journal des actions">
                 <i class="ti ti-history"></i>
@@ -151,7 +151,7 @@
 
         <div class="ver-compte-solde">
           <span class="gn-slabel" style="color:#b3a2a6;">Cumul versé</span>
-          <span class="gn-serif">{{ formatMontant(c.solde) }}</span>
+          <span class="gn-serif">{{ c.solde | currency }}</span>
         </div>
       </div>
 
@@ -202,16 +202,16 @@
     <div class="ver-recette" *ngIf="recette as r">
       <div class="ver-recette-h"><i class="ti ti-calculator"></i> Recette de la période</div>
       <div class="ver-recette-l">
-        <span>Encaissé sur {{ r.caisseNom }}</span><strong>{{ formatMontant(r.recetteEncaissee) }}</strong>
+        <span>Encaissé sur {{ r.caisseNom }}</span><strong>{{ r.recetteEncaissee | currency }}</strong>
       </div>
       <div class="ver-recette-l" *ngIf="r.dejaVerse > 0">
-        <span>Déjà versé pour cette période</span><strong>− {{ formatMontant(r.dejaVerse) }}</strong>
+        <span>Déjà versé pour cette période</span><strong>− {{ r.dejaVerse | currency }}</strong>
       </div>
       <div class="ver-recette-l total">
-        <span>Reste à verser</span><strong>{{ formatMontant(r.resteAVerser) }}</strong>
+        <span>Reste à verser</span><strong>{{ r.resteAVerser | currency }}</strong>
       </div>
       <div class="ver-recette-n">
-        Solde actuel de la caisse : {{ formatMontant(r.soldeCaisse) }} — le versement ne peut pas le dépasser.
+        Solde actuel de la caisse : {{ r.soldeCaisse | currency }} — le versement ne peut pas le dépasser.
       </div>
     </div>
 
@@ -270,7 +270,7 @@
         </div>
       </div>
       <div style="text-align:right;">
-        <div class="gn-serif" style="font-size:22px;color:#2e2024;">{{ formatMontant(v.montant) }}</div>
+        <div class="gn-serif" style="font-size:22px;color:#2e2024;">{{ v.montant | currency }}</div>
         <span class="gn-bdg" [ngClass]="statutTone(v.statut)">{{ statutLabels[v.statut] }}</span>
       </div>
     </div>
@@ -293,7 +293,7 @@
           <div class="ver-tl-s">
             {{ a.dateAction | date:'dd/MM/yyyy à HH:mm' }}
             <span *ngIf="a.agentNom"> · {{ a.agentNom }}</span>
-            <span *ngIf="a.montant"> · {{ formatMontant(a.montant) }}</span>
+            <span *ngIf="a.montant"> · {{ a.montant | currency }}</span>
           </div>
           <div class="ver-tl-c" *ngIf="a.commentaire">{{ a.commentaire }}</div>
         </div>

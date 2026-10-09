@@ -90,6 +90,8 @@
           <span>{{ loading ? 'Connexion…' : 'Se connecter' }}</span>
         </button>
       </form>
+      <!-- Version servie par le backend : permet au support d'identifier le déploiement en service. -->
+      <div class="gn-login-version" *ngIf="hotelInfo?.version as version">Version {{ version }}</div>
     </div>
   </div>
 </div>

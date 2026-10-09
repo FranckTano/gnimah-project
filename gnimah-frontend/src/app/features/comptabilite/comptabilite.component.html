@@ -20,7 +20,7 @@
       <div class="cpt-res-main">
         <div class="gn-slabel" style="color:#b3a2a6;">Résultat · {{ libelle }}</div>
         <div class="gn-serif cpt-res-value" [class.negatif]="!resultatPositif">
-          {{ formatMontant(s.resultat) }}
+          {{ s.resultat | currency }}
         </div>
         <div class="cpt-res-sub">
           Taux de marge <strong>{{ s.tauxMarge }} %</strong>
@@ -33,13 +33,13 @@
       <div class="cpt-res-split">
         <div class="cpt-res-item">
           <div class="gn-slabel" style="color:#b3a2a6;">Recettes</div>
-          <div class="gn-serif" style="font-size:22px;color:#2f9e6f;">{{ formatMontant(s.totalRecettes) }}</div>
+          <div class="gn-serif" style="font-size:22px;color:#2f9e6f;">{{ s.totalRecettes | currency }}</div>
         </div>
         <div class="cpt-res-item">
           <div class="gn-slabel" style="color:#b3a2a6;">Charges</div>
-          <div class="gn-serif" style="font-size:22px;color:#d0455a;">{{ formatMontant(s.totalDepenses) }}</div>
+          <div class="gn-serif" style="font-size:22px;color:#d0455a;">{{ s.totalDepenses | currency }}</div>
           <div style="font-size:11.5px;color:#a99a9d;margin-top:3px;" *ngIf="s.depensesEnAttente > 0">
-            dont {{ formatMontant(s.depensesEnAttente) }} non réglées
+            dont {{ s.depensesEnAttente | currency }} non réglées
           </div>
         </div>
       </div>
@@ -51,7 +51,7 @@
         <div class="gn-tile wine"><i class="ti ti-cash-register"></i></div>
         <div>
           <div class="gn-slabel" style="color:#b3a2a6;">En caisse</div>
-          <div class="gn-serif cpt-kpi-v">{{ formatMontant(s.soldeCaisses) }}</div>
+          <div class="gn-serif cpt-kpi-v">{{ s.soldeCaisses | currency }}</div>
           <div class="cpt-kpi-s">à verser en banque</div>
         </div>
       </div>
@@ -59,7 +59,7 @@
         <div class="gn-tile green"><i class="ti ti-building-bank"></i></div>
         <div>
           <div class="gn-slabel" style="color:#b3a2a6;">Versé</div>
-          <div class="gn-serif cpt-kpi-v">{{ formatMontant(s.totalVerse) }}</div>
+          <div class="gn-serif cpt-kpi-v">{{ s.totalVerse | currency }}</div>
           <div class="cpt-kpi-s">sur la période</div>
         </div>
       </div>
@@ -67,7 +67,7 @@
         <div class="gn-tile gold"><i class="ti ti-user-dollar"></i></div>
         <div>
           <div class="gn-slabel" style="color:#b3a2a6;">Créances</div>
-          <div class="gn-serif cpt-kpi-v">{{ formatMontant(s.creancesClients) }}</div>
+          <div class="gn-serif cpt-kpi-v">{{ s.creancesClients | currency }}</div>
           <div class="cpt-kpi-s">restant dû par les clients</div>
         </div>
       </div>
@@ -75,7 +75,7 @@
         <div class="gn-tile brown"><i class="ti ti-package"></i></div>
         <div>
           <div class="gn-slabel" style="color:#b3a2a6;">Stock</div>
-          <div class="gn-serif cpt-kpi-v">{{ formatMontant(s.valeurStock) }}</div>
+          <div class="gn-serif cpt-kpi-v">{{ s.valeurStock | currency }}</div>
           <div class="cpt-kpi-s">valeur d'inventaire</div>
         </div>
       </div>
@@ -87,13 +87,13 @@
       <div class="gn-card" style="padding:22px;">
         <div class="cpt-h">
           <div class="gn-serif cpt-title">D'où vient l'argent</div>
-          <span class="gn-bdg green">{{ formatMontant(s.totalRecettes) }}</span>
+          <span class="gn-bdg green">{{ s.totalRecettes | currency }}</span>
         </div>
         <div *ngIf="!s.recettesParSource.length" class="gn-empty">Aucune recette sur la période.</div>
         <div class="cpt-line" *ngFor="let l of s.recettesParSource">
           <div class="cpt-line-h">
             <span class="cpt-line-lb">{{ l.libelle }}</span>
-            <span class="cpt-line-v">{{ formatMontant(l.montant) }}</span>
+            <span class="cpt-line-v">{{ l.montant | currency }}</span>
           </div>
           <div class="gn-bartrack">
             <div class="gn-barfill" [style.width.%]="largeur(l, s.recettesParSource)" style="background:#2f9e6f;"></div>
@@ -105,7 +105,7 @@
       <div class="gn-card" style="padding:22px;">
         <div class="cpt-h">
           <div class="gn-serif cpt-title">Où part l'argent</div>
-          <span class="gn-bdg red">{{ formatMontant(s.totalDepenses) }}</span>
+          <span class="gn-bdg red">{{ s.totalDepenses | currency }}</span>
         </div>
         <div *ngIf="!s.depensesParFamille.length" class="gn-empty">Aucune charge enregistrée sur la période.</div>
         <div class="cpt-line" *ngFor="let l of s.depensesParFamille">
@@ -115,7 +115,7 @@
               {{ l.libelle }}
               <span class="cpt-count">({{ l.nombre }})</span>
             </span>
-            <span class="cpt-line-v">{{ formatMontant(l.montant) }}</span>
+            <span class="cpt-line-v">{{ l.montant | currency }}</span>
           </div>
           <div class="gn-bartrack">
             <div class="gn-barfill" [style.width.%]="largeur(l, s.depensesParFamille)" style="background:#b23a55;"></div>
@@ -161,7 +161,7 @@
             <div class="cpt-frn-n">{{ f.libelle }}</div>
             <div class="cpt-frn-s">{{ f.nombre }} facture(s) · {{ f.part }} %</div>
           </div>
-          <div class="gn-serif" style="font-size:15px;color:#2e2024;">{{ formatMontant(f.montant) }}</div>
+          <div class="gn-serif" style="font-size:15px;color:#2e2024;">{{ f.montant | currency }}</div>
         </div>
       </div>
     </div>
@@ -170,7 +170,7 @@
     <div class="gn-card" style="padding:22px;margin-top:18px;" *ngIf="caisses.length">
       <div class="cpt-h">
         <div class="gn-serif cpt-title">Position des caisses</div>
-        <span class="gn-bdg slate">{{ formatMontant(soldeCaisses) }} au total</span>
+        <span class="gn-bdg slate">{{ soldeCaisses | currency }} au total</span>
       </div>
       <div class="cpt-caisses">
         <div class="cpt-caisse" *ngFor="let c of caisses">
@@ -180,7 +180,7 @@
               {{ c.sessionOuverteId ? 'Ouverte' : 'Fermée' }}
             </span>
           </div>
-          <div class="gn-serif cpt-caisse-v">{{ formatMontant(c.solde) }}</div>
+          <div class="gn-serif cpt-caisse-v">{{ c.solde | currency }}</div>
           <div class="cpt-caisse-s" *ngIf="c.sessionCaissierNom">Tenue par {{ c.sessionCaissierNom }}</div>
           <div class="cpt-caisse-s" *ngIf="!c.sessionCaissierNom">Aucune vacation en cours</div>
         </div>
@@ -189,7 +189,7 @@
 
     <div class="cpt-note" *ngIf="s.coutIncidents > 0">
       <i class="ti ti-alert-triangle"></i>
-      {{ formatMontant(s.coutIncidents) }} de dégâts et matériel défectueux constatés en chambre sur la période.
+      {{ s.coutIncidents | currency }} de dégâts et matériel défectueux constatés en chambre sur la période.
       <a routerLink="/entretien/incidents">Voir les incidents</a>
     </div>
 

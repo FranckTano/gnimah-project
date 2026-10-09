@@ -11,7 +11,7 @@ import { SejourResponse } from '../../core/models/sejour.model';
 import { ReservationResponse } from '../../core/models/reservation.model';
 import { ChambreResponse } from '../../core/models/chambre.model';
 import { KpiResponse } from '../../core/models/kpi.model';
-import { Periode, libellePeriode, nbJours } from '../../shared/periode';
+import { Periode, iso, libellePeriode, nbJours } from '../../shared/periode';
 import { SERIES, ETAT_SERIES, montantComplet } from '../../shared/chart-theme';
 import { PLUGIN_CURSEUR, courbeMontantsParJour, colonnesParJour } from '../../shared/chart-builders';
 
@@ -138,7 +138,7 @@ export class DashboardComponent implements OnInit {
       if (!this.isDirecteur) { this.loading = false; this.premierChargement = false; }
     });
     this.reservationService.findAll(0, 50).subscribe(page => {
-      const auj = new Date().toISOString().split('T')[0];
+      const auj = iso(new Date());
       this.reservationsAVenir = page.content.filter(r =>
         (r.statut === 'EN_ATTENTE' || r.statut === 'CONFIRMEE') && r.dateArrivee >= auj
       ).length;
@@ -294,10 +294,6 @@ export class DashboardComponent implements OnInit {
   // ==========================================================================
   //  Formatage
   // ==========================================================================
-
-  formatCurrency(v: number | undefined | null): string {
-    return montantComplet(Number(v) || 0);
-  }
 
   formatPct(v: number | undefined | null): string {
     return `${(Number(v) || 0).toFixed(1).replace('.', ',')} %`;

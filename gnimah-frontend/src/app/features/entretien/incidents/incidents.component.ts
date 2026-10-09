@@ -18,6 +18,7 @@ import { SejourResponse } from '../../../core/models/sejour.model';
 import { ArticleStockResponse } from '../../../core/models/stock.model';
 import { CaisseResponse } from '../../../core/models/caisse.model';
 import { FAMILLE_DEPENSE_OPTIONS } from '../../../core/models/comptabilite.model';
+import { formatMontant } from '../../../core/i18n/devise';
 
 /**
  * Déclaration et suivi du matériel défectueux relevé en chambre après le départ
@@ -283,7 +284,7 @@ export class IncidentsComponent implements OnInit {
           severity: 'success',
           summary: i.imputeClient ? 'Facturé au client' : 'Incident clôturé',
           detail: i.imputeClient
-            ? `${this.formatMontant(i.coutReel)} ajoutés à la note de ${i.clientNom}`
+            ? `${formatMontant(i.coutReel)} ajoutés à la note de ${i.clientNom}`
             : `${i.numero} — ${this.statutLabels[i.statut]}`
         });
         this.charger();
@@ -338,11 +339,5 @@ export class IncidentsComponent implements OnInit {
   isInvalid(champ: string, form: FormGroup): boolean {
     const c = form.get(champ);
     return !!(c && c.invalid && c.touched);
-  }
-
-  formatMontant(v: number | null | undefined): string {
-    return new Intl.NumberFormat('fr-CI', {
-      style: 'currency', currency: 'XOF', maximumFractionDigits: 0
-    }).format(v || 0);
   }
 }

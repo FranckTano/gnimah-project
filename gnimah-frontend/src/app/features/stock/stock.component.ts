@@ -337,12 +337,6 @@ export class StockComponent implements OnInit {
     return !!(c && c.invalid && c.touched);
   }
 
-  formatMontant(v: number | null | undefined): string {
-    return new Intl.NumberFormat('fr-CI', {
-      style: 'currency', currency: 'XOF', maximumFractionDigits: 0
-    }).format(v || 0);
-  }
-
   formatQte(v: number | null | undefined): string {
     const n = v || 0;
     return Number.isInteger(n) ? `${n}` : n.toFixed(2);

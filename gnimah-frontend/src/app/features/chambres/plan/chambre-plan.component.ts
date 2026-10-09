@@ -101,9 +101,9 @@ export class ChambrePlanComponent implements OnInit {
         this.chambres = data;
         this.loading = false;
       },
-      error: () => {
+      error: (err) => {
         this.loading = false;
-        this.messageService.add({ severity: 'error', summary: 'Erreur', detail: 'Impossible de charger les chambres' });
+        this.messageService.add({ severity: 'error', summary: 'Erreur', detail: err?.error?.message || 'Impossible de charger les chambres' });
       }
     });
   }
@@ -126,9 +126,9 @@ export class ChambrePlanComponent implements OnInit {
         this.updatingEtat = false;
         this.messageService.add({ severity: 'success', summary: 'Succès', detail: 'État mis à jour' });
       },
-      error: () => {
+      error: (err) => {
         this.updatingEtat = false;
-        this.messageService.add({ severity: 'error', summary: 'Erreur', detail: 'Mise à jour impossible' });
+        this.messageService.add({ severity: 'error', summary: 'Erreur', detail: err?.error?.message || 'Mise à jour impossible' });
       }
     });
   }
@@ -142,11 +142,5 @@ export class ChambrePlanComponent implements OnInit {
 
   getChambreClass(etat: EtatChambre): string {
     return 'chambre-card chambre-' + etat.toLowerCase().replace('_', '-');
-  }
-
-  formatCurrency(amount: number): string {
-    return new Intl.NumberFormat('fr-CI', {
-      style: 'currency', currency: 'XOF', maximumFractionDigits: 0
-    }).format(amount || 0);
   }
 }

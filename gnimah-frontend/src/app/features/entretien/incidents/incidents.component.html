@@ -30,14 +30,14 @@
       <div class="gn-tile brown"><i class="ti ti-tool"></i></div>
       <div>
         <div class="gn-slabel" style="color:#b3a2a6;">Coût constaté</div>
-        <div class="gn-serif inc-tile-v">{{ formatMontant(stats.coutTotal) }}</div>
+        <div class="gn-serif inc-tile-v">{{ stats.coutTotal | currency }}</div>
       </div>
     </div>
     <div class="gn-card inc-tile">
       <div class="gn-tile green"><i class="ti ti-user-dollar"></i></div>
       <div>
         <div class="gn-slabel" style="color:#b3a2a6;">Refacturé aux clients</div>
-        <div class="gn-serif inc-tile-v" style="color:#2f9e6f;">{{ formatMontant(stats.factures) }}</div>
+        <div class="gn-serif inc-tile-v" style="color:#2f9e6f;">{{ stats.factures | currency }}</div>
       </div>
     </div>
   </div>
@@ -92,10 +92,10 @@
 
         <div class="inc-cout" *ngIf="i.coutEstime > 0 || i.coutReel > 0">
           <span *ngIf="i.coutEstime > 0 && i.statut === 'DECLARE'">
-            Estimé à <strong>{{ formatMontant(i.coutEstime) }}</strong>
+            Estimé à <strong>{{ i.coutEstime | currency }}</strong>
           </span>
           <span *ngIf="i.coutReel > 0">
-            Coût réel <strong>{{ formatMontant(i.coutReel) }}</strong>
+            Coût réel <strong>{{ i.coutReel | currency }}</strong>
             <span class="inc-impute" *ngIf="i.imputeClient">facturé au client</span>
             <span class="inc-charge" *ngIf="!i.imputeClient && i.depenseId">à la charge de la résidence</span>
           </span>

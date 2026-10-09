@@ -7,6 +7,9 @@ export interface PaiementResponse {
   modePaiement: string;
   dateHeure: string;
   numeroRecu: string;
+  referenceTransaction?: string | null;
+  agentNom?: string | null;
+  notes?: string | null;
 }
 
 export interface PaiementRequest {
@@ -15,6 +18,8 @@ export interface PaiementRequest {
   mode: string;
   referenceTransaction?: string;
   notes?: string;
+  /** Caisse qui reçoit l'encaissement ; vide = caisse de réception. */
+  caisseId?: number | null;
 }
 
 export const modePaiementLabel: Record<string, string> = {

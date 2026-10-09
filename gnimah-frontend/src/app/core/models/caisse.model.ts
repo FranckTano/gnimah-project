@@ -20,8 +20,13 @@ export interface SessionCaisseResponse {
   dateOuverture: string;
   fondCaisse: number;
   dateFermeture: string | null;
+  /** Activité de la vacation, tous modes de règlement. */
   totalEntrees: number;
   totalSorties: number;
+  /** Part en espèces : c'est elle qui fait varier le tiroir. */
+  entreesEspeces: number;
+  sortiesEspeces: number;
+  /** Fond de caisse + entrées en espèces − sorties en espèces. */
   montantTheorique: number;
   montantCompte: number | null;
   ecart: number;

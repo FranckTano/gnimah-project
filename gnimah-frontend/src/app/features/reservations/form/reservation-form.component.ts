@@ -11,6 +11,8 @@ import { TYPE_REMISE_OPTIONS } from '../../../core/models/sejour.model';
 import { modePaiementOptions } from '../../../core/models/paiement.model';
 import { MessageService } from 'primeng/api';
 import { PageHeaderService } from '../../../core/services/page-header.service';
+import { formatMontant } from '../../../core/i18n/devise';
+import { iso } from '../../../shared/periode';
 
 /** Part du séjour exigée en acompte par défaut — doit rester alignée sur le backend. */
 const TAUX_ACOMPTE_DEFAUT = 0.3;
@@ -27,7 +29,7 @@ export class ReservationFormComponent implements OnInit {
   chambres: ChambreResponse[] = [];
   saving = false;
   loading = false;
-  today = new Date().toISOString().split('T')[0];
+  today = iso(new Date());
 
   preavisHeures = PREAVIS_ANNULATION_HEURES;
   typeRemiseOptions = TYPE_REMISE_OPTIONS;
@@ -177,8 +179,8 @@ export class ReservationFormComponent implements OnInit {
           severity: 'success',
           summary: res.statut === 'CONFIRMEE' ? 'Réservation confirmée' : 'Réservation enregistrée',
           detail: res.statut === 'CONFIRMEE'
-            ? `N° ${res.numeroReservation} — acompte de ${this.formatMontant(res.acompte)} encaissé`
-            : `N° ${res.numeroReservation} — en attente d'un acompte de ${this.formatMontant(res.acompteRequis)}`
+            ? `N° ${res.numeroReservation} — acompte de ${formatMontant(res.acompte)} encaissé`
+            : `N° ${res.numeroReservation} — en attente d'un acompte de ${formatMontant(res.acompteRequis)}`
         });
         this.router.navigate(['/reservations']);
       },
@@ -195,11 +197,5 @@ export class ReservationFormComponent implements OnInit {
   isInvalid(f: string): boolean {
     const c = this.form.get(f);
     return !!(c && c.invalid && c.touched);
-  }
-
-  formatMontant(v: number | null | undefined): string {
-    return new Intl.NumberFormat('fr-CI', {
-      style: 'currency', currency: 'XOF', maximumFractionDigits: 0
-    }).format(v || 0);
   }
 }

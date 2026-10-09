@@ -1,3 +1,5 @@
+import { formatMontant } from '../core/i18n/devise';
+
 /**
  * Jetons de couleur des graphiques GNIMAH.
  *
@@ -76,7 +78,7 @@ export function montantCompact(v: number): string {
   return `${Math.round(v || 0)}`;
 }
 
-/** Montant complet en FCFA, séparateurs francophones : « 145 000 FCFA ». */
+/** Montant complet, rendu par le pipe currency : « 145 000 FCFA ». */
 export function montantComplet(v: number): string {
-  return `${new Intl.NumberFormat('fr-FR', { maximumFractionDigits: 0 }).format(v || 0)} FCFA`;
+  return formatMontant(v);
 }

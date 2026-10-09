@@ -31,7 +31,7 @@
     <div class="cai-etat gn-card">
       <div class="cai-etat-main">
         <div class="gn-slabel" style="color:#b3a2a6;">Solde de {{ caisse.nom }}</div>
-        <div class="gn-serif cai-solde">{{ formatMontant(caisse.solde) }}</div>
+        <div class="gn-serif cai-solde">{{ caisse.solde | currency }}</div>
         <div class="cai-etat-sub">
           <span class="gn-bdg" [ngClass]="session ? 'green' : 'gray'">
             <span class="gn-dot"></span>
@@ -66,22 +66,22 @@
     <div class="gn-kpi cai-kpi" *ngIf="session as s">
       <div class="gn-card cai-tile">
         <div class="gn-slabel" style="color:#b3a2a6;">Fond de caisse</div>
-        <div class="gn-serif cai-tile-v">{{ formatMontant(s.fondCaisse) }}</div>
+        <div class="gn-serif cai-tile-v">{{ s.fondCaisse | currency }}</div>
         <div class="cai-tile-s">mise en place à l'ouverture</div>
       </div>
       <div class="gn-card cai-tile">
         <div class="gn-slabel" style="color:#b3a2a6;">Entrées</div>
-        <div class="gn-serif cai-tile-v" style="color:#2f9e6f;">{{ formatMontant(s.totalEntrees) }}</div>
+        <div class="gn-serif cai-tile-v" style="color:#2f9e6f;">{{ s.totalEntrees | currency }}</div>
         <div class="cai-tile-s">tous modes de règlement</div>
       </div>
       <div class="gn-card cai-tile">
         <div class="gn-slabel" style="color:#b3a2a6;">Sorties</div>
-        <div class="gn-serif cai-tile-v" style="color:#d0455a;">{{ formatMontant(s.totalSorties) }}</div>
+        <div class="gn-serif cai-tile-v" style="color:#d0455a;">{{ s.totalSorties | currency }}</div>
         <div class="cai-tile-s">dépenses et versements</div>
       </div>
       <div class="gn-card cai-tile cai-tile-hi">
         <div class="gn-slabel" style="color:#b3a2a6;">Espèces attendues</div>
-        <div class="gn-serif cai-tile-v" style="color:#8c2f4d;">{{ formatMontant(s.montantTheorique) }}</div>
+        <div class="gn-serif cai-tile-v" style="color:#8c2f4d;">{{ s.montantTheorique | currency }}</div>
         <div class="cai-tile-s">à compter dans le tiroir</div>
       </div>
     </div>
@@ -93,8 +93,8 @@
           {{ session ? 'Mouvements de la vacation' : 'Derniers mouvements' }}
         </div>
         <div class="cai-h-tot" *ngIf="mouvements.length">
-          <span class="gn-bdg green">+ {{ formatMontant(totalEntrees) }}</span>
-          <span class="gn-bdg red">− {{ formatMontant(totalSorties) }}</span>
+          <span class="gn-bdg green">+ {{ totalEntrees | currency }}</span>
+          <span class="gn-bdg red">− {{ totalSorties | currency }}</span>
         </div>
       </div>
 
@@ -124,9 +124,9 @@
             <div class="cai-mvt-r" *ngIf="m.reference">Réf. {{ m.reference }}</div>
           </div>
           <div class="cai-mvt-m" [ngClass]="m.sens === 'ENTREE' ? 'in' : 'out'">
-            {{ m.sens === 'ENTREE' ? '+' : '−' }} {{ formatMontant(m.montant) }}
+            {{ m.sens === 'ENTREE' ? '+' : '−' }} {{ m.montant | currency }}
             <div class="cai-mvt-solde" *ngIf="m.soldeApres !== null">
-              solde {{ formatMontant(m.soldeApres) }}
+              solde {{ m.soldeApres | currency }}
             </div>
           </div>
         </div>
@@ -140,13 +140,19 @@
           header="Ouvrir la vacation" [draggable]="false">
   <form [formGroup]="ouvertureForm" class="cai-form">
     <p class="cai-hint">
-      Le fond de caisse est la somme physiquement présente dans le tiroir au moment
-      de l'ouverture. Il sert de base au comptage de fermeture.
+      Comptez les espèces présentes dans le tiroir. Le solde attendu est de
+      <strong>{{ caisseActive?.solde ?? 0 | currency }}</strong> : s'il diffère de votre
+      comptage, l'écart sera enregistré dans le journal de caisse.
     </p>
     <div>
-      <label class="gn-flabel">Fond de caisse (FCFA)</label>
-      <input class="gn-input" type="number" formControlName="fondCaisse"
+      <label class="gn-flabel">Fond de caisse compté (FCFA)</label>
+      <input class="gn-input" type="number" min="0" formControlName="fondCaisse"
              [class.gn-invalid]="isInvalid('fondCaisse', ouvertureForm)" placeholder="0" />
+    </div>
+    <div class="cai-ecart" *ngIf="ecartOuverture !== 0" [ngClass]="ecartOuverture > 0 ? 'plus' : 'moins'">
+      <i class="ti ti-alert-triangle"></i>
+      <span *ngIf="ecartOuverture > 0">Apport de {{ ecartOuverture | currency }} au fond de caisse.</span>
+      <span *ngIf="ecartOuverture < 0">Il manque {{ -ecartOuverture | currency }} par rapport au solde attendu.</span>
     </div>
     <div>
       <label class="gn-flabel">Notes</label>
@@ -168,17 +174,17 @@
   <form [formGroup]="fermetureForm" class="cai-form" *ngIf="session as s">
     <div class="cai-compte">
       <div class="cai-compte-l">
-        <span>Fond de caisse</span><strong>{{ formatMontant(s.fondCaisse) }}</strong>
+        <span>Fond de caisse</span><strong>{{ s.fondCaisse | currency }}</strong>
       </div>
       <div class="cai-compte-l">
-        <span>Entrées en espèces</span><strong class="c-green">+ {{ formatMontant(s.totalEntrees) }}</strong>
+        <span>Entrées en espèces</span><strong class="c-green">+ {{ s.entreesEspeces | currency }}</strong>
       </div>
       <div class="cai-compte-l">
-        <span>Sorties</span><strong class="c-red">− {{ formatMontant(s.totalSorties) }}</strong>
+        <span>Sorties en espèces</span><strong class="c-red">− {{ s.sortiesEspeces | currency }}</strong>
       </div>
       <div class="cai-compte-l total">
         <span>Espèces attendues</span>
-        <strong class="gn-serif">{{ formatMontant(s.montantTheorique) }}</strong>
+        <strong class="gn-serif">{{ s.montantTheorique | currency }}</strong>
       </div>
     </div>
 
@@ -191,8 +197,8 @@
     <div class="cai-ecart" [ngClass]="ecartSimule === 0 ? 'ok' : (ecartSimule > 0 ? 'plus' : 'moins')">
       <i class="ti" [ngClass]="ecartSimule === 0 ? 'ti-circle-check' : 'ti-alert-triangle'"></i>
       <span *ngIf="ecartSimule === 0">Caisse juste — aucun écart.</span>
-      <span *ngIf="ecartSimule > 0">Excédent de {{ formatMontant(ecartSimule) }}.</span>
-      <span *ngIf="ecartSimule < 0">Manquant de {{ formatMontant(-ecartSimule) }}.</span>
+      <span *ngIf="ecartSimule > 0">Excédent de {{ ecartSimule | currency }}.</span>
+      <span *ngIf="ecartSimule < 0">Manquant de {{ -ecartSimule | currency }}.</span>
     </div>
 
     <div>

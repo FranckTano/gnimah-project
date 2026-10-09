@@ -64,7 +64,7 @@
               <div class="d-listname">{{ a.clientNom }}</div>
               <div class="d-listsub">{{ a.chambreNumero || a.typeChambre }} · {{ a.nbNuits }} nuit{{ a.nbNuits > 1 ? 's' : '' }}</div>
             </div>
-            <a routerLink="/sejours/check-in" class="gn-btn-p d-mini">Enregistrer</a>
+            <a routerLink="/sejours/check-in" [queryParams]="{ reservation: a.id }" class="gn-btn-p d-mini">Enregistrer</a>
           </div>
           <div *ngIf="!arriveesDuJour.length" class="d-blank">
             <i class="ti ti-calendar-check d-blank-i"></i>
@@ -118,26 +118,26 @@
       <div class="gn-kpi">
         <div class="gn-card d-tile">
           <div class="d-tile-l">Chiffre d'affaires</div>
-          <div class="gn-serif d-tile-v d-big">{{ formatCurrency(kpi.chiffreAffaires) }}</div>
+          <div class="gn-serif d-tile-v d-big">{{ kpi.chiffreAffaires | currency }}</div>
           <div class="d-tile-h">Facturé sur {{ nbJoursPeriode }} jour{{ nbJoursPeriode > 1 ? 's' : '' }}.</div>
         </div>
         <div class="gn-card d-tile">
           <div class="d-tile-l">Encaissé</div>
-          <div class="gn-serif d-tile-v d-big">{{ formatCurrency(kpi.encaissements) }}</div>
+          <div class="gn-serif d-tile-v d-big">{{ kpi.encaissements | currency }}</div>
           <div class="gn-meter d-meter"><div class="gn-meterfill" [style.width.%]="partEncaissee"></div></div>
           <div class="d-tile-h">{{ formatPct(partEncaissee) }} déjà en caisse</div>
         </div>
         <div class="gn-card d-tile">
           <div class="d-tile-l">Reste à payer</div>
-          <div class="gn-serif d-tile-v d-big d-neg">{{ formatCurrency(kpi.resteAPayer) }}</div>
+          <div class="gn-serif d-tile-v d-big d-neg">{{ kpi.resteAPayer | currency }}</div>
           <div class="d-tile-h">Encore dû par les clients.</div>
         </div>
         <div class="gn-card d-tile">
           <div class="d-tile-l">Marge</div>
           <div class="gn-serif d-tile-v d-big" [class.d-pos]="kpi.marge >= 0" [class.d-neg]="kpi.marge < 0">
-            {{ formatCurrency(kpi.marge) }}
+            {{ kpi.marge | currency }}
           </div>
-          <div class="d-tile-h">Après {{ formatCurrency(kpi.depensesTotales) }} de dépenses.</div>
+          <div class="d-tile-h">Après {{ kpi.depensesTotales | currency }} de dépenses.</div>
         </div>
       </div>
 
@@ -150,15 +150,15 @@
           <div class="d-summary" *ngIf="afficheCourbeCA">
             <div>
               <div class="gn-slabel d-sum-l">Total période</div>
-              <div class="gn-serif d-sum-v">{{ formatCurrency(caTotal) }}</div>
+              <div class="gn-serif d-sum-v">{{ caTotal | currency }}</div>
             </div>
             <div>
               <div class="gn-slabel d-sum-l">Moyenne / jour</div>
-              <div class="gn-serif d-sum-v">{{ formatCurrency(caMoyenParJour) }}</div>
+              <div class="gn-serif d-sum-v">{{ caMoyenParJour | currency }}</div>
             </div>
             <div *ngIf="meilleureJournee">
               <div class="gn-slabel d-sum-l">Meilleure journée</div>
-              <div class="gn-serif d-sum-v">{{ formatCurrency(meilleureJournee.ca) }}</div>
+              <div class="gn-serif d-sum-v">{{ meilleureJournee.ca | currency }}</div>
               <div class="d-sum-h">{{ labelJour(meilleureJournee.date) }}</div>
             </div>
           </div>
@@ -169,7 +169,7 @@
 
           <div class="d-blank" *ngIf="!afficheCourbeCA">
             <i class="ti ti-chart-area-line d-blank-i"></i>
-            <div class="d-blank-t">{{ formatCurrency(caTotal) }} sur cette journée</div>
+            <div class="d-blank-t">{{ caTotal | currency }} sur cette journée</div>
             <div class="d-blank-s">Choisissez une période de plusieurs jours pour visualiser la tendance.</div>
           </div>
 

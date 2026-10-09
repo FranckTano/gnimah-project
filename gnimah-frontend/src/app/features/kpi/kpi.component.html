@@ -7,7 +7,7 @@
     <div class="gn-band-in k-hero-in">
       <div>
         <div class="gn-slabel gn-band-kicker">Résidence Hôtel GNIMAH · Abobo Baoulé</div>
-        <div class="k-hero-fig gn-serif">{{ kpi ? formatMontant(kpi.chiffreAffaires) : '—' }}</div>
+        <div class="k-hero-fig gn-serif">{{ kpi ? (kpi.chiffreAffaires | currency) : '—' }}</div>
         <div class="k-hero-sub">
           Chiffre d'affaires — {{ libellePeriode }}
           <span class="k-hero-days">{{ nbJoursPeriode }} jour{{ nbJoursPeriode > 1 ? 's' : '' }}</span>
@@ -16,7 +16,7 @@
       <div class="gn-band-panel k-hero-facts" *ngIf="kpi">
         <div>
           <div class="gn-slabel k-fact-l">Encaissé</div>
-          <div class="gn-serif k-fact-v">{{ formatMontant(kpi.encaissements) }}</div>
+          <div class="gn-serif k-fact-v">{{ kpi.encaissements | currency }}</div>
         </div>
         <div class="k-hero-sep"></div>
         <div>
@@ -53,7 +53,7 @@
     <div class="gn-kpi">
       <div class="gn-card k-tile">
         <div class="k-tile-l">Encaissé</div>
-        <div class="gn-serif k-tile-v">{{ formatMontant(kpi.encaissements) }}</div>
+        <div class="gn-serif k-tile-v">{{ kpi.encaissements | currency }}</div>
         <div class="gn-meter k-meter" [attr.aria-label]="'Part encaissée : ' + formatPct(partEncaissee)">
           <div class="gn-meterfill" [style.width.%]="partEncaissee"></div>
         </div>
@@ -62,20 +62,20 @@
 
       <div class="gn-card k-tile">
         <div class="k-tile-l">Reste à payer</div>
-        <div class="gn-serif k-tile-v k-neg">{{ formatMontant(kpi.resteAPayer) }}</div>
+        <div class="gn-serif k-tile-v k-neg">{{ kpi.resteAPayer | currency }}</div>
         <div class="k-tile-h">Montant facturé que les clients doivent encore régler.</div>
       </div>
 
       <div class="gn-card k-tile">
         <div class="k-tile-l">Dépenses</div>
-        <div class="gn-serif k-tile-v">{{ formatMontant(kpi.depensesTotales) }}</div>
+        <div class="gn-serif k-tile-v">{{ kpi.depensesTotales | currency }}</div>
         <div class="k-tile-h">Total des sorties de caisse sur la période.</div>
       </div>
 
       <div class="gn-card k-tile">
         <div class="k-tile-l">Marge</div>
         <div class="gn-serif k-tile-v" [class.k-pos]="kpi.marge >= 0" [class.k-neg]="kpi.marge < 0">
-          {{ formatMontant(kpi.marge) }}
+          {{ kpi.marge | currency }}
         </div>
         <div class="k-tile-h">Chiffre d'affaires moins les dépenses.</div>
       </div>
@@ -99,15 +99,15 @@
         <div class="k-summary" *ngIf="afficheCourbeCA">
           <div>
             <div class="gn-slabel k-sum-l">Total période</div>
-            <div class="gn-serif k-sum-v">{{ formatMontant(caTotal) }}</div>
+            <div class="gn-serif k-sum-v">{{ caTotal | currency }}</div>
           </div>
           <div>
             <div class="gn-slabel k-sum-l">Moyenne / jour</div>
-            <div class="gn-serif k-sum-v">{{ formatMontant(caMoyenParJour) }}</div>
+            <div class="gn-serif k-sum-v">{{ caMoyenParJour | currency }}</div>
           </div>
           <div *ngIf="meilleureJournee">
             <div class="gn-slabel k-sum-l">Meilleure journée</div>
-            <div class="gn-serif k-sum-v">{{ formatMontant(meilleureJournee.ca) }}</div>
+            <div class="gn-serif k-sum-v">{{ meilleureJournee.ca | currency }}</div>
             <div class="k-sum-h">{{ labelJour(meilleureJournee.date) }}</div>
           </div>
         </div>
@@ -121,7 +121,7 @@
           <!-- Période d'une seule journée : une courbe à un point ne dit rien -->
           <div class="k-blank" *ngIf="!afficheCourbeCA">
             <i class="ti ti-chart-area-line k-blank-i"></i>
-            <div class="k-blank-t">{{ formatMontant(caTotal) }} sur cette journée</div>
+            <div class="k-blank-t">{{ caTotal | currency }} sur cette journée</div>
             <div class="k-blank-s">Choisissez une période de plusieurs jours pour visualiser la tendance.</div>
           </div>
 

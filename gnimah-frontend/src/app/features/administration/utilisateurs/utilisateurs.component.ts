@@ -78,9 +78,9 @@ export class UtilisateursComponent implements OnInit {
         this.showResolvedDialog = true;
         this.loadResetRequests();
       },
-      error: () => {
+      error: (err) => {
         this.resolvingId = null;
-        this.messageService.add({ severity: 'error', summary: 'Erreur', detail: 'Impossible de traiter cette demande' });
+        this.messageService.add({ severity: 'error', summary: 'Erreur', detail: err?.error?.message || 'Impossible de traiter cette demande' });
       }
     });
   }
@@ -138,7 +138,7 @@ export class UtilisateursComponent implements OnInit {
       accept: () => {
         this.utilisateurService.toggleActif(u.id).subscribe({
           next: () => { this.load(); },
-          error: () => this.messageService.add({ severity: 'error', summary: 'Erreur', detail: 'Opération impossible' })
+          error: (err) => this.messageService.add({ severity: 'error', summary: 'Erreur', detail: err?.error?.message || 'Opération impossible' })
         });
       }
     });

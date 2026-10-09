@@ -1,16 +1,19 @@
 import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
-import { Router } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { MessageService } from 'primeng/api';
 import { ClientService } from '../../../core/services/client.service';
 import { ChambreService } from '../../../core/services/chambre.service';
 import { SejourService } from '../../../core/services/sejour.service';
+import { ReservationService } from '../../../core/services/reservation.service';
 import { PageHeaderService } from '../../../core/services/page-header.service';
 import { MediaService } from '../../../core/services/media.service';
 import { ClientResponse, ClientRequest } from '../../../core/models/client.model';
 import { ChambreResponse } from '../../../core/models/chambre.model';
+import { ReservationResponse } from '../../../core/models/reservation.model';
 import { SejourRequest, SejourResponse, TYPE_REMISE_OPTIONS } from '../../../core/models/sejour.model';
 import { modePaiementOptions, modePaiementLabel } from '../../../core/models/paiement.model';
+import { iso } from '../../../shared/periode';
 
 @Component({
   selector: 'app-check-in',
@@ -24,6 +27,8 @@ export class CheckInComponent implements OnInit {
   searchingClient = false;
   foundClient: ClientResponse | null = null;
   clientNotFound = false;
+  /** Plusieurs fiches répondent à la recherche : l'agent choisit la bonne. */
+  resultatsClient: ClientResponse[] = [];
   clientForm!: FormGroup;
 
   civiliteOptions = [
@@ -54,6 +59,11 @@ export class CheckInComponent implements OnInit {
   modePaiementOptions = modePaiementOptions;
   modePaiementLabel = modePaiementLabel;
 
+  // Réservation honorée : son acompte vient en déduction de la note.
+  reservation: ReservationResponse | null = null;
+  /** La chambre réservée n'est pas libre : l'agent doit en attribuer une autre. */
+  chambreReserveeIndisponible = false;
+
   // Result
   checkingIn = false;
   createdSejour: SejourResponse | null = null;
@@ -63,8 +73,10 @@ export class CheckInComponent implements OnInit {
     private clientService: ClientService,
     private chambreService: ChambreService,
     private sejourService: SejourService,
+    private reservationService: ReservationService,
     private messageService: MessageService,
     private router: Router,
+    private route: ActivatedRoute,
     private fb: FormBuilder,
     private pageHeaderService: PageHeaderService,
     private media: MediaService
@@ -85,6 +97,10 @@ export class CheckInComponent implements OnInit {
     this.pageHeaderService.set("Enregistrement d'un séjour", "Enregistrement d'arrivée · émission du reçu");
     this.initForms();
     this.loadChambresLibres();
+    const reservationId = Number(this.route.snapshot.queryParamMap.get('reservation'));
+    if (reservationId > 0) {
+      this.chargerReservation(reservationId);
+    }
   }
 
   initForms(): void {
@@ -100,10 +116,12 @@ export class CheckInComponent implements OnInit {
       adresse: ['']
     });
 
+    // Dates au format « AAAA-MM-JJ » attendu par les champs date, et calculées
+    // en heure locale (toISOString basculerait en UTC et pourrait changer le jour).
     this.sejourForm = this.fb.group({
       typeLocation: ['SEJOUR', Validators.required],
-      dateEntree: [new Date(), Validators.required],
-      dateSortie: [null],
+      dateEntree: [iso(new Date()), Validators.required],
+      dateSortie: [''],
       heureEntree: ['', Validators.required],
       heureSortie: [''],
       notes: ['']
@@ -130,10 +148,72 @@ export class CheckInComponent implements OnInit {
   loadChambresLibres(): void {
     this.loadingChambres = true;
     this.chambreService.findDisponibles().subscribe({
-      next: (data) => { this.chambresLibres = data; this.loadingChambres = false; },
+      next: (data) => {
+        this.chambresLibres = data;
+        this.loadingChambres = false;
+        this.selectionnerChambreReservee();
+      },
       error: () => { this.loadingChambres = false; }
     });
   }
+
+  // ------------------------------------------------------------------
+  // Arrivée d'une réservation
+  // ------------------------------------------------------------------
+
+  private chargerReservation(id: number): void {
+    this.reservationService.getById(id).subscribe({
+      next: (r) => {
+        if (r.statut === 'ANNULEE' || r.statut === 'ARRIVEE') {
+          this.messageService.add({
+            severity: 'warn', summary: 'Réservation non utilisable',
+            detail: r.statut === 'ANNULEE' ? 'Cette réservation est annulée' : 'Ce client est déjà enregistré'
+          });
+          return;
+        }
+        this.reservation = r;
+        this.clientService.getById(r.clientId).subscribe({ next: (c) => { this.foundClient = c; } });
+
+        // Arrivée aujourd'hui (le client peut se présenter en avance ou en
+        // retard), départ conservé tel que réservé.
+        const depart = (r.dateDepart || '').substring(0, 10);
+        this.sejourForm.patchValue({
+          typeLocation: 'SEJOUR',
+          dateSortie: depart > iso(new Date()) ? depart : ''
+        });
+
+        // Un tarif négocié à la réservation est repris tel quel.
+        const nuits = r.nbNuits && r.nbNuits > 0 ? r.nbNuits : 1;
+        const tarifReserve = r.montantBrut ? Math.round(r.montantBrut / nuits) : null;
+        this.tarifForm.patchValue({
+          tarifPersonnalise: tarifReserve,
+          remiseType: r.remiseType,
+          remiseValeur: r.remiseValeur > 0 ? r.remiseValeur : null,
+          remiseMotif: r.remiseMotif || ''
+        });
+        this.afficherRemise = !!r.remiseType;
+        this.selectionnerChambreReservee();
+      },
+      error: (err) => this.erreur(err, 'Réservation introuvable')
+    });
+  }
+
+  private selectionnerChambreReservee(): void {
+    const r = this.reservation;
+    if (!r || !r.chambreId || this.loadingChambres) return;
+    const chambre = this.chambresLibres.find(c => c.id === r.chambreId) || null;
+    this.chambreReserveeIndisponible = !chambre;
+    if (chambre) this.selectedChambre = chambre;
+  }
+
+  /** Acompte déjà encaissé à la réservation, déduit de la note. */
+  get acompteReservation(): number {
+    return this.reservation ? Number(this.reservation.acompte) || 0 : 0;
+  }
+
+  // ------------------------------------------------------------------
+  // Client
+  // ------------------------------------------------------------------
 
   get isSejour(): boolean {
     return this.sejourForm.get('typeLocation')?.value === 'SEJOUR';
@@ -143,27 +223,44 @@ export class CheckInComponent implements OnInit {
     this.sejourForm.patchValue({ typeLocation: mode });
   }
 
+  /**
+   * Recherche par nom, téléphone (avec ou sans espaces) ou numéro de pièce.
+   * Une seule fiche : elle est retenue ; plusieurs : l'agent choisit.
+   */
   searchClient(): void {
-    if (!this.searchQuery.trim()) return;
+    const query = this.searchQuery.trim();
+    if (!query) return;
     this.searchingClient = true;
     this.foundClient = null;
     this.clientNotFound = false;
+    this.resultatsClient = [];
 
-    const query = this.searchQuery.trim();
-    const obs = /^\d/.test(query)
-      ? this.clientService.findByTelephone(query)
-      : this.clientService.findByPiece(query);
-
-    obs.subscribe({
-      next: (client) => { this.foundClient = client; this.clientNotFound = false; this.searchingClient = false; },
-      error: () => { this.foundClient = null; this.clientNotFound = true; this.searchingClient = false; }
+    this.clientService.search(query, 0, 8).subscribe({
+      next: (page) => {
+        this.searchingClient = false;
+        const clients = page.content || [];
+        if (clients.length === 1) {
+          this.foundClient = clients[0];
+        } else if (clients.length > 1) {
+          this.resultatsClient = clients;
+        } else {
+          this.clientNotFound = true;
+        }
+      },
+      error: () => { this.clientNotFound = true; this.searchingClient = false; }
     });
+  }
+
+  choisirClient(c: ClientResponse): void {
+    this.foundClient = c;
+    this.resultatsClient = [];
   }
 
   changerClient(): void {
     this.foundClient = null;
     this.searchQuery = '';
     this.clientNotFound = false;
+    this.resultatsClient = [];
   }
 
   createNewClient(): void {
@@ -179,9 +276,7 @@ export class CheckInComponent implements OnInit {
         this.clientNotFound = false;
         this.messageService.add({ severity: 'success', summary: 'Client créé', detail: client.nomComplet });
       },
-      error: () => {
-        this.messageService.add({ severity: 'error', summary: 'Erreur', detail: 'Création du client impossible' });
-      }
+      error: (err) => this.erreur(err, 'Création du client impossible')
     });
   }
 
@@ -192,6 +287,10 @@ export class CheckInComponent implements OnInit {
   basculerRemise(): void {
     this.afficherRemise = !this.afficherRemise;
   }
+
+  // ------------------------------------------------------------------
+  // Montants
+  // ------------------------------------------------------------------
 
   /** Tarif catalogue de la chambre, affiché en filigrane du champ tarif négocié. */
   get tarifCatalogue(): string {
@@ -217,8 +316,8 @@ export class CheckInComponent implements OnInit {
     const entree = this.sejourForm?.get('dateEntree')?.value;
     const sortie = this.sejourForm?.get('dateSortie')?.value;
     if (!entree || !sortie) return 1;
-    const d1 = new Date(entree).getTime();
-    const d2 = new Date(sortie).getTime();
+    const d1 = new Date(`${entree}T00:00:00`).getTime();
+    const d2 = new Date(`${sortie}T00:00:00`).getTime();
     return Math.max(1, Math.round((d2 - d1) / 86_400_000));
   }
 
@@ -245,8 +344,13 @@ export class CheckInComponent implements OnInit {
   }
 
   get resteAPayer(): number {
-    return Math.max(0, this.montantTotal - (this.paiementForm.get('montantPaye')?.value || 0));
+    const verse = Number(this.paiementForm.get('montantPaye')?.value) || 0;
+    return Math.max(0, this.montantTotal - this.acompteReservation - verse);
   }
+
+  // ------------------------------------------------------------------
+  // Validation
+  // ------------------------------------------------------------------
 
   confirmCheckIn(): void {
     if (!this.foundClient) {
@@ -257,11 +361,18 @@ export class CheckInComponent implements OnInit {
       this.messageService.add({ severity: 'warn', summary: 'Chambre requise', detail: 'Sélectionnez une chambre disponible' });
       return;
     }
-    this.checkingIn = true;
-
     const formVal = this.sejourForm.value;
-    const dateEntree = formVal.dateEntree instanceof Date ? formVal.dateEntree.toISOString().split('T')[0] : formVal.dateEntree;
-    const dateSortie = formVal.dateSortie instanceof Date ? formVal.dateSortie.toISOString().split('T')[0] : formVal.dateSortie;
+    const dateEntree = formVal.dateEntree instanceof Date ? iso(formVal.dateEntree) : formVal.dateEntree;
+    const dateSortie = formVal.dateSortie instanceof Date ? iso(formVal.dateSortie) : formVal.dateSortie;
+    if (!dateEntree) {
+      this.messageService.add({ severity: 'warn', summary: 'Date requise', detail: "Indiquez la date d'entrée" });
+      return;
+    }
+    if (this.isSejour && dateSortie && dateSortie <= dateEntree) {
+      this.messageService.add({ severity: 'warn', summary: 'Dates incohérentes', detail: "La date de sortie doit suivre la date d'entrée" });
+      return;
+    }
+    this.checkingIn = true;
 
     const tarif = this.tarifForm.value;
     const request: SejourRequest = {
@@ -269,16 +380,17 @@ export class CheckInComponent implements OnInit {
       chambreId: this.selectedChambre.id,
       typeLocation: formVal.typeLocation,
       dateEntree,
-      dateSortie,
-      heureEntree: formVal.heureEntree,
-      heureSortie: formVal.heureSortie,
+      dateSortie: this.isSejour && dateSortie ? dateSortie : undefined,
+      heureEntree: formVal.heureEntree || undefined,
+      heureSortie: formVal.heureSortie || undefined,
       tarifPersonnalise: Number(tarif.tarifPersonnalise) > 0 ? Number(tarif.tarifPersonnalise) : null,
       remiseType: tarif.remiseType || null,
       remiseValeur: Number(tarif.remiseValeur) > 0 ? Number(tarif.remiseValeur) : null,
       remiseMotif: tarif.remiseMotif || null,
-      montantPaye: this.paiementForm.get('montantPaye')?.value || 0,
+      montantPaye: Number(this.paiementForm.get('montantPaye')?.value) || 0,
       modePaiement: this.paiementForm.get('modePaiement')?.value || 'ESPECES',
-      notes: formVal.notes
+      notes: formVal.notes,
+      reservationId: this.reservation?.id
     };
 
     this.sejourService.checkIn(request).subscribe({
@@ -288,9 +400,9 @@ export class CheckInComponent implements OnInit {
         this.checkingIn = false;
         this.messageService.add({ severity: 'success', summary: 'Séjour enregistré', detail: `N° Reçu : ${sejour.numeroRecu}` });
       },
-      error: () => {
+      error: (err) => {
         this.checkingIn = false;
-        this.messageService.add({ severity: 'error', summary: 'Erreur', detail: 'Enregistrement impossible' });
+        this.erreur(err, 'Enregistrement impossible');
       }
     });
   }
@@ -303,16 +415,22 @@ export class CheckInComponent implements OnInit {
     this.foundClient = null;
     this.selectedChambre = null;
     this.clientNotFound = false;
+    this.resultatsClient = [];
     this.searchQuery = '';
     this.success = false;
     this.createdSejour = null;
     this.afficherRemise = false;
+    this.reservation = null;
+    this.chambreReserveeIndisponible = false;
+    if (this.route.snapshot.queryParamMap.has('reservation')) {
+      this.router.navigate([], { queryParams: {} });
+    }
     this.initForms();
     this.loadChambresLibres();
   }
 
-  formatCurrency(amount: number | undefined): string {
-    return new Intl.NumberFormat('fr-CI', { style: 'currency', currency: 'XOF', maximumFractionDigits: 0 }).format(amount || 0);
+  private erreur(err: any, defaut: string): void {
+    this.messageService.add({ severity: 'error', summary: 'Erreur', detail: err?.error?.message || defaut });
   }
 
   isClientFieldInvalid(field: string): boolean {

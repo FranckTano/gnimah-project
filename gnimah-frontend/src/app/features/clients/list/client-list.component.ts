@@ -89,9 +89,9 @@ export class ClientListComponent implements OnInit {
         this.totalRecords = page.totalElements;
         this.loading = false;
       },
-      error: () => {
+      error: (err) => {
         this.loading = false;
-        this.messageService.add({ severity: 'error', summary: 'Erreur', detail: 'Impossible de charger les clients' });
+        this.messageService.add({ severity: 'error', summary: 'Erreur', detail: err?.error?.message || 'Impossible de charger les clients' });
       }
     });
   }
@@ -154,9 +154,9 @@ export class ClientListComponent implements OnInit {
         this.saving = false;
         this.loadClients();
       },
-      error: () => {
+      error: (err) => {
         this.saving = false;
-        this.messageService.add({ severity: 'error', summary: 'Erreur', detail: 'Opération échouée' });
+        this.messageService.add({ severity: 'error', summary: 'Erreur', detail: err?.error?.message || 'Opération échouée' });
       }
     });
   }
@@ -173,8 +173,8 @@ export class ClientListComponent implements OnInit {
             this.messageService.add({ severity: 'success', summary: 'Supprimé', detail: 'Client supprimé' });
             this.loadClients();
           },
-          error: () => {
-            this.messageService.add({ severity: 'error', summary: 'Erreur', detail: 'Suppression impossible' });
+          error: (err) => {
+            this.messageService.add({ severity: 'error', summary: 'Erreur', detail: err?.error?.message || 'Suppression impossible' });
           }
         });
       }

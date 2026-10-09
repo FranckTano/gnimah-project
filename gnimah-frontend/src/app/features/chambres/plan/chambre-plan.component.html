@@ -23,7 +23,7 @@
         </div>
         <div style="font-weight:600;font-size:13px;color:#4d3f43;margin-top:10px;">{{ rm.type }}</div>
         <div [ngClass]="stateTone(rm.etat)" style="font-size:13px;font-weight:600;">{{ etatLabels[rm.etat] }}</div>
-        <div style="font-size:12px;color:#9a8a8e;margin-top:6px;">{{ formatCurrency(rm.tarifNuitee) }}/nuit</div>
+        <div style="font-size:12px;color:#9a8a8e;margin-top:6px;">{{ rm.tarifNuitee | currency }}/nuit</div>
       </div>
     </div>
   </div>
@@ -54,8 +54,8 @@
       <div class="detail-item"><label>Type</label><span>{{ selectedChambre.type }}</span></div>
       <div class="detail-item"><label>Étage</label><span>{{ floorName(selectedChambre.etage) }}</span></div>
       <div class="detail-item"><label>Capacité</label><span>{{ selectedChambre.capacite }} pers.</span></div>
-      <div class="detail-item"><label>Tarif passage</label><span>{{ formatCurrency(selectedChambre.tarifPassage) }}</span></div>
-      <div class="detail-item"><label>Tarif nuitée</label><span>{{ formatCurrency(selectedChambre.tarifNuitee) }}</span></div>
+      <div class="detail-item"><label>Tarif passage</label><span>{{ selectedChambre.tarifPassage | currency }}</span></div>
+      <div class="detail-item"><label>Tarif nuitée</label><span>{{ selectedChambre.tarifNuitee | currency }}</span></div>
       <div class="detail-item detail-full"><label>Équipements</label><span>{{ selectedChambre.equipements || '—' }}</span></div>
       <div class="detail-item detail-full"><label>Description</label><span>{{ selectedChambre.description || '—' }}</span></div>
     </div>

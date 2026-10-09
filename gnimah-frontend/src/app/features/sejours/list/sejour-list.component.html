@@ -30,19 +30,37 @@
               </div>
             </td>
             <td style="font-size:13.5px;color:#6d585d;">{{ s.chambreNumero }} · {{ s.chambreType }}</td>
-            <td style="font-size:13.5px;color:#6d585d;">{{ s.typeLocation === 'PASSAGE' ? 'Passage (h)' : 'Séjour (n)' }}</td>
-            <td style="font-size:13.5px;color:#6d585d;">{{ s.dateEntree | date:'dd/MM/yy HH:mm' }}</td>
-            <td style="font-size:13.5px;color:#6d585d;">{{ s.dateSortie ? (s.dateSortie | date:'dd/MM/yy HH:mm') : '—' }}</td>
+            <td style="font-size:13.5px;color:#6d585d;">
+              {{ s.typeLocation === 'PASSAGE' ? 'Passage (h)' : 'Séjour (n)' }}
+              <div *ngIf="s.typeLocation === 'SEJOUR' && s.nbJours" style="font-size:12px;color:#a99a9d;">{{ s.nbJours }} nuit{{ s.nbJours > 1 ? 's' : '' }}</div>
+            </td>
+            <td style="font-size:13.5px;color:#6d585d;">
+              {{ s.dateEntree | date:'dd/MM/yy' }}
+              <span *ngIf="s.heureEntree"> · {{ s.heureEntree.substring(0, 5) }}</span>
+            </td>
+            <td style="font-size:13.5px;color:#6d585d;">
+              {{ s.dateSortie ? (s.dateSortie | date:(s.statut === 'EN_COURS' ? 'dd/MM/yy' : 'dd/MM/yy HH:mm')) : '—' }}
+              <div *ngIf="s.statut === 'EN_COURS' && s.dateSortie" style="font-size:11.5px;color:#a99a9d;">prévue</div>
+            </td>
             <td style="font-size:13px;">
-              <span style="color:#3a2c30;font-weight:600;">{{ formatMontant(s.montantTotal) }}</span>
-              <span [ngClass]="s.resteAPayer > 0 ? 'c-red' : 'c-green'"> · {{ formatMontant(s.resteAPayer) }}</span>
+              <span style="color:#3a2c30;font-weight:600;">{{ s.montantTotal | currency }}</span>
+              <span [ngClass]="s.resteAPayer > 0 ? 'c-red' : 'c-green'"> · {{ s.resteAPayer | currency }}</span>
             </td>
             <td><span class="gn-bdg" [ngClass]="statutTone(s.statut)">{{ getStatutLabel(s.statut) }}</span></td>
             <td>
-              <button *ngIf="s.statut === 'EN_COURS'" class="gn-btn-o" style="padding:7px 14px;font-size:12.5px;" [disabled]="checkOutLoading && selectedSejourId === s.id" (click)="confirmCheckOut(s)">
-                <i class="ti ti-loader-2 gn-spin" *ngIf="checkOutLoading && selectedSejourId === s.id"></i>
-                <i class="ti ti-door-exit" *ngIf="!(checkOutLoading && selectedSejourId === s.id)"></i> Départ
-              </button>
+              <div class="sj-actions">
+                <button *ngIf="s.resteAPayer > 0" class="gn-btn-p sj-btn" (click)="ouvrirPaiement(s)">
+                  <i class="ti ti-cash"></i> Encaisser
+                </button>
+                <button *ngIf="s.statut === 'EN_COURS'" class="gn-btn-o sj-btn" title="Prolonger, changer le tarif ou la remise"
+                        (click)="ouvrirRevision(s)">
+                  <i class="ti ti-calendar-plus"></i> Modifier
+                </button>
+                <button *ngIf="s.statut === 'EN_COURS'" class="gn-btn-o sj-btn" [disabled]="checkOutLoading && selectedSejourId === s.id" (click)="confirmCheckOut(s)">
+                  <i class="ti ti-loader-2 gn-spin" *ngIf="checkOutLoading && selectedSejourId === s.id"></i>
+                  <i class="ti ti-door-exit" *ngIf="!(checkOutLoading && selectedSejourId === s.id)"></i> Départ
+                </button>
+              </div>
             </td>
           </tr>
         </ng-template>
@@ -54,3 +72,128 @@
   </div>
 </div>
 
+<!-- ===== ENCAISSEMENT DU SOLDE ===== -->
+<p-dialog [(visible)]="showPaiement" [modal]="true" [style]="{ width: '500px' }"
+          header="Encaisser un paiement" [draggable]="false">
+  <div *ngIf="sejourCible as s">
+    <div class="sj-recap">
+      <div class="sj-recap-h">
+        <strong>{{ s.clientNom }}</strong>
+        <span>Chambre {{ s.chambreNumero }} · reçu {{ s.numeroRecu }}</span>
+      </div>
+      <div class="sj-recap-l"><span>Montant du séjour</span><strong>{{ s.montantTotal | currency }}</strong></div>
+      <div class="sj-recap-l"><span>Déjà payé</span><strong>{{ s.montantPaye | currency }}</strong></div>
+      <div class="sj-recap-l total"><span>Reste à payer</span><strong>{{ s.resteAPayer | currency }}</strong></div>
+    </div>
+
+    <div *ngIf="paiementEnregistre as p" class="sj-ok">
+      <i class="ti ti-circle-check"></i>
+      <div>
+        <strong>{{ p.montant | currency }} encaissés</strong>
+        <span>Le reçu est disponible au format PDF.</span>
+      </div>
+    </div>
+
+    <form *ngIf="!paiementEnregistre" [formGroup]="paiementForm" class="sj-form">
+      <div class="sj-f2">
+        <div>
+          <label class="gn-flabel">Montant (FCFA) *</label>
+          <input class="gn-input" type="number" min="1" formControlName="montant"
+                 [class.gn-invalid]="isInvalid('montant', paiementForm) || montantSaisiDepasse" />
+          <small class="c-red" *ngIf="montantSaisiDepasse">Le montant dépasse le reste à payer.</small>
+        </div>
+        <div>
+          <label class="gn-flabel">Mode de paiement *</label>
+          <p-select [options]="modeOptions" formControlName="mode" optionLabel="label"
+                    optionValue="value" styleClass="sj-select" appendTo="body"></p-select>
+        </div>
+      </div>
+      <div class="sj-f2">
+        <div>
+          <label class="gn-flabel">Référence</label>
+          <input class="gn-input" formControlName="referenceTransaction" placeholder="N° de transaction (Wave, carte…)" />
+        </div>
+        <div>
+          <label class="gn-flabel">Caisse</label>
+          <p-select [options]="caisses" formControlName="caisseId" optionLabel="nom" optionValue="id"
+                    placeholder="Caisse réception" [showClear]="true" styleClass="sj-select" appendTo="body"></p-select>
+        </div>
+      </div>
+      <div>
+        <label class="gn-flabel">Notes</label>
+        <input class="gn-input" formControlName="notes" placeholder="Facultatif" />
+      </div>
+    </form>
+  </div>
+  <ng-template pTemplate="footer">
+    <ng-container *ngIf="!paiementEnregistre">
+      <button class="gn-btn-o" style="padding:10px 18px;" (click)="showPaiement = false">Annuler</button>
+      <button class="gn-btn-p" style="padding:10px 20px;" [disabled]="saving" (click)="enregistrerPaiement()">
+        <i class="ti ti-loader-2 gn-spin" *ngIf="saving"></i> Encaisser
+      </button>
+    </ng-container>
+    <ng-container *ngIf="paiementEnregistre">
+      <button class="gn-btn-o" style="padding:10px 18px;" [disabled]="telechargement" (click)="telechargerRecu()">
+        <i class="ti ti-loader-2 gn-spin" *ngIf="telechargement"></i>
+        <i class="ti ti-file-download" *ngIf="!telechargement"></i> Télécharger le reçu
+      </button>
+      <button class="gn-btn-p" style="padding:10px 20px;" (click)="showPaiement = false">Terminer</button>
+    </ng-container>
+  </ng-template>
+</p-dialog>
+
+<!-- ===== RÉVISION DU SÉJOUR ===== -->
+<p-dialog [(visible)]="showRevision" [modal]="true" [style]="{ width: '520px' }"
+          header="Modifier le séjour" [draggable]="false">
+  <div *ngIf="sejourCible as s">
+    <div class="sj-recap">
+      <div class="sj-recap-h">
+        <strong>{{ s.clientNom }}</strong>
+        <span>Chambre {{ s.chambreNumero }} · arrivé le {{ s.dateEntree | date:'dd/MM/yyyy' }}</span>
+      </div>
+      <div class="sj-recap-l"><span>Montant actuel</span><strong>{{ s.montantTotal | currency }}</strong></div>
+      <div class="sj-recap-l"><span>Déjà payé</span><strong>{{ s.montantPaye | currency }}</strong></div>
+    </div>
+
+    <form [formGroup]="revisionForm" class="sj-form">
+      <div class="sj-f2">
+        <div *ngIf="s.typeLocation === 'SEJOUR'">
+          <label class="gn-flabel">Date de départ</label>
+          <input class="gn-input" type="date" formControlName="dateSortie" />
+        </div>
+        <div>
+          <label class="gn-flabel">Tarif {{ s.typeLocation === 'SEJOUR' ? 'par nuit' : 'du passage' }} (FCFA)</label>
+          <input class="gn-input" type="number" min="0" formControlName="tarifPersonnalise" placeholder="Tarif de la chambre" />
+        </div>
+      </div>
+      <div class="sj-f2">
+        <div>
+          <label class="gn-flabel">Remise</label>
+          <select class="gn-input" formControlName="remiseType">
+            <option [ngValue]="null">Aucune</option>
+            <option *ngFor="let t of typeRemiseOptions" [ngValue]="t.value">{{ t.label }}</option>
+          </select>
+        </div>
+        <div>
+          <label class="gn-flabel">Valeur</label>
+          <input class="gn-input" type="number" min="0" formControlName="remiseValeur"
+                 [placeholder]="revisionForm.value.remiseType === 'POURCENTAGE' ? '%' : 'FCFA'" />
+        </div>
+      </div>
+      <div *ngIf="revisionForm.value.remiseType">
+        <label class="gn-flabel">Motif de la remise</label>
+        <input class="gn-input" formControlName="remiseMotif" placeholder="Client fidèle, geste commercial…" />
+      </div>
+      <p class="sj-hint">
+        Le montant est recalculé à partir du tarif, du nombre de nuits et de la remise.
+        Une prolongation est refusée si la chambre est réservée par un autre client.
+      </p>
+    </form>
+  </div>
+  <ng-template pTemplate="footer">
+    <button class="gn-btn-o" style="padding:10px 18px;" (click)="showRevision = false">Annuler</button>
+    <button class="gn-btn-p" style="padding:10px 20px;" [disabled]="saving" (click)="enregistrerRevision()">
+      <i class="ti ti-loader-2 gn-spin" *ngIf="saving"></i> Enregistrer
+    </button>
+  </ng-template>
+</p-dialog>

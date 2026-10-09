@@ -13,6 +13,7 @@ import {
 import { CaisseResponse } from '../../../core/models/caisse.model';
 import { modePaiementLabel, modePaiementOptions } from '../../../core/models/paiement.model';
 import { iso } from '../../../shared/periode';
+import { formatMontant } from '../../../core/i18n/devise';
 
 type Onglet = 'VERSEMENTS' | 'COMPTES';
 
@@ -213,7 +214,7 @@ export class VersementsComponent implements OnInit {
         this.showPreparation = false;
         this.messageService.add({
           severity: 'success', summary: 'Versement préparé',
-          detail: `${v.numero} — ${this.formatMontant(v.montant)}`
+          detail: `${v.numero} — ${formatMontant(v.montant)}`
         });
         this.charger();
       },
@@ -228,7 +229,7 @@ export class VersementsComponent implements OnInit {
   deposer(v: VersementResponse): void {
     this.confirmationService.confirm({
       header: 'Confirmer le dépôt',
-      message: `Déposer ${this.formatMontant(v.montant)} sur « ${v.compteLibelle} » ? `
+      message: `Déposer ${formatMontant(v.montant)} sur « ${v.compteLibelle} » ? `
         + `Le montant sort immédiatement de ${v.caisseNom}.`,
       icon: 'pi pi-building',
       acceptLabel: 'Dépôt effectué',
@@ -253,7 +254,7 @@ export class VersementsComponent implements OnInit {
   confirmer(v: VersementResponse): void {
     this.confirmationService.confirm({
       header: 'Confirmer le versement',
-      message: `Confirmer la réception de ${this.formatMontant(v.montant)} sur « ${v.compteLibelle} » ? `
+      message: `Confirmer la réception de ${formatMontant(v.montant)} sur « ${v.compteLibelle} » ? `
         + `À faire au vu du reçu de la banque ou du message de l'opérateur.`,
       icon: 'pi pi-check-circle',
       acceptLabel: 'Confirmer',
@@ -278,7 +279,7 @@ export class VersementsComponent implements OnInit {
       header: 'Annuler le versement',
       message: v.statut === 'PREPARE'
         ? `Annuler le versement ${v.numero} ?`
-        : `Annuler ${v.numero} ? Les ${this.formatMontant(v.montant)} reviendront en caisse par un mouvement inverse.`,
+        : `Annuler ${v.numero} ? Les ${formatMontant(v.montant)} reviendront en caisse par un mouvement inverse.`,
       icon: 'pi pi-times-circle',
       acceptLabel: 'Annuler le versement',
       rejectLabel: 'Retour',
@@ -379,11 +380,5 @@ export class VersementsComponent implements OnInit {
   isInvalid(champ: string, form: FormGroup): boolean {
     const c = form.get(champ);
     return !!(c && c.invalid && c.touched);
-  }
-
-  formatMontant(v: number | null | undefined): string {
-    return new Intl.NumberFormat('fr-CI', {
-      style: 'currency', currency: 'XOF', maximumFractionDigits: 0
-    }).format(v || 0);
   }
 }

@@ -21,7 +21,7 @@
         <div class="gn-tile brown"><i class="ti ti-package"></i></div>
         <div>
           <div class="gn-slabel" style="color:#b3a2a6;">Valeur du stock</div>
-          <div class="gn-serif stk-tile-v">{{ formatMontant(valeurTotale) }}</div>
+          <div class="gn-serif stk-tile-v">{{ valeurTotale | currency }}</div>
         </div>
       </div>
       <div class="gn-card stk-tile">
@@ -94,8 +94,8 @@
           <div class="gn-barfill" [style.width.%]="jauge(a)" [style.background]="jaugeTon(a)"></div>
         </div>
         <div class="stk-art-s">
-          Seuil {{ formatQte(a.seuilAlerte) }} · {{ formatMontant(a.prixUnitaire) }}/{{ uniteLabels[a.unite] }}
-          · valeur {{ formatMontant(a.valeurStock) }}
+          Seuil {{ formatQte(a.seuilAlerte) }} · {{ a.prixUnitaire | currency }}/{{ uniteLabels[a.unite] }}
+          · valeur {{ a.valeurStock | currency }}
         </div>
         <div class="stk-art-s" *ngIf="a.fournisseurNom">
           <i class="ti ti-truck-delivery"></i> {{ a.fournisseurNom }}
@@ -179,7 +179,7 @@
                 {{ m.sens === 'ENTREE' ? '+' : '−' }}{{ formatQte(m.quantite) }} {{ uniteLabels[m.unite] || m.unite }}
               </td>
               <td style="font-size:13px;color:#6d585d;">{{ formatQte(m.quantiteApres) }}</td>
-              <td style="font-size:13px;color:#3a2c30;font-weight:600;">{{ formatMontant(m.montant) }}</td>
+              <td style="font-size:13px;color:#3a2c30;font-weight:600;">{{ m.montant | currency }}</td>
               <td style="font-size:12.5px;color:#8a7a7e;">{{ m.agentNom || '—' }}</td>
             </tr>
           </tbody>
@@ -297,7 +297,7 @@
       </div>
 
       <div class="stk-montant" *ngIf="montantMouvement > 0">
-        Valeur du mouvement : <strong>{{ formatMontant(montantMouvement) }}</strong>
+        Valeur du mouvement : <strong>{{ montantMouvement | currency }}</strong>
       </div>
 
       <div *ngIf="mouvementEstAchat">

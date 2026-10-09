@@ -4,6 +4,7 @@ import { EvenementService } from '../../core/services/evenement.service';
 import { EvenementResponse } from '../../core/models/evenement.model';
 import { MessageService, ConfirmationService } from 'primeng/api';
 import { PageHeaderService } from '../../core/services/page-header.service';
+import { iso } from '../../shared/periode';
 
 interface CalCell {
   day: string;
@@ -161,17 +162,22 @@ export class EvenementsComponent implements OnInit {
     this.showDialog = true;
   }
 
-  private splitDateTime(iso: string): [string, string] {
-    const d = new Date(iso);
-    const jour = d.toISOString().split('T')[0];
+  private splitDateTime(valeur: string | null): [string, string] {
+    if (!valeur) return ['', ''];
+    const d = new Date(valeur);
+    const jour = iso(d);
     const heure = `${d.getHours().toString().padStart(2, '0')}:${d.getMinutes().toString().padStart(2, '0')}`;
     return [jour, heure];
   }
 
   save(): void {
     if (this.form.invalid) { this.form.markAllAsTouched(); return; }
-    this.saving = true;
     const v = this.form.value;
+    if (`${v.dateFinJour}T${v.dateFinHeure}` < `${v.dateDebutJour}T${v.dateDebutHeure}`) {
+      this.messageService.add({ severity: 'warn', summary: 'Dates incohérentes', detail: 'La fin doit suivre le début de l’événement' });
+      return;
+    }
+    this.saving = true;
     const req = {
       ...v,
       dateDebut: `${v.dateDebutJour}T${v.dateDebutHeure}:00`,
@@ -185,9 +191,9 @@ export class EvenementsComponent implements OnInit {
         this.messageService.add({ severity: 'success', summary: 'Succès', detail: this.editingId ? 'Événement modifié' : 'Événement créé' });
         this.showDialog = false; this.saving = false; this.load();
       },
-      error: () => {
+      error: (err) => {
         this.saving = false;
-        this.messageService.add({ severity: 'error', summary: 'Erreur', detail: 'Opération échouée' });
+        this.messageService.add({ severity: 'error', summary: 'Erreur', detail: err?.error?.message || 'Opération échouée' });
       }
     });
   }
@@ -200,7 +206,7 @@ export class EvenementsComponent implements OnInit {
       accept: () => {
         this.evenementService.delete(ev.id).subscribe({
           next: () => { this.messageService.add({ severity: 'warn', summary: 'Supprimé', detail: 'Événement supprimé' }); this.load(); },
-          error: () => this.messageService.add({ severity: 'error', summary: 'Erreur', detail: 'Suppression impossible' })
+          error: (err) => this.messageService.add({ severity: 'error', summary: 'Erreur', detail: err?.error?.message || 'Suppression impossible' })
         });
       }
     });
@@ -208,9 +214,5 @@ export class EvenementsComponent implements OnInit {
 
   isInvalid(f: string): boolean {
     const c = this.form.get(f); return !!(c && c.invalid && c.touched);
-  }
-
-  formatMontant(v: number): string {
-    return new Intl.NumberFormat('fr-CI', { style: 'currency', currency: 'XOF', maximumFractionDigits: 0 }).format(v || 0);
   }
 }

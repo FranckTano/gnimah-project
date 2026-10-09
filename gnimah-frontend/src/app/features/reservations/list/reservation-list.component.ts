@@ -9,7 +9,9 @@ import {
 import { CaisseResponse } from '../../../core/models/caisse.model';
 import { modePaiementLabel, modePaiementOptions } from '../../../core/models/paiement.model';
 import { MessageService } from 'primeng/api';
+import { Router } from '@angular/router';
 import { PageHeaderService } from '../../../core/services/page-header.service';
+import { formatMontant } from '../../../core/i18n/devise';
 
 /**
  * Planning des réservations.
@@ -58,7 +60,8 @@ export class ReservationListComponent implements OnInit {
     private reservationService: ReservationService,
     private caisseService: CaisseService,
     private messageService: MessageService,
-    private pageHeaderService: PageHeaderService
+    private pageHeaderService: PageHeaderService,
+    private router: Router
   ) {}
 
   ngOnInit(): void {
@@ -156,8 +159,8 @@ export class ReservationListComponent implements OnInit {
           severity: 'success',
           summary: r.statut === 'CONFIRMEE' ? 'Réservation confirmée' : 'Acompte encaissé',
           detail: r.statut === 'CONFIRMEE'
-            ? `${r.clientNom} — acompte de ${this.formatMontant(r.acompte)} reçu`
-            : `Il reste ${this.formatMontant(r.resteAcompte)} pour confirmer`
+            ? `${r.clientNom} — acompte de ${formatMontant(r.acompte)} reçu`
+            : `Il reste ${formatMontant(r.resteAcompte)} pour confirmer`
         });
         this.load();
       },
@@ -210,9 +213,9 @@ export class ReservationListComponent implements OnInit {
           severity: r.penaliteAnnulation > 0 ? 'warn' : 'success',
           summary: 'Réservation annulée',
           detail: r.penaliteAnnulation > 0
-            ? `Pénalité de ${this.formatMontant(r.penaliteAnnulation)} retenue`
+            ? `Pénalité de ${formatMontant(r.penaliteAnnulation)} retenue`
             : (r.montantRembourse > 0
-                ? `${this.formatMontant(r.montantRembourse)} remboursés au client`
+                ? `${formatMontant(r.montantRembourse)} remboursés au client`
                 : 'Annulation sans frais')
         });
         this.load();
@@ -236,17 +239,13 @@ export class ReservationListComponent implements OnInit {
     this.detailVisible = true;
   }
 
+  /**
+   * L'arrivée d'un client se traduit par un séjour : l'écran d'enregistrement
+   * s'ouvre pré-rempli depuis la réservation, et l'acompte déjà versé vient en
+   * déduction de la note. La réservation passe « arrivée » à la validation.
+   */
   marquerArrivee(r: ReservationResponse): void {
-    this.reservationService.updateStatut(r.id, 'ARRIVEE').subscribe({
-      next: () => {
-        this.messageService.add({ severity: 'success', summary: 'Arrivée notée', detail: r.clientNom });
-        this.load();
-      },
-      error: (err) => this.messageService.add({
-        severity: 'error', summary: 'Erreur',
-        detail: err?.error?.message || 'Changement de statut impossible'
-      })
-    });
+    this.router.navigate(['/sejours/check-in'], { queryParams: { reservation: r.id } });
   }
 
   /** Heures restantes avant l'arrivée — sert au bandeau d'alerte de la liste. */
@@ -262,11 +261,5 @@ export class ReservationListComponent implements OnInit {
   isInvalid(champ: string, form: FormGroup): boolean {
     const c = form.get(champ);
     return !!(c && c.invalid && c.touched);
-  }
-
-  formatMontant(v: number | null | undefined): string {
-    return new Intl.NumberFormat('fr-CI', {
-      style: 'currency', currency: 'XOF', maximumFractionDigits: 0
-    }).format(v || 0);
   }
 }

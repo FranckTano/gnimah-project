@@ -39,7 +39,7 @@
                 [class.off]="!a.disponible" (click)="ajouter(a)">
           <div class="res-art-ico"><i class="ti" [ngClass]="categorieIcons[a.categorie] || 'ti-tools-kitchen-2'"></i></div>
           <div class="res-art-n">{{ a.nom }}</div>
-          <div class="res-art-p">{{ formatMontant(a.prixVente) }}</div>
+          <div class="res-art-p">{{ a.prixVente | currency }}</div>
           <span class="res-art-off" *ngIf="!a.disponible">Indisponible</span>
         </button>
 
@@ -63,14 +63,14 @@
         <div class="res-ligne" *ngFor="let l of panier">
           <div style="flex:1;min-width:0;">
             <div class="res-ligne-n">{{ l.designation }}</div>
-            <div class="res-ligne-p">{{ formatMontant(l.prixUnitaire) }} × {{ l.quantite }}</div>
+            <div class="res-ligne-p">{{ l.prixUnitaire | currency }} × {{ l.quantite }}</div>
           </div>
           <div class="res-qte">
             <button type="button" (click)="retirer(l)"><i class="ti ti-minus"></i></button>
             <span>{{ l.quantite }}</span>
             <button type="button" (click)="incrementer(l)"><i class="ti ti-plus"></i></button>
           </div>
-          <div class="res-ligne-m">{{ formatMontant(l.quantite * l.prixUnitaire) }}</div>
+          <div class="res-ligne-m">{{ l.quantite * l.prixUnitaire | currency }}</div>
           <button class="res-x" (click)="supprimerLigne(l)"><i class="ti ti-x"></i></button>
         </div>
       </div>
@@ -138,12 +138,12 @@
         </form>
 
         <div class="res-totaux">
-          <div class="res-tot-l"><span>Sous-total</span><strong>{{ formatMontant(totalBrut) }}</strong></div>
+          <div class="res-tot-l"><span>Sous-total</span><strong>{{ totalBrut | currency }}</strong></div>
           <div class="res-tot-l" *ngIf="remisePanier > 0">
-            <span>Remise</span><strong class="c-green">− {{ formatMontant(remisePanier) }}</strong>
+            <span>Remise</span><strong class="c-green">− {{ remisePanier | currency }}</strong>
           </div>
           <div class="res-tot-l total">
-            <span>À payer</span><strong class="gn-serif">{{ formatMontant(totalNet) }}</strong>
+            <span>À payer</span><strong class="gn-serif">{{ totalNet | currency }}</strong>
           </div>
         </div>
 
@@ -192,10 +192,10 @@
             <div class="res-add-info">
               {{ c.dateCommande | date:'dd/MM HH:mm' }}
               <span *ngIf="c.agentNom"> · {{ c.agentNom }}</span>
-              <span *ngIf="c.remiseMontant > 0"> · remise {{ formatMontant(c.remiseMontant) }}</span>
+              <span *ngIf="c.remiseMontant > 0"> · remise {{ c.remiseMontant | currency }}</span>
             </div>
             <div class="res-add-r">
-              <span class="gn-serif res-add-m">{{ formatMontant(c.montantNet) }}</span>
+              <span class="gn-serif res-add-m">{{ c.montantNet | currency }}</span>
               <div class="res-add-actions">
                 <button class="gn-btn-o res-a"
                         *ngIf="c.statut === 'OUVERTE' || c.statut === 'ENVOYEE_CUISINE'"
@@ -255,9 +255,9 @@
                   {{ categorieLabels[a.categorie] || a.categorie }}
                 </span>
               </td>
-              <td class="gn-serif" style="font-size:15px;color:#2e2024;">{{ formatMontant(a.prixVente) }}</td>
-              <td style="font-size:13px;color:#6d585d;">{{ formatMontant(a.coutRevient) }}</td>
-              <td style="font-size:13px;color:#2f9e6f;font-weight:600;">{{ formatMontant(a.marge) }}</td>
+              <td class="gn-serif" style="font-size:15px;color:#2e2024;">{{ a.prixVente | currency }}</td>
+              <td style="font-size:13px;color:#6d585d;">{{ a.coutRevient | currency }}</td>
+              <td style="font-size:13px;color:#2f9e6f;font-weight:600;">{{ a.marge | currency }}</td>
               <td>
                 <span class="gn-bdg" [ngClass]="a.disponible ? 'green' : 'gray'">
                   {{ a.disponible ? 'Disponible' : 'Retiré' }}
@@ -296,7 +296,7 @@
         <div class="gn-serif" style="font-size:18px;color:#8c2f4d;">{{ c.numero }}</div>
         <div style="font-size:12.5px;color:#8a7a7e;margin-top:3px;">{{ libelleCible(c) }}</div>
       </div>
-      <div class="gn-serif" style="font-size:24px;color:#2e2024;">{{ formatMontant(c.montantNet) }}</div>
+      <div class="gn-serif" style="font-size:24px;color:#2e2024;">{{ c.montantNet | currency }}</div>
     </div>
 
     <form [formGroup]="paiementForm" class="res-form" style="margin-top:16px;">

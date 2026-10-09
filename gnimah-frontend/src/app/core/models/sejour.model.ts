@@ -25,6 +25,8 @@ export interface RemiseSejourRequest {
   remiseType?: string | null;
   remiseValeur?: number | null;
   remiseMotif?: string | null;
+  /** Nouvelle date de départ « AAAA-MM-JJ » (prolongation) ; vide = durée inchangée. */
+  dateSortie?: string | null;
 }
 
 export interface SejourResponse {

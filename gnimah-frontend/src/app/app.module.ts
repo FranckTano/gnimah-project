@@ -1,9 +1,8 @@
-import { NgModule, LOCALE_ID } from '@angular/core';
+import { NgModule, LOCALE_ID, DEFAULT_CURRENCY_CODE } from '@angular/core';
 import { BrowserModule } from '@angular/platform-browser';
-import { CommonModule, registerLocaleData } from '@angular/common';
-import localeFr from '@angular/common/locales/fr';
-
-registerLocaleData(localeFr, 'fr');
+import { CommonModule } from '@angular/common';
+// Enregistre la locale française et le symbole « FCFA » utilisés par le pipe currency.
+import { CODE_DEVISE, LOCALE_APP } from './core/i18n/devise';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { HTTP_INTERCEPTORS, HttpClientModule } from '@angular/common/http';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
@@ -154,7 +153,9 @@ import { MediasComponent } from './features/administration/medias/medias.compone
     DatePickerModule
   ],
   providers: [
-    { provide: LOCALE_ID, useValue: 'fr' },
+    { provide: LOCALE_ID, useValue: LOCALE_APP },
+    // Devise de `{{ montant | currency }}` : le franc CFA, affiché « FCFA ».
+    { provide: DEFAULT_CURRENCY_CODE, useValue: CODE_DEVISE },
     MessageService,
     ConfirmationService,
     { provide: HTTP_INTERCEPTORS, useClass: AuthInterceptor, multi: true },
