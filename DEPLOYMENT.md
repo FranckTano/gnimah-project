@@ -20,7 +20,7 @@ Avant de commencer : commit et push tout ce qui est en cours (`git status` doit 
    jdbc:postgresql://aws-0-eu-west-1.pooler.supabase.com:5432/postgres
    ```
    (garde `postgres.xxxxxxxxxxxx` comme **username**, et ton mot de passe à part — ce sont les 3 valeurs dont Render aura besoin à l'étape suivante.)
-5. Tu n'as **rien d'autre à faire manuellement** sur le schéma : au premier démarrage, le backend applique automatiquement les 7 migrations Flyway (tables, colonnes) puis crée les comptes de démonstration (`admin`, `directeur`, `responsable`, `agent`) via `DataInitializer`. Si tu préfères démarrer sans les comptes/chambres de démo en production, dis-le-moi avant de déployer — il faudra alors désactiver `DemoDataSeeder`.
+5. Tu n'as **rien d'autre à faire manuellement** sur le schéma : au premier démarrage, le backend applique automatiquement les migrations Flyway (tables, colonnes, 12 chambres, 2 caisses, galerie) puis crée les comptes `admin`, `directeur`, `responsable`, `agent` via `DataInitializer`. Les **données de démonstration** (faux clients, séjours, paiements) ne sont plus créées : elles ne le sont que si la variable `DEMO_DATA_ENABLED=true` est posée — à ne jamais faire en production.
 
 ---
 
@@ -45,6 +45,9 @@ Que tu aies utilisé le Blueprint ou pas, va dans **Environment** et vérifie/co
 | `SPRING_DATASOURCE_PASSWORD` | le mot de passe choisi à la création du projet Supabase |
 | `JWT_SECRET` | généré par le Blueprint, sinon génère-en un toi-même (32+ caractères aléatoires) |
 | `CORS_ALLOWED_ORIGINS` | l'URL Vercel une fois connue (étape 3) — laisse `http://localhost:4200` pour l'instant, tu la mettras à jour après |
+| `DEMO_DATA_ENABLED` | *facultatif* — `false` par défaut. Ne jamais mettre `true` en production (faux séjours et faux paiements) |
+| `LOG_LEVEL_APP` | *facultatif* — `INFO` par défaut ; `DEBUG` le temps d'un diagnostic |
+| `KEEPALIVE_TARGET_URL` | *facultatif* — `https://<ton-service>.onrender.com/api/actuator/health` : le serveur se « ping » lui-même toutes les 13 min pour ne pas s'endormir |
 
 Render fournit déjà `PORT` automatiquement — le backend l'utilise (`server.port: ${PORT:8080}` dans `application.yml`), rien à faire.
 
@@ -126,6 +129,7 @@ CORS_ALLOWED_ORIGINS=https://gnimah-project.vercel.app
 Checklist à dérouler une fois les deux services live :
 
 - [ ] `https://<backend>.onrender.com/api/actuator/health` répond `UP`
+- [ ] `https://<backend>.onrender.com/api/public/hotel-info` renvoie la `version` attendue (2.1.0) et une `dateBuild` récente — preuve que Render sert le dernier code ; la même version s'affiche sous le formulaire de connexion
 - [ ] `https://<frontend>.vercel.app/login` affiche le vrai nombre de chambres (pas de valeur figée) — confirme que le proxy `/api` fonctionne
 - [ ] Connexion avec `admin` / `Admin@2026` (ou tes propres identifiants si tu as changé les comptes de démo) fonctionne et redirige vers le tableau de bord
 - [ ] Un rechargement de page sur une route profonde (ex. `/entretien`) ne donne pas un 404 Vercel (vérifie le `rewrites` catch-all vers `index.html`)
@@ -137,3 +141,17 @@ Checklist à dérouler une fois les deux services live :
 - **Change les mots de passe de démo** (`admin`/`directeur`/`responsable`/`agent`) dès que le service est en ligne — ce sont des identifiants documentés dans ce dépôt, donc publics si le dépôt est public. Connecte-toi en `admin`, va dans Administration → Utilisateurs, modifie chaque compte.
 - **Vérifie la visibilité du dépôt GitHub** (public vs privé). S'il est public, n'importe qui peut lire `DataInitializer.java` et donc les mots de passe de démo par défaut — encore une raison de les changer immédiatement après le premier déploiement.
 - Le `JWT_SECRET` généré par Render est unique à cet environnement — ne le copie jamais dans un fichier versionné.
+
+---
+
+## 6. Jour d'ouverture de l'hôtel — check-list
+
+À dérouler une fois, juste avant d'accueillir les premiers clients.
+
+1. **Mots de passe** — le dépôt GitHub est public : les mots de passe d'origine des comptes `admin`, `directeur`, `responsable`, `agent` sont lisibles par tous. Connecte-toi en `admin`, **Administration → Utilisateurs** : crée un compte nominatif par employé, change le mot de passe des quatre comptes d'origine ou désactive ceux qui ne servent pas.
+2. **Repartir d'une base propre** — si la base de production contient des essais (clients, séjours, paiements, mouvements de caisse de test), fais d'abord une sauvegarde (Supabase → Database → Backups), puis exécute **une seule fois** `scripts/remise-a-zero-avant-ouverture.sql` dans l'éditeur SQL de Supabase. Il efface toutes les opérations et conserve comptes, chambres, caisses (soldes à zéro), fournisseurs, carte du restaurant, stock et galerie. Ne jamais l'exécuter une fois l'hôtel en activité.
+3. **Chambres et tarifs** — **Chambres** : vérifie numéros, types et tarifs (passage / nuitée), désactive celles qui n'existent pas.
+4. **Comptes de versement** — **Caisse → Versements → Comptes** : renseigne le vrai numéro du compte bancaire et du compte Wave (un versement est refusé tant qu'ils sont vides).
+5. **Stock** — les quantités d'origine sont des valeurs d'exemple : aligne chaque article sur la réserve réelle (un mouvement « Inventaire » ajoute, une « Perte » retire).
+6. **Première vacation de caisse** — **Caisse → Ouvrir la vacation** : saisis le fond réellement compté dans le tiroir. Ensuite, à chaque ouverture, le montant proposé est le solde attendu : on ne le corrige que si le comptage diffère (l'écart est alors tracé dans le journal).
+7. **Essai à blanc** — enregistre une arrivée, un paiement, télécharge le reçu PDF, enregistre le départ ; vérifie que tous les montants s'affichent en « FCFA ».

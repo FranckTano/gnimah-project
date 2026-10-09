@@ -227,9 +227,9 @@ En pratique, on ne fait jamais cet INSERT à la main pour un séjour : le flux *
 Ce scénario suit exactement le cycle métier de l'application, du premier lancement à la lecture des statistiques.
 
 1. **Connexion** — `/login`, compte `directeur` / `Directeur@2026`.
-2. **Ajouter une chambre** — `Plan des chambres → Gestion des chambres → Nouvelle chambre` : numéro `401`, type Suite, vue Mer, tarif nuitée 45 000 XOF.
+2. **Ajouter une chambre** — `Plan des chambres → Gestion des chambres → Nouvelle chambre` : numéro `401`, type Suite, vue Mer, tarif nuitée 45 000 FCFA.
 3. **Créer un client** — pendant le check-in (étape suivante) ou depuis `Fiches clients → Nouveau client` : Mme Fatou Diallo, +225 05 44 55 66, CNI CI0099887.
-4. **Créer une réservation** (optionnel) — `Réservations → Nouvelle réservation` : Fatou Diallo, chambre 401, arrivée demain, 2 nuits, acompte 20 000 XOF. Statut `EN_ATTENTE`.
+4. **Créer une réservation** (optionnel) — `Réservations → Nouvelle réservation` : Fatou Diallo, chambre 401, arrivée demain, 2 nuits, acompte 20 000 FCFA. Statut `EN_ATTENTE`.
 5. **Check-in** — le jour J, `Check-in / Séjour` : rechercher Fatou par téléphone (trouvée), mode Séjour, sélectionner la chambre 401, confirmer l'acompte → **Valider & générer le reçu**. La chambre 401 passe à `OCCUPÉE`, un reçu `GN-xxxx` est émis.
 6. **Encaisser un complément** — depuis `Reçus & factures`, ouvrir le reçu, constater le reste à payer.
 7. **Housekeeping** pendant le séjour — si besoin, créer une tâche d'entretien pour une autre chambre libérée (`Housekeeping → Nouvelle tâche`).
