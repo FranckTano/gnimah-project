@@ -149,9 +149,20 @@ Checklist à dérouler une fois les deux services live :
 À dérouler une fois, juste avant d'accueillir les premiers clients.
 
 1. **Mots de passe** — le dépôt GitHub est public : les mots de passe d'origine des comptes `admin`, `directeur`, `responsable`, `agent` sont lisibles par tous. Connecte-toi en `admin`, **Administration → Utilisateurs** : crée un compte nominatif par employé, change le mot de passe des quatre comptes d'origine ou désactive ceux qui ne servent pas.
-2. **Repartir d'une base propre** — si la base de production contient des essais (clients, séjours, paiements, mouvements de caisse de test), fais d'abord une sauvegarde (Supabase → Database → Backups), puis exécute **une seule fois** `scripts/remise-a-zero-avant-ouverture.sql` dans l'éditeur SQL de Supabase. Il efface toutes les opérations et conserve comptes, chambres, caisses (soldes à zéro), fournisseurs, carte du restaurant, stock et galerie. Ne jamais l'exécuter une fois l'hôtel en activité.
+2. **Repartir d'une base propre** — si la base de production contient des essais (clients, séjours, paiements, mouvements de caisse de test), exporte d'abord la base (voir « Sauvegardes » ci-dessous), puis exécute **une seule fois** `scripts/remise-a-zero-avant-ouverture.sql` dans l'éditeur SQL de Supabase. Il efface toutes les opérations et conserve comptes, chambres, caisses (soldes à zéro), fournisseurs, carte du restaurant, stock et galerie. Ne jamais l'exécuter une fois l'hôtel en activité.
 3. **Chambres et tarifs** — **Chambres** : vérifie numéros, types et tarifs (passage / nuitée), désactive celles qui n'existent pas.
 4. **Comptes de versement** — **Caisse → Versements → Comptes** : renseigne le vrai numéro du compte bancaire et du compte Wave (un versement est refusé tant qu'ils sont vides).
 5. **Stock** — les quantités d'origine sont des valeurs d'exemple : aligne chaque article sur la réserve réelle (un mouvement « Inventaire » ajoute, une « Perte » retire).
 6. **Première vacation de caisse** — **Caisse → Ouvrir la vacation** : saisis le fond réellement compté dans le tiroir. Ensuite, à chaque ouverture, le montant proposé est le solde attendu : on ne le corrige que si le comptage diffère (l'écart est alors tracé dans le journal).
 7. **Essai à blanc** — enregistre une arrivée, un paiement, télécharge le reçu PDF, enregistre le départ ; vérifie que tous les montants s'affichent en « FCFA ».
+
+### Sauvegardes
+
+L'offre gratuite de Supabase **ne fait aucune sauvegarde automatique** de la base. Pour un hôtel en activité, deux options :
+
+- passer Supabase en offre **Pro** (sauvegarde quotidienne conservée 7 jours) ;
+- ou exporter soi-même la base régulièrement (au minimum chaque semaine, et toujours avant une opération sensible), depuis un poste où PostgreSQL est installé :
+  ```
+  pg_dump "postgresql://postgres.<ref>:<mot-de-passe>@<hôte-pooler>:5432/postgres" -Fc -f gnimah-AAAA-MM-JJ.dump
+  ```
+  et conserver le fichier hors de Supabase (clé USB, Google Drive…).

@@ -6,8 +6,9 @@
 -- mise en service réelle de la résidence. JAMAIS une fois l'hôtel en activité :
 -- toutes les opérations enregistrées seraient définitivement effacées.
 --
--- Avant de l'exécuter : Supabase → Database → Backups — vérifier qu'une
--- sauvegarde récente existe.
+-- Avant de l'exécuter : EXPORTER LA BASE. L'offre gratuite de Supabase ne fait
+-- aucune sauvegarde automatique ; depuis un poste où PostgreSQL est installé :
+--   pg_dump "postgresql://postgres.<ref>:<mot-de-passe>@<hôte-pooler>:5432/postgres" -Fc -f gnimah-avant-ouverture.dump
 --
 -- EFFACE  : clients, réservations, séjours, paiements et reçus, événements,
 --           tâches d'entretien, incidents, additions du restaurant, vacations
