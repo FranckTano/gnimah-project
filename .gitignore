@@ -1,5 +1,7 @@
 # Backend - Gradle
 gnimah-backend/build/
+# Reliquat de l'ancienne configuration Maven : classes compilées par l'IDE.
+gnimah-backend/target/
 gnimah-backend/.gradle/
 gnimah-backend/*.log
 
