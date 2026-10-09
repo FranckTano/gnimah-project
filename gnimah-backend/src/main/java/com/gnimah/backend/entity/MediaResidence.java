@@ -29,6 +29,7 @@ public class MediaResidence {
     @Column(nullable = false, length = 150)
     private String titre;
 
+    @Builder.Default
     @Column(nullable = false, length = 60)
     private String categorie = "Chambres";
 
@@ -44,14 +45,17 @@ public class MediaResidence {
     private String publicId;
 
     /** Ordre d'affichage, les plus petits d'abord. */
+    @Builder.Default
     @Column(nullable = false)
     private int position = 0;
 
     /** Permet de masquer un visuel sans le supprimer. */
+    @Builder.Default
     @Column(nullable = false)
     private boolean actif = true;
 
     /** Visuel utilisé pour les bandeaux d'accueil et l'affiche de la vidéo. */
+    @Builder.Default
     @Column(name = "mis_en_avant", nullable = false)
     private boolean misEnAvant = false;
 

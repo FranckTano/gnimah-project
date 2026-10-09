@@ -35,6 +35,8 @@ services:
       # "create" recréait le schéma (donc perdait toutes les données) à chaque redémarrage du conteneur,
       # en plus d'entrer en conflit avec Flyway qui gère déjà le schéma (voir application.yml: ddl-auto: none).
       SPRING_JPA_HIBERNATE_DDL_AUTO: none
+      # Pile de développement : données de démonstration activées (jamais en production).
+      DEMO_DATA_ENABLED: "true"
     depends_on:
       postgres:
         condition: service_healthy

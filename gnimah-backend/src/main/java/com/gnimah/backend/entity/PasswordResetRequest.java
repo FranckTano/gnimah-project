@@ -21,6 +21,7 @@ public class PasswordResetRequest {
     @JoinColumn(name = "utilisateur_id", nullable = false)
     private Utilisateur utilisateur;
 
+    @Builder.Default
     @Column(nullable = false, length = 20)
     private String statut = "EN_ATTENTE";
 

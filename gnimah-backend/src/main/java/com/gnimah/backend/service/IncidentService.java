@@ -176,13 +176,25 @@ public class IncidentService {
         if (incident.getStatut() == StatutIncident.CLASSE_SANS_SUITE) {
             throw new BusinessException("Cet incident a été classé sans suite");
         }
+        // Une seconde résolution engagerait une seconde fois le coût : nouvelle
+        // dépense en caisse ou nouveau supplément sur la note du client.
+        if (incident.getStatut() == StatutIncident.REPARE || incident.getStatut() == StatutIncident.REMPLACE
+                || incident.getStatut() == StatutIncident.IMPUTE_CLIENT) {
+            throw new BusinessException("Cet incident est déjà résolu");
+        }
 
         StatutIncident statut = CaisseService.parseEnum(
                 StatutIncident.class, request.getStatut(), "statut de résolution");
+        if (statut == StatutIncident.DECLARE || statut == StatutIncident.EN_COURS) {
+            throw new BusinessException("Issue de résolution invalide : choisissez réparé, remplacé ou classé sans suite");
+        }
         Utilisateur agent = getAgentConnecte();
         BigDecimal cout = request.getCoutReel() != null ? request.getCoutReel() : incident.getCoutEstime();
-        boolean imputeClient = request.getImputeClient() != null
-                ? request.getImputeClient() : incident.isImputeClient();
+        if (cout == null || cout.signum() < 0) {
+            throw new BusinessException("Le coût réel ne peut pas être négatif");
+        }
+        boolean imputeClient = statut == StatutIncident.IMPUTE_CLIENT
+                || (request.getImputeClient() != null ? request.getImputeClient() : incident.isImputeClient());
 
         incident.setCoutReel(cout);
         incident.setResoluPar(agent);

@@ -187,8 +187,12 @@ public class VersementService {
             versement.setReferenceTransaction(request.getReferenceTransaction());
         }
 
+        // Le versement porte sur la recette en espèces (son assiette n'inclut
+        // que le numéraire) : ce sont donc toujours des billets qui quittent le
+        // tiroir, quel que soit le canal de dépôt — guichet bancaire ou agent
+        // mobile money. Le canal reste consigné sur le versement lui-même.
         caisseService.enregistrer(versement.getCaisse(), SensMouvement.SORTIE,
-                TypeMouvementCaisse.VERSEMENT_BANQUE, versement.getMontant(), versement.getMode(),
+                TypeMouvementCaisse.VERSEMENT_BANQUE, versement.getMontant(), ModePaiement.ESPECES,
                 "Versement " + versement.getNumero() + " vers " + versement.getCompte().getLibelle(),
                 versement.getReferenceTransaction(), "VERSEMENT", versement.getId(), agent);
 
@@ -258,8 +262,16 @@ public class VersementService {
                 || versement.getStatut() == StatutVersement.CONFIRME;
 
         if (argentSorti) {
+            // Le mouvement inverse reprend le mode de la sortie d'origine : il
+            // doit remettre au tiroir exactement ce que le dépôt en avait retiré.
+            ModePaiement modeSortie = mouvementRepository.findByOrigineTypeAndOrigineId("VERSEMENT", versement.getId())
+                    .stream()
+                    .filter(m -> m.getSens() == SensMouvement.SORTIE)
+                    .map(MouvementCaisse::getMode)
+                    .findFirst()
+                    .orElse(ModePaiement.ESPECES);
             caisseService.enregistrer(versement.getCaisse(), SensMouvement.ENTREE,
-                    TypeMouvementCaisse.AJUSTEMENT, versement.getMontant(), versement.getMode(),
+                    TypeMouvementCaisse.AJUSTEMENT, versement.getMontant(), modeSortie,
                     "Annulation du versement " + versement.getNumero(),
                     versement.getReferenceTransaction(), "VERSEMENT_ANNULE", versement.getId(), agent);
         }

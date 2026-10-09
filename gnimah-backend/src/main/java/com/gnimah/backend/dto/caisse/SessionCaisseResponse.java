@@ -16,8 +16,13 @@ public class SessionCaisseResponse {
     private LocalDateTime dateOuverture;
     private BigDecimal fondCaisse;
     private LocalDateTime dateFermeture;
+    /** Activité de la vacation, tous modes de règlement (hors régularisations du fond). */
     private BigDecimal totalEntrees;
     private BigDecimal totalSorties;
+    /** Part en espèces de cette activité : c'est elle qui fait varier le tiroir. */
+    private BigDecimal entreesEspeces;
+    private BigDecimal sortiesEspeces;
+    /** Fond de caisse + entrées en espèces − sorties en espèces. */
     private BigDecimal montantTheorique;
     private BigDecimal montantCompte;
     private BigDecimal ecart;

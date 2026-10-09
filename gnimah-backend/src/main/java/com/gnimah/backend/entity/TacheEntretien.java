@@ -34,16 +34,19 @@ public class TacheEntretien {
     @JoinColumn(name = "evenement_id")
     private Evenement evenement;
 
+    @Builder.Default
     @Column(name = "type_tache", nullable = false, length = 50)
     private String typeTache = "NETTOYAGE";
 
     @Column(columnDefinition = "TEXT")
     private String description;
 
+    @Builder.Default
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 20)
     private StatutTache statut = StatutTache.A_FAIRE;
 
+    @Builder.Default
     @Column(nullable = false)
     private int priorite = 2;
 

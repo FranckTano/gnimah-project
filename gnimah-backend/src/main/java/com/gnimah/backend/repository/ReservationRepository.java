@@ -18,9 +18,10 @@ public interface ReservationRepository extends JpaRepository<Reservation, Long> 
 
     Optional<Reservation> findByNumeroReservation(String numeroReservation);
     Page<Reservation> findByClientId(Long clientId, Pageable pageable);
+    boolean existsByClientId(Long clientId);
     List<Reservation> findByStatut(StatutReservation statut);
 
-    @Query("SELECT r FROM Reservation r WHERE r.dateArrivee BETWEEN :debut AND :fin AND r.statut = :statut")
+    @Query("SELECT r FROM Reservation r WHERE r.dateArrivee >= :debut AND r.dateArrivee < :fin AND r.statut = :statut")
     List<Reservation> findArriveesPeriode(
             @Param("debut") LocalDateTime debut,
             @Param("fin") LocalDateTime fin,
@@ -36,6 +37,14 @@ public interface ReservationRepository extends JpaRepository<Reservation, Long> 
 
     long countByStatut(StatutReservation statut);
 
-    @Query("SELECT COUNT(r) FROM Reservation r WHERE r.createdAt BETWEEN :debut AND :fin")
+    @Query("SELECT COUNT(r) FROM Reservation r WHERE r.createdAt >= :debut AND r.createdAt < :fin")
     long countReservationsPeriode(@Param("debut") LocalDateTime debut, @Param("fin") LocalDateTime fin);
+
+    @Query("SELECT MAX(CAST(SUBSTRING(r.numeroReservation, LENGTH(r.numeroReservation) - 3, 4) AS int)) " +
+           "FROM Reservation r WHERE r.numeroReservation LIKE CONCAT(:prefix, '%')")
+    Integer findMaxSequence(@Param("prefix") String prefix);
+
+    /** Dates de prise des réservations de la période, pour la courbe jour par jour. */
+    @Query("SELECT r.createdAt FROM Reservation r WHERE r.createdAt >= :debut AND r.createdAt < :fin")
+    List<LocalDateTime> findDatesCreationPeriode(@Param("debut") LocalDateTime debut, @Param("fin") LocalDateTime fin);
 }

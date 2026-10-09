@@ -12,14 +12,15 @@ import java.util.List;
 @Repository
 public interface EvenementRepository extends JpaRepository<Evenement, Long> {
 
-    @Query("SELECT e FROM Evenement e WHERE e.dateDebut BETWEEN :debut AND :fin ORDER BY e.dateDebut")
+    @Query("SELECT e FROM Evenement e WHERE e.dateDebut >= :debut AND e.dateDebut < :fin ORDER BY e.dateDebut")
     List<Evenement> findByPeriode(@Param("debut") LocalDateTime debut, @Param("fin") LocalDateTime fin);
 
     List<Evenement> findByClientId(Long clientId);
+    boolean existsByClientId(Long clientId);
 
     /** Recette événementielle d'une période, hors événements annulés. */
     @Query("SELECT COALESCE(SUM(e.montant), 0) FROM Evenement e " +
            "WHERE e.statut <> com.gnimah.backend.entity.enums.StatutEvenement.ANNULE " +
-           "AND e.dateDebut BETWEEN :debut AND :fin")
+           "AND e.dateDebut >= :debut AND e.dateDebut < :fin")
     java.math.BigDecimal sumMontantPeriode(@Param("debut") LocalDateTime debut, @Param("fin") LocalDateTime fin);
 }

@@ -7,11 +7,13 @@ import com.gnimah.backend.entity.Caisse;
 import com.gnimah.backend.entity.Chambre;
 import com.gnimah.backend.entity.Client;
 import com.gnimah.backend.entity.Paiement;
+import com.gnimah.backend.entity.Reservation;
 import com.gnimah.backend.entity.Sejour;
 import com.gnimah.backend.entity.Utilisateur;
 import com.gnimah.backend.entity.enums.EtatChambre;
 import com.gnimah.backend.entity.enums.ModePaiement;
 import com.gnimah.backend.entity.enums.SensMouvement;
+import com.gnimah.backend.entity.enums.StatutReservation;
 import com.gnimah.backend.entity.enums.TypeLocation;
 import com.gnimah.backend.entity.enums.TypeMouvementCaisse;
 import com.gnimah.backend.entity.enums.TypeRemise;
@@ -19,6 +21,7 @@ import com.gnimah.backend.exception.BusinessException;
 import com.gnimah.backend.exception.ResourceNotFoundException;
 import com.gnimah.backend.repository.ClientRepository;
 import com.gnimah.backend.repository.PaiementRepository;
+import com.gnimah.backend.repository.ReservationRepository;
 import com.gnimah.backend.repository.SejourRepository;
 import com.gnimah.backend.repository.UtilisateurRepository;
 import lombok.RequiredArgsConstructor;
@@ -47,6 +50,7 @@ public class SejourService {
     private final AuditService auditService;
     private final NotificationService notificationService;
     private final CaisseService caisseService;
+    private final ReservationRepository reservationRepository;
 
     @Transactional
     public SejourResponse checkIn(SejourRequest request) {
@@ -56,6 +60,28 @@ public class SejourService {
 
         if (chambre.getEtat() != EtatChambre.LIBRE) {
             throw new BusinessException("La chambre " + chambre.getNumero() + " n'est pas disponible (état: " + chambre.getEtat() + ")");
+        }
+
+        // Arrivée d'un client qui avait réservé : l'acompte qu'il a versé lui
+        // reste acquis et vient en déduction de sa note.
+        Reservation reservation = request.getReservationId() != null
+                ? reservationRepository.findById(request.getReservationId())
+                    .orElseThrow(() -> new ResourceNotFoundException("Réservation", request.getReservationId()))
+                : null;
+        BigDecimal acompteReservation = BigDecimal.ZERO;
+        if (reservation != null) {
+            if (reservation.getStatut() == StatutReservation.ANNULEE) {
+                throw new BusinessException("La réservation " + reservation.getNumeroReservation() + " est annulée");
+            }
+            if (reservation.getStatut() == StatutReservation.ARRIVEE) {
+                throw new BusinessException("La réservation " + reservation.getNumeroReservation()
+                        + " a déjà donné lieu à un séjour");
+            }
+            if (!reservation.getClient().getId().equals(client.getId())) {
+                throw new BusinessException("La réservation " + reservation.getNumeroReservation()
+                        + " est au nom de " + reservation.getClient().getNomComplet());
+            }
+            acompteReservation = reservation.getAcompte() != null ? reservation.getAcompte() : BigDecimal.ZERO;
         }
 
         TypeLocation typeLocation = TypeLocation.valueOf(request.getTypeLocation());
@@ -73,10 +99,16 @@ public class SejourService {
         BigDecimal remiseMontant = Remises.calculer(montantBrut, remiseType, request.getRemiseValeur());
         BigDecimal montantTotal = montantBrut.subtract(remiseMontant);
 
-        BigDecimal montantPaye = request.getMontantPaye() != null ? request.getMontantPaye() : BigDecimal.ZERO;
+        BigDecimal versementArrivee = request.getMontantPaye() != null ? request.getMontantPaye() : BigDecimal.ZERO;
+        if (versementArrivee.signum() < 0) {
+            throw new BusinessException("Le montant encaissé ne peut pas être négatif");
+        }
+        BigDecimal montantPaye = acompteReservation.add(versementArrivee);
         if (montantPaye.compareTo(montantTotal) > 0) {
-            throw new BusinessException("L'acompte (" + montantPaye + " FCFA) dépasse le montant du séjour ("
-                    + montantTotal + " FCFA)");
+            throw new BusinessException(acompteReservation.signum() > 0
+                    ? "L'acompte de la réservation (" + acompteReservation + " FCFA) et le versement d'arrivée ("
+                        + versementArrivee + " FCFA) dépassent le montant du séjour (" + montantTotal + " FCFA)"
+                    : "L'acompte (" + montantPaye + " FCFA) dépasse le montant du séjour (" + montantTotal + " FCFA)");
         }
         BigDecimal resteAPayer = montantTotal.subtract(montantPaye);
 
@@ -86,6 +118,10 @@ public class SejourService {
         // Le frontend envoie des dates au format "yyyy-MM-dd" (LocalDate), on convertit en LocalDateTime
         LocalDateTime dateEntreeDT = request.getDateEntree().atStartOfDay();
         LocalDateTime dateSortieDT = request.getDateSortie() != null ? request.getDateSortie().atStartOfDay() : null;
+        if (typeLocation == TypeLocation.SEJOUR) {
+            verifierReservationsConfirmees(chambre, dateEntreeDT,
+                    dateSortieDT != null ? dateSortieDT : dateEntreeDT.plusDays(nbUnites), reservation);
+        }
 
         Sejour sejour = Sejour.builder()
                 .numeroRecu(numeroRecu)
@@ -110,7 +146,7 @@ public class SejourService {
                 .resteAPayer(resteAPayer)
                 .statut("EN_COURS")
                 .notes(request.getNotes())
-                .reservationId(request.getReservationId())
+                .reservationId(reservation != null ? reservation.getId() : null)
                 .build();
 
         if (typeLocation == TypeLocation.SEJOUR) {
@@ -123,15 +159,30 @@ public class SejourService {
 
         Sejour saved = sejourRepository.save(sejour);
 
-        // Créer un enregistrement Paiement si un acompte a été reçu
-        if (montantPaye.compareTo(BigDecimal.ZERO) > 0) {
+        // L'acompte de la réservation est en caisse depuis son encaissement : il
+        // est reporté sur le séjour par une ligne de paiement, sans nouvelle
+        // écriture de caisse — l'argent ne serait sinon compté deux fois.
+        if (acompteReservation.signum() > 0) {
+            paiementRepository.save(Paiement.builder()
+                    .sejour(saved)
+                    .montant(acompteReservation)
+                    .mode(reservation.getModeAcompte() != null ? reservation.getModeAcompte() : ModePaiement.ESPECES)
+                    .referenceTransaction(reservation.getReferenceAcompte())
+                    .agent(agent)
+                    .datePaiement(reservation.getDateAcompte() != null ? reservation.getDateAcompte() : LocalDateTime.now())
+                    .notes("Acompte versé à la réservation " + reservation.getNumeroReservation())
+                    .build());
+        }
+
+        // Créer un enregistrement Paiement si un acompte a été reçu à l'arrivée
+        if (versementArrivee.compareTo(BigDecimal.ZERO) > 0) {
             ModePaiement mode = ModePaiement.ESPECES;
             if (request.getModePaiement() != null && !request.getModePaiement().isBlank()) {
                 try { mode = ModePaiement.valueOf(request.getModePaiement()); } catch (IllegalArgumentException ignored) {}
             }
             Paiement paiement = Paiement.builder()
                     .sejour(saved)
-                    .montant(montantPaye)
+                    .montant(versementArrivee)
                     .mode(mode)
                     .agent(agent)
                     .datePaiement(LocalDateTime.now())
@@ -140,12 +191,18 @@ public class SejourService {
 
             Caisse caisse = caisseService.resoudreCaisse(request.getCaisseId());
             caisseService.enregistrer(caisse, SensMouvement.ENTREE, TypeMouvementCaisse.ENCAISSEMENT_SEJOUR,
-                    montantPaye, mode,
+                    versementArrivee, mode,
                     "Acompte à l'arrivée — chambre " + chambre.getNumero() + " (" + client.getNomComplet() + ")",
                     numeroRecu, "SEJOUR", saved.getId(), agent);
         }
 
-        auditService.log(agent, "CHECK_IN", "Sejour", saved.getId(), "Check-in chambre " + chambre.getNumero() + " pour " + client.getNomComplet());
+        if (reservation != null) {
+            reservation.setStatut(StatutReservation.ARRIVEE);
+            reservationRepository.save(reservation);
+        }
+
+        auditService.log(agent, "CHECK_IN", "Sejour", saved.getId(), "Check-in chambre " + chambre.getNumero() + " pour " + client.getNomComplet()
+                + (reservation != null ? " (réservation " + reservation.getNumeroReservation() + ")" : ""));
         if (remiseMontant.compareTo(BigDecimal.ZERO) > 0) {
             auditService.log(agent, "REMISE_SEJOUR", "Sejour", saved.getId(),
                     "Remise de " + remiseMontant + " FCFA sur " + montantBrut + " FCFA"
@@ -176,6 +233,11 @@ public class SejourService {
 
         int nbUnites = sejour.getTypeLocation() == TypeLocation.SEJOUR
                 ? Math.max(sejour.getNbJours() != null ? sejour.getNbJours() : 1, 1) : 1;
+        LocalDateTime nouvelleSortie = null;
+        if (sejour.getTypeLocation() == TypeLocation.SEJOUR && request.getDateSortie() != null) {
+            nouvelleSortie = request.getDateSortie().atStartOfDay();
+            nbUnites = nuiteesJusquA(sejour, nouvelleSortie);
+        }
         BigDecimal montantBrut = tarifApplique.multiply(BigDecimal.valueOf(nbUnites));
 
         TypeRemise remiseType = Remises.parse(request.getRemiseType());
@@ -190,6 +252,15 @@ public class SejourService {
         }
 
         Utilisateur agent = getAgentConnecte();
+        if (nouvelleSortie != null) {
+            if (!nouvelleSortie.equals(sejour.getDateSortie())) {
+                auditService.log(agent, "MODIFICATION_DATES_SEJOUR", "Sejour", sejour.getId(),
+                        "Départ prévu le " + request.getDateSortie() + " (" + nbUnites + " nuit"
+                                + (nbUnites > 1 ? "s" : "") + ")");
+            }
+            sejour.setDateSortie(nouvelleSortie);
+            sejour.setNbJours(nbUnites);
+        }
         sejour.setTarifApplique(tarifApplique);
         sejour.setMontantBrut(montantBrut);
         sejour.setRemiseType(remiseMontant.compareTo(BigDecimal.ZERO) > 0 ? remiseType : null);
@@ -267,6 +338,47 @@ public class SejourService {
     /** Tarif catalogue de la chambre pour le mode de location retenu. */
     private BigDecimal tarifCatalogue(TypeLocation type, Chambre chambre) {
         return type == TypeLocation.SEJOUR ? chambre.getTarifNuitee() : chambre.getTarifPassage();
+    }
+
+    /**
+     * Nuitées entre l'arrivée et une nouvelle date de départ. Une prolongation
+     * ne doit pas empiéter sur la réservation d'un autre client pour la même
+     * chambre : elle est refusée, l'agent proposera un changement de chambre.
+     */
+    private int nuiteesJusquA(Sejour sejour, LocalDateTime nouvelleSortie) {
+        DateTimeFormatter jourFmt = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+        LocalDateTime arrivee = sejour.getDateEntree().toLocalDate().atStartOfDay();
+        if (!nouvelleSortie.isAfter(arrivee)) {
+            throw new BusinessException("La date de départ doit être postérieure à la date d'arrivée ("
+                    + arrivee.format(jourFmt) + ")");
+        }
+        LocalDateTime sortiePrevue = sejour.getDateSortie() != null
+                ? sejour.getDateSortie()
+                : arrivee.plusDays(Math.max(sejour.getNbJours() != null ? sejour.getNbJours() : 1, 1));
+        if (nouvelleSortie.isAfter(sortiePrevue)) {
+            verifierReservationsConfirmees(sejour.getChambre(), sortiePrevue, nouvelleSortie, null);
+        }
+        return (int) ChronoUnit.DAYS.between(arrivee.toLocalDate(), nouvelleSortie.toLocalDate());
+    }
+
+    /**
+     * Refuse d'occuper une chambre sur des nuits déjà promises à un autre client
+     * par une réservation confirmée (acompte versé) : il trouverait sa chambre
+     * prise à son arrivée. Une réservation encore en attente d'acompte ne tient
+     * pas la chambre — c'est la règle de la maison — et ne bloque donc rien.
+     */
+    private void verifierReservationsConfirmees(Chambre chambre, LocalDateTime debut, LocalDateTime fin,
+                                                Reservation honoree) {
+        reservationRepository.findConflits(chambre.getId(), debut, fin).stream()
+                .filter(r -> r.getStatut() == StatutReservation.CONFIRMEE)
+                .filter(r -> honoree == null || !r.getId().equals(honoree.getId()))
+                .findFirst()
+                .ifPresent(r -> {
+                    throw new BusinessException("La chambre " + chambre.getNumero() + " est réservée par "
+                            + r.getClient().getNomComplet() + " à partir du "
+                            + r.getDateArrivee().format(DateTimeFormatter.ofPattern("dd/MM/yyyy"))
+                            + " : choisissez une autre chambre ou des dates plus courtes.");
+                });
     }
 
     /** Nombre de nuitées facturées ; un passage est un forfait à l'unité. */

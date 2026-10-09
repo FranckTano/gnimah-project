@@ -161,17 +161,29 @@ public class ComptabiliteService {
      * pour un graphique devenu illisible.
      */
     private List<Map<String, Object>> evolutionJournaliere(LocalDate debut, LocalDate fin) {
-        List<Map<String, Object>> resultat = new ArrayList<>();
         LocalDate borne = debut.plusDays(91);
         LocalDate finEffective = fin.isAfter(borne) ? borne : fin;
+        LocalDateTime debutDT = debut.atStartOfDay();
+        LocalDateTime finDT = finEffective.plusDays(1).atStartOfDay();
 
+        // Trois requêtes pour toute la période, agrégées jour par jour en mémoire.
+        Map<LocalDate, BigDecimal> recettesParJour = new HashMap<>();
+        for (Object[] row : sejourRepository.findMontantsParArrivee(debutDT, finDT)) {
+            BigDecimal hebergement = montant(row[1]).subtract(montant(row[2]));
+            recettesParJour.merge(((LocalDateTime) row[0]).toLocalDate(), hebergement, BigDecimal::add);
+        }
+        for (Object[] row : commandeRepository.findVentesPayeesPeriode(debutDT, finDT)) {
+            recettesParJour.merge(((LocalDateTime) row[0]).toLocalDate(), montant(row[1]), BigDecimal::add);
+        }
+        Map<LocalDate, BigDecimal> depensesParJour = new HashMap<>();
+        for (Object[] row : depenseRepository.findMontantsPeriode(debut, finEffective)) {
+            depensesParJour.merge((LocalDate) row[0], montant(row[1]), BigDecimal::add);
+        }
+
+        List<Map<String, Object>> resultat = new ArrayList<>();
         for (LocalDate jour = debut; !jour.isAfter(finEffective); jour = jour.plusDays(1)) {
-            LocalDateTime d = jour.atStartOfDay();
-            LocalDateTime f = jour.plusDays(1).atStartOfDay();
-
-            BigDecimal recettes = sejourRepository.sumRecetteHebergement(d, f)
-                    .add(commandeRepository.sumChiffreAffairesPeriode(d, f));
-            BigDecimal depenses = depenseRepository.sumDepensesPeriode(jour, jour);
+            BigDecimal recettes = recettesParJour.getOrDefault(jour, BigDecimal.ZERO);
+            BigDecimal depenses = depensesParJour.getOrDefault(jour, BigDecimal.ZERO);
 
             Map<String, Object> entree = new HashMap<>();
             entree.put("date", jour.toString());
@@ -181,6 +193,10 @@ public class ComptabiliteService {
             resultat.add(entree);
         }
         return resultat;
+    }
+
+    private static BigDecimal montant(Object valeur) {
+        return valeur != null ? (BigDecimal) valeur : BigDecimal.ZERO;
     }
 
     // ------------------------------------------------------------------

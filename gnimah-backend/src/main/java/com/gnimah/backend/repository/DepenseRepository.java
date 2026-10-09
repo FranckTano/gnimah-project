@@ -37,6 +37,12 @@ public interface DepenseRepository extends JpaRepository<Depense, Long> {
            "AND d.dateDepense BETWEEN :debut AND :fin")
     BigDecimal sumDepensesPeriode(@Param("debut") LocalDate debut, @Param("fin") LocalDate fin);
 
+    /** (dateDepense, montant) des charges de la période hors rejets, pour la courbe jour par jour. */
+    @Query("SELECT d.dateDepense, d.montant FROM Depense d " +
+           "WHERE d.statut <> com.gnimah.backend.entity.enums.StatutDepense.REJETEE " +
+           "AND d.dateDepense BETWEEN :debut AND :fin")
+    List<Object[]> findMontantsPeriode(@Param("debut") LocalDate debut, @Param("fin") LocalDate fin);
+
     /** Charges effectivement décaissées sur la période (hors engagements non réglés). */
     @Query("SELECT COALESCE(SUM(d.montant), 0) FROM Depense d " +
            "WHERE d.statut = com.gnimah.backend.entity.enums.StatutDepense.PAYEE " +

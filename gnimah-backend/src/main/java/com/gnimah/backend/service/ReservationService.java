@@ -29,6 +29,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
@@ -112,7 +113,7 @@ public class ReservationService {
             acompteRequis = montantPrevu;
         }
 
-        String numero = "RES-" + LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMddHHmmss"));
+        String numero = genererNumero();
         Utilisateur agent = getAgentConnecte();
 
         Reservation reservation = Reservation.builder()
@@ -404,6 +405,17 @@ public class ReservationService {
         return r.getDateLimiteAnnulation() != null
                 ? r.getDateLimiteAnnulation()
                 : r.getDateArrivee().minusHours(PREAVIS_ANNULATION_HEURES);
+    }
+
+    /**
+     * « RES-20261009-0001 » : séquence du jour, comme les reçus et les additions.
+     * Un numéro horodaté à la seconde faisait échouer la seconde de deux
+     * réservations saisies dans la même seconde.
+     */
+    private String genererNumero() {
+        String prefix = "RES-" + LocalDate.now().format(DateTimeFormatter.ofPattern("yyyyMMdd")) + "-";
+        Integer max = reservationRepository.findMaxSequence(prefix);
+        return prefix + String.format("%04d", (max != null ? max : 0) + 1);
     }
 
     private String concat(String existant, String ajout) {

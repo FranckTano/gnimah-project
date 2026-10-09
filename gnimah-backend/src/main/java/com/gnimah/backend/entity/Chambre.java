@@ -27,10 +27,12 @@ public class Chambre {
     @Column(length = 150)
     private String nom;
 
+    @Builder.Default
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 20)
     private TypeChambre type = TypeChambre.STANDARD;
 
+    @Builder.Default
     @Column(nullable = false)
     private int capacite = 2;
 
@@ -40,10 +42,12 @@ public class Chambre {
     @Column(name = "tarif_nuitee", nullable = false, precision = 10, scale = 2)
     private BigDecimal tarifNuitee;
 
+    @Builder.Default
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 20)
     private EtatChambre etat = EtatChambre.LIBRE;
 
+    @Builder.Default
     private int etage = 0;
 
     @Column(columnDefinition = "TEXT")
@@ -62,6 +66,7 @@ public class Chambre {
     @Column(columnDefinition = "TEXT")
     private String photos;
 
+    @Builder.Default
     @Column(nullable = false)
     private boolean actif = true;
 

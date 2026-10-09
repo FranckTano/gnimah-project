@@ -39,11 +39,11 @@ public interface IncidentChambreRepository extends JpaRepository<IncidentChambre
     long countOuverts();
 
     @Query("SELECT COALESCE(SUM(i.coutReel), 0) FROM IncidentChambre i " +
-           "WHERE i.dateIncident BETWEEN :debut AND :fin")
+           "WHERE i.dateIncident >= :debut AND i.dateIncident < :fin")
     BigDecimal sumCoutPeriode(@Param("debut") LocalDateTime debut, @Param("fin") LocalDateTime fin);
 
     @Query("SELECT i.type, COUNT(i), COALESCE(SUM(i.coutReel), 0) FROM IncidentChambre i " +
-           "WHERE i.dateIncident BETWEEN :debut AND :fin GROUP BY i.type")
+           "WHERE i.dateIncident >= :debut AND i.dateIncident < :fin GROUP BY i.type")
     List<Object[]> repartitionParType(@Param("debut") LocalDateTime debut, @Param("fin") LocalDateTime fin);
 
     @Query("SELECT MAX(CAST(SUBSTRING(i.numero, LENGTH(i.numero) - 3, 4) AS int)) FROM IncidentChambre i " +

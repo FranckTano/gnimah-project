@@ -21,11 +21,11 @@ public interface MouvementStockRepository extends JpaRepository<MouvementStock, 
 
     @Query("SELECT COALESCE(SUM(m.montant), 0) FROM MouvementStock m " +
            "WHERE m.sens = com.gnimah.backend.entity.enums.SensMouvement.SORTIE " +
-           "AND m.dateMouvement BETWEEN :debut AND :fin")
+           "AND m.dateMouvement >= :debut AND m.dateMouvement < :fin")
     BigDecimal sumConsommationPeriode(@Param("debut") LocalDateTime debut, @Param("fin") LocalDateTime fin);
 
     @Query("SELECT COALESCE(SUM(m.montant), 0) FROM MouvementStock m " +
            "WHERE m.sens = com.gnimah.backend.entity.enums.SensMouvement.ENTREE " +
-           "AND m.dateMouvement BETWEEN :debut AND :fin")
+           "AND m.dateMouvement >= :debut AND m.dateMouvement < :fin")
     BigDecimal sumAchatsPeriode(@Param("debut") LocalDateTime debut, @Param("fin") LocalDateTime fin);
 }

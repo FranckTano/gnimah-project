@@ -31,17 +31,23 @@ public interface CommandeRestaurantRepository extends JpaRepository<CommandeRest
 
     @Query("SELECT COALESCE(SUM(c.montantNet), 0) FROM CommandeRestaurant c " +
            "WHERE c.statut = com.gnimah.backend.entity.enums.StatutCommande.PAYEE " +
-           "AND c.dateCommande BETWEEN :debut AND :fin")
+           "AND c.dateCommande >= :debut AND c.dateCommande < :fin")
     BigDecimal sumChiffreAffairesPeriode(@Param("debut") LocalDateTime debut, @Param("fin") LocalDateTime fin);
 
-    @Query("SELECT COUNT(c) FROM CommandeRestaurant c WHERE c.dateCommande BETWEEN :debut AND :fin")
+    @Query("SELECT COUNT(c) FROM CommandeRestaurant c WHERE c.dateCommande >= :debut AND c.dateCommande < :fin")
     long countPeriode(@Param("debut") LocalDateTime debut, @Param("fin") LocalDateTime fin);
+
+    /** (dateCommande, montantNet) des additions réglées de la période, pour la courbe jour par jour. */
+    @Query("SELECT c.dateCommande, c.montantNet FROM CommandeRestaurant c " +
+           "WHERE c.statut = com.gnimah.backend.entity.enums.StatutCommande.PAYEE " +
+           "AND c.dateCommande >= :debut AND c.dateCommande < :fin")
+    List<Object[]> findVentesPayeesPeriode(@Param("debut") LocalDateTime debut, @Param("fin") LocalDateTime fin);
 
     /** Palmarès des plats vendus sur une période : article, quantité, chiffre d'affaires. */
     @Query("SELECT l.designation, SUM(l.quantite), COALESCE(SUM(l.montant), 0) " +
            "FROM LigneCommande l JOIN l.commande c " +
            "WHERE c.statut <> com.gnimah.backend.entity.enums.StatutCommande.ANNULEE " +
-           "AND c.dateCommande BETWEEN :debut AND :fin " +
+           "AND c.dateCommande >= :debut AND c.dateCommande < :fin " +
            "GROUP BY l.designation ORDER BY SUM(l.quantite) DESC")
     List<Object[]> findTopArticles(@Param("debut") LocalDateTime debut, @Param("fin") LocalDateTime fin);
 

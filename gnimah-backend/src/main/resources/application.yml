@@ -80,6 +80,10 @@ app:
     # Vide par défaut (désactivé en local/test). À définir en prod (Render) avec
     # la propre URL publique du service pour empêcher la mise en veille du plan gratuit.
     target-url: ${KEEPALIVE_TARGET_URL:}
+  demo-data:
+    # Faux clients, séjours et paiements de démonstration (DemoDataSeeder).
+    # Jamais en production : ils occuperaient des chambres et fausseraient la caisse.
+    enabled: ${DEMO_DATA_ENABLED:false}
   pdf:
     output-dir: ${PDF_OUTPUT_DIR:./pdfs}
   cloudinary:
@@ -130,7 +134,8 @@ management:
 
 logging:
   level:
-    com.gnimah: DEBUG
+    # INFO en production ; LOG_LEVEL_APP=DEBUG pour un diagnostic ponctuel.
+    com.gnimah: ${LOG_LEVEL_APP:INFO}
     org.springframework.security: INFO
     org.hibernate.SQL: INFO
     org.flywaydb: INFO

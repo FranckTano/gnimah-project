@@ -186,6 +186,9 @@ public class RestaurationService {
         if (commande.getStatut() == StatutCommande.PAYEE || commande.getStatut() == StatutCommande.ANNULEE) {
             throw new BusinessException("Une addition réglée ou annulée ne peut plus être modifiée");
         }
+        if (request.getLignes() == null || request.getLignes().isEmpty()) {
+            throw new BusinessException("Une commande doit comporter au moins une ligne");
+        }
         commande.getLignes().clear();
         appliquerLignes(commande, request.getLignes());
         appliquerRemise(commande, request.getRemiseType(), request.getRemiseValeur(), request.getRemiseMotif());
@@ -250,6 +253,9 @@ public class RestaurationService {
             auditService.log(agent, "IMPUTATION_ADDITION", "CommandeRestaurant", commande.getId(),
                     commande.getMontantNet() + " FCFA portés au séjour " + sejour.getNumeroRecu());
         } else {
+            if (request.getMode() == null || request.getMode().isBlank()) {
+                throw new BusinessException("Le mode de paiement est requis pour encaisser l'addition");
+            }
             ModePaiement mode = CaisseService.parseEnum(
                     ModePaiement.class, request.getMode(), "mode de paiement");
             Caisse caisse = caisseService.resoudreCaisse(caisseRestaurationId());

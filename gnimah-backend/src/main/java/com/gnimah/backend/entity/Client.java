@@ -39,12 +39,14 @@ public class Client {
     @Column(name = "numero_piece", nullable = false, length = 50)
     private String numeroPiece;
 
+    @Builder.Default
     @Column(length = 100)
     private String nationalite = "Ivoirienne";
 
     @Column(columnDefinition = "TEXT")
     private String adresse;
 
+    @Builder.Default
     @Column(name = "nb_sejours", nullable = false)
     private int nbSejours = 0;
 

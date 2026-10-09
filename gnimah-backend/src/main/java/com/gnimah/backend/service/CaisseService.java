@@ -12,7 +12,11 @@ import com.gnimah.backend.repository.CaisseRepository;
 import com.gnimah.backend.repository.MouvementCaisseRepository;
 import com.gnimah.backend.repository.SessionCaisseRepository;
 import com.gnimah.backend.repository.UtilisateurRepository;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.LockModeType;
+import jakarta.persistence.PersistenceContext;
 import lombok.RequiredArgsConstructor;
+import org.hibernate.Hibernate;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -42,6 +46,9 @@ public class CaisseService {
     private final MouvementCaisseRepository mouvementRepository;
     private final UtilisateurRepository utilisateurRepository;
     private final AuditService auditService;
+
+    @PersistenceContext
+    private EntityManager entityManager;
 
     // ------------------------------------------------------------------
     // Référentiel des caisses
@@ -106,6 +113,16 @@ public class CaisseService {
     // Sessions (vacations)
     // ------------------------------------------------------------------
 
+    /**
+     * Ouvre une vacation. Le fond de caisse est ce que la caissière compte dans
+     * le tiroir en prenant son service.
+     *
+     * Ces espèces sont le plus souvent déjà au solde — c'est le fond laissé par
+     * la vacation précédente. Les ré-enregistrer comme une entrée gonflerait le
+     * solde du montant du fond à chaque ouverture : seul l'écart entre le
+     * comptage et le solde théorique donne donc lieu à une écriture, un apport
+     * s'il manque de la monnaie, une régularisation s'il manque des espèces.
+     */
     @Transactional
     public SessionCaisseResponse ouvrir(OuvertureCaisseRequest request) {
         Caisse caisse = findCaisse(request.getCaisseId());
@@ -117,6 +134,9 @@ public class CaisseService {
 
         Utilisateur agent = getAgentConnecte();
         BigDecimal fond = request.getFondCaisse() != null ? request.getFondCaisse() : BigDecimal.ZERO;
+        if (fond.compareTo(BigDecimal.ZERO) < 0) {
+            throw new BusinessException("Le fond de caisse ne peut pas être négatif");
+        }
 
         SessionCaisse session = SessionCaisse.builder()
                 .caisse(caisse)
@@ -129,20 +149,34 @@ public class CaisseService {
                 .build();
         SessionCaisse saved = sessionRepository.save(session);
 
-        // Le fond de caisse est une mise en place, pas une recette : il figure au
-        // journal pour expliquer le solde, mais il est exclu de l'assiette des
-        // versements (voir MouvementCaisseRepository.sumRecettePeriode).
-        if (fond.compareTo(BigDecimal.ZERO) > 0) {
+        // Le fond reste une mise en place, pas une recette : l'apport est exclu
+        // de l'assiette des versements (voir MouvementCaisseRepository.sumRecettePeriode).
+        BigDecimal soldeTheorique = verrouiller(caisse).getSolde();
+        BigDecimal apport = fond.subtract(soldeTheorique);
+        if (apport.signum() > 0) {
             enregistrerInterne(caisse, saved, SensMouvement.ENTREE, TypeMouvementCaisse.FOND_DE_CAISSE,
-                    fond, ModePaiement.ESPECES, "Fond de caisse — ouverture de vacation",
-                    null, "SESSION_CAISSE", saved.getId(), agent, null);
+                    apport, ModePaiement.ESPECES, "Fond de caisse — apport à l'ouverture",
+                    null, ORIGINE_SESSION, saved.getId(), agent,
+                    "Compté " + fond + " FCFA pour un solde théorique de " + soldeTheorique + " FCFA");
+        } else if (apport.signum() < 0) {
+            enregistrerInterne(caisse, saved, SensMouvement.SORTIE, TypeMouvementCaisse.AJUSTEMENT,
+                    apport.negate(), ModePaiement.ESPECES, "Écart constaté à l'ouverture — espèces manquantes",
+                    null, ORIGINE_SESSION, saved.getId(), agent,
+                    "Compté " + fond + " FCFA pour un solde théorique de " + soldeTheorique + " FCFA");
         }
 
         auditService.log(agent, "OUVERTURE_CAISSE", "SessionCaisse", saved.getId(),
-                "Ouverture de " + caisse.getNom() + " avec un fond de " + fond + " FCFA");
+                "Ouverture de " + caisse.getNom() + " avec un fond de " + fond + " FCFA"
+                        + (apport.signum() != 0 ? " (solde théorique " + soldeTheorique + " FCFA)" : ""));
         return toResponse(saved);
     }
 
+    /**
+     * Ferme la vacation sur le comptage de la caissière. L'écart est conservé
+     * sur la session — c'est la pièce que la direction examine — et le solde
+     * de la caisse est régularisé au montant compté : après fermeture, il doit
+     * correspondre aux espèces réellement présentes dans le tiroir.
+     */
     @Transactional
     public SessionCaisseResponse fermer(Long sessionId, FermetureCaisseRequest request) {
         SessionCaisse session = sessionRepository.findById(sessionId)
@@ -150,37 +184,81 @@ public class CaisseService {
         if (session.getStatut() == StatutSessionCaisse.FERMEE) {
             throw new BusinessException("Cette session de caisse est déjà fermée");
         }
-        if (request.getMontantCompte() == null) {
+        BigDecimal compte = request.getMontantCompte();
+        if (compte == null) {
             throw new BusinessException("Le montant compté en caisse est requis pour fermer la vacation");
         }
+        if (compte.compareTo(BigDecimal.ZERO) < 0) {
+            throw new BusinessException("Le montant compté ne peut pas être négatif");
+        }
 
-        BigDecimal entrees = mouvementRepository.sumBySessionAndSens(sessionId, SensMouvement.ENTREE);
-        BigDecimal sorties = mouvementRepository.sumBySessionAndSens(sessionId, SensMouvement.SORTIE);
-        BigDecimal entreesEspeces = mouvementRepository.sumEspecesBySessionAndSens(sessionId, SensMouvement.ENTREE);
-        BigDecimal sortiesEspeces = mouvementRepository.sumEspecesBySessionAndSens(sessionId, SensMouvement.SORTIE);
+        Position position = position(session);
+        BigDecimal ecart = compte.subtract(position.theorique());
+        Utilisateur agent = getAgentConnecte();
 
-        // Le fond de caisse est déjà compté dans les entrées en espèces : le
-        // rajouter au théorique le compterait deux fois.
-        BigDecimal theorique = entreesEspeces.subtract(sortiesEspeces);
-        BigDecimal ecart = request.getMontantCompte().subtract(theorique);
+        Caisse caisse = verrouiller(session.getCaisse());
+        BigDecimal regularisation = compte.subtract(caisse.getSolde());
+        if (regularisation.signum() != 0) {
+            enregistrerInterne(caisse, session,
+                    regularisation.signum() > 0 ? SensMouvement.ENTREE : SensMouvement.SORTIE,
+                    TypeMouvementCaisse.AJUSTEMENT, regularisation.abs(), ModePaiement.ESPECES,
+                    "Régularisation à la fermeture — " + (regularisation.signum() > 0 ? "excédent" : "manquant"),
+                    null, ORIGINE_SESSION, session.getId(), agent,
+                    "Compté " + compte + " FCFA pour " + position.theorique() + " FCFA attendus");
+        }
 
-        session.setTotalEntrees(entrees);
-        session.setTotalSorties(sorties);
-        session.setMontantTheorique(theorique);
-        session.setMontantCompte(request.getMontantCompte());
+        session.setTotalEntrees(position.entrees());
+        session.setTotalSorties(position.sorties());
+        session.setMontantTheorique(position.theorique());
+        session.setMontantCompte(compte);
         session.setEcart(ecart);
         session.setStatut(StatutSessionCaisse.FERMEE);
         session.setDateFermeture(LocalDateTime.now());
-        session.setFermePar(getAgentConnecte());
+        session.setFermePar(agent);
         if (request.getNotes() != null && !request.getNotes().isBlank()) {
             session.setNotes(request.getNotes());
         }
 
         SessionCaisse saved = sessionRepository.save(session);
-        auditService.log(session.getFermePar(), "FERMETURE_CAISSE", "SessionCaisse", saved.getId(),
-                "Fermeture de " + session.getCaisse().getNom() + " — théorique " + theorique
-                        + ", compté " + request.getMontantCompte() + ", écart " + ecart + " FCFA");
+        auditService.log(agent, "FERMETURE_CAISSE", "SessionCaisse", saved.getId(),
+                "Fermeture de " + session.getCaisse().getNom() + " — théorique " + position.theorique()
+                        + ", compté " + compte + ", écart " + ecart + " FCFA");
         return toResponse(saved);
+    }
+
+    /** Écritures de régularisation du fond, exclues de l'activité de la vacation. */
+    static final String ORIGINE_SESSION = "SESSION_CAISSE";
+
+    /** Activité d'une vacation et espèces attendues dans le tiroir. */
+    private record Position(BigDecimal entrees, BigDecimal sorties,
+                            BigDecimal entreesEspeces, BigDecimal sortiesEspeces, BigDecimal theorique) {}
+
+    private Position position(SessionCaisse s) {
+        Long id = s.getId();
+        BigDecimal entreesEspeces = mouvementRepository.sumActiviteEspecesBySessionAndSens(id, SensMouvement.ENTREE);
+        BigDecimal sortiesEspeces = mouvementRepository.sumActiviteEspecesBySessionAndSens(id, SensMouvement.SORTIE);
+        BigDecimal fond = s.getFondCaisse() != null ? s.getFondCaisse() : BigDecimal.ZERO;
+        return new Position(
+                mouvementRepository.sumActiviteBySessionAndSens(id, SensMouvement.ENTREE),
+                mouvementRepository.sumActiviteBySessionAndSens(id, SensMouvement.SORTIE),
+                entreesEspeces, sortiesEspeces,
+                fond.add(entreesEspeces).subtract(sortiesEspeces));
+    }
+
+    /**
+     * Pose un verrou d'écriture sur la ligne de la caisse et relit son solde.
+     * Deux encaissements simultanés sur la même caisse (réception et bar, par
+     * exemple) se succèdent ainsi au lieu de s'écraser : sans verrou, chacun
+     * partirait du même solde et l'un des deux montants serait perdu.
+     */
+    private Caisse verrouiller(Caisse caisse) {
+        if (entityManager != null) {
+            Object entite = Hibernate.unproxy(caisse);
+            if (entityManager.contains(entite)) {
+                entityManager.refresh(entite, LockModeType.PESSIMISTIC_WRITE);
+            }
+        }
+        return caisse;
     }
 
     @Transactional(readOnly = true)
@@ -260,6 +338,9 @@ public class CaisseService {
         SessionCaisse sessionCourante = session != null ? session
                 : sessionRepository.findFirstByCaisseIdAndStatutOrderByDateOuvertureDesc(
                         caisse.getId(), StatutSessionCaisse.OUVERTE).orElse(null);
+
+        // Solde relu sous verrou : c'est lui que l'on va faire évoluer.
+        verrouiller(caisse);
 
         // Le solde d'une caisse représente les espèces réellement détenues. Un
         // règlement par virement, carte ou mobile money est bien une recette (ou
@@ -393,17 +474,14 @@ public class CaisseService {
     }
 
     public SessionCaisseResponse toResponse(SessionCaisse s) {
-        // Sur une vacation encore ouverte, les cumuls stockés ne sont pas à jour
-        // (ils ne le deviennent qu'à la fermeture) : on les recalcule à la volée
-        // pour que la caissière voie sa position réelle en cours de service.
-        BigDecimal entrees = s.getStatut() == StatutSessionCaisse.OUVERTE
-                ? mouvementRepository.sumBySessionAndSens(s.getId(), SensMouvement.ENTREE) : s.getTotalEntrees();
-        BigDecimal sorties = s.getStatut() == StatutSessionCaisse.OUVERTE
-                ? mouvementRepository.sumBySessionAndSens(s.getId(), SensMouvement.SORTIE) : s.getTotalSorties();
-        BigDecimal theorique = s.getStatut() == StatutSessionCaisse.OUVERTE
-                ? mouvementRepository.sumEspecesBySessionAndSens(s.getId(), SensMouvement.ENTREE)
-                    .subtract(mouvementRepository.sumEspecesBySessionAndSens(s.getId(), SensMouvement.SORTIE))
-                : s.getMontantTheorique();
+        // L'activité est toujours recalculée depuis le journal pour que la
+        // caissière voie sa position réelle en cours de service. Une vacation
+        // fermée garde en revanche le théorique figé au moment du comptage.
+        Position p = position(s);
+        boolean ouverte = s.getStatut() == StatutSessionCaisse.OUVERTE;
+        BigDecimal entrees = ouverte ? p.entrees() : s.getTotalEntrees();
+        BigDecimal sorties = ouverte ? p.sorties() : s.getTotalSorties();
+        BigDecimal theorique = ouverte ? p.theorique() : s.getMontantTheorique();
 
         return SessionCaisseResponse.builder()
                 .id(s.getId())
@@ -416,6 +494,8 @@ public class CaisseService {
                 .dateFermeture(s.getDateFermeture())
                 .totalEntrees(entrees)
                 .totalSorties(sorties)
+                .entreesEspeces(p.entreesEspeces())
+                .sortiesEspeces(p.sortiesEspeces())
                 .montantTheorique(theorique)
                 .montantCompte(s.getMontantCompte())
                 .ecart(s.getEcart())

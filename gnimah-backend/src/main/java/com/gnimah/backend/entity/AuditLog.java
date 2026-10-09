@@ -1,5 +1,6 @@
 package com.gnimah.backend.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -14,6 +15,9 @@ public class AuditLog {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    // Exclu du JSON : relation paresseuse illisible hors transaction (le journal
+    // renvoyait une erreur 500) ; le nom d'utilisateur est déjà copié ci-dessous.
+    @JsonIgnore
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "utilisateur_id")
     private Utilisateur utilisateur;

@@ -5,7 +5,7 @@ plugins {
 }
 
 group = 'com.gnimah'
-version = '1.0.0'
+version = '2.1.0'
 
 java {
     sourceCompatibility = JavaVersion.VERSION_17
@@ -73,6 +73,12 @@ dependencies {
 
 tasks.named('test') {
     useJUnitPlatform()
+}
+
+// Version et horodatage du build, exposés par /api/public/hotel-info : ils
+// permettent de vérifier qu'un déploiement sert bien le dernier code.
+springBoot {
+    buildInfo()
 }
 
 // Exclure Lombok du jar final

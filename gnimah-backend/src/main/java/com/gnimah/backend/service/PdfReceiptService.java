@@ -25,6 +25,7 @@ import org.springframework.stereotype.Service;
 import java.io.ByteArrayOutputStream;
 import java.math.BigDecimal;
 import java.time.format.DateTimeFormatter;
+import java.util.Locale;
 
 @Service
 @Slf4j
@@ -115,7 +116,9 @@ public class PdfReceiptService {
                 document.add(new Paragraph("Reste à payer : " + formatAmount(sejour.getResteAPayer()) + " FCFA")
                         .setFont(regular).setFontSize(11).setFontColor(RED).setMarginBottom(8));
             } else {
-                document.add(new Paragraph("✓  Séjour entièrement réglé")
+                // Pas de pictogramme : Helvetica (police standard du PDF) ne
+                // contient pas « ✓ », qui disparaîtrait du reçu imprimé.
+                document.add(new Paragraph("Séjour entièrement réglé")
                         .setFont(bold).setFontSize(11).setFontColor(GREEN).setMarginBottom(8));
             }
 
@@ -162,6 +165,8 @@ public class PdfReceiptService {
 
     private String formatAmount(BigDecimal amount) {
         if (amount == null) return "0";
-        return String.format("%,.0f", amount.doubleValue()).replace(",", " ");
+        // Séparateur de milliers posé explicitement (espace insécable) : le rendu
+        // ne dépend pas de la locale de la machine qui héberge le serveur.
+        return String.format(Locale.ROOT, "%,.0f", amount).replace(",", " ");
     }
 }

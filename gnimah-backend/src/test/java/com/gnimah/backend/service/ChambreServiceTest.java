@@ -61,6 +61,9 @@ class ChambreServiceTest {
 
         assertThat(response.getNumero()).isEqualTo("501");
         assertThat(response.getEtat()).isEqualTo("LIBRE");
+        // Sans @Builder.Default, Lombok créait la chambre inactive : invisible
+        // sur le plan des chambres et pour les arrivées.
+        assertThat(response.isActif()).isTrue();
     }
 
     @Test

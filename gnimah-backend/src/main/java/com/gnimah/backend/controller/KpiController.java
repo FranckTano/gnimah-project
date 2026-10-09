@@ -13,7 +13,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 
 @RestController
 @RequestMapping("/kpi")
@@ -24,21 +26,26 @@ public class KpiController {
 
     private final KpiService kpiService;
 
+    /**
+     * {@code fin} est inclusive pour l'appelant (l'écran envoie « jour à 23:59:59 ») ;
+     * elle est convertie ici en borne exclue, comme l'attendent les requêtes.
+     */
     @GetMapping("/dashboard")
     @Operation(summary = "Tableau de bord KPI")
     public ResponseEntity<KpiResponse> getDashboard(
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime debut,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime fin) {
-        if (debut == null) debut = LocalDateTime.now().withDayOfMonth(1).withHour(0).withMinute(0).withSecond(0);
-        if (fin == null) fin = LocalDateTime.now();
-        return ResponseEntity.ok(kpiService.getDashboard(debut, fin));
+        if (debut == null) debut = LocalDate.now().withDayOfMonth(1).atStartOfDay();
+        LocalDateTime finExclue = fin != null
+                ? fin.truncatedTo(ChronoUnit.SECONDS).plusSeconds(1)
+                : LocalDate.now().plusDays(1).atStartOfDay();
+        return ResponseEntity.ok(kpiService.getDashboard(debut, finExclue));
     }
 
     @GetMapping("/dashboard/today")
     @Operation(summary = "KPI du jour")
     public ResponseEntity<KpiResponse> getDashboardToday() {
-        LocalDateTime debut = LocalDateTime.now().toLocalDate().atStartOfDay();
-        LocalDateTime fin = LocalDateTime.now();
-        return ResponseEntity.ok(kpiService.getDashboard(debut, fin));
+        LocalDateTime debut = LocalDate.now().atStartOfDay();
+        return ResponseEntity.ok(kpiService.getDashboard(debut, debut.plusDays(1)));
     }
 }

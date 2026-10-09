@@ -28,11 +28,16 @@ public class KpiService {
     private final PaiementRepository paiementRepository;
     private final DepenseRepository depenseRepository;
 
+    /**
+     * @param debut début de période, inclus
+     * @param fin   fin de période, <b>exclue</b> (lendemain 00:00 pour finir une journée)
+     */
     @Transactional(readOnly = true)
     public KpiResponse getDashboard(LocalDateTime debut, LocalDateTime fin) {
         BigDecimal chiffreAffaires = sejourRepository.sumChiffreAffaires(debut, fin);
         BigDecimal encaissements = sejourRepository.sumEncaissements(debut, fin);
-        BigDecimal depenses = depenseRepository.sumDepensesPeriode(debut.toLocalDate(), fin.toLocalDate());
+        // Les dépenses sont datées au jour (bornes incluses) : dernier jour couvert = veille de la borne exclue.
+        BigDecimal depenses = depenseRepository.sumDepensesPeriode(debut.toLocalDate(), fin.minusNanos(1).toLocalDate());
         BigDecimal marge = chiffreAffaires.subtract(depenses);
 
         long totalSejours = sejourRepository.countSejoursPeriode(debut, fin);
@@ -100,34 +105,38 @@ public class KpiService {
                 .build();
     }
 
+    // Les deux courbes jour par jour partent d'une seule requête chacune, agrégée
+    // en mémoire : une requête par jour coûterait des dizaines d'allers-retours
+    // vers la base dès que la période dépasse quelques jours.
+
     private List<Map<String, Object>> buildCaParJour(LocalDateTime debut, LocalDateTime fin) {
+        Map<LocalDate, BigDecimal> caParJour = new HashMap<>();
+        for (Object[] row : sejourRepository.findMontantsParArrivee(debut, fin)) {
+            LocalDate jour = ((LocalDateTime) row[0]).toLocalDate();
+            BigDecimal montant = row[1] != null ? (BigDecimal) row[1] : BigDecimal.ZERO;
+            caParJour.merge(jour, montant, BigDecimal::add);
+        }
         List<Map<String, Object>> result = new ArrayList<>();
-        LocalDateTime current = debut.toLocalDate().atStartOfDay();
-        LocalDateTime end = fin.toLocalDate().atStartOfDay();
-        while (!current.isAfter(end)) {
-            LocalDateTime nextDay = current.plusDays(1);
-            BigDecimal ca = sejourRepository.sumChiffreAffaires(current, nextDay);
+        for (LocalDate jour = debut.toLocalDate(); jour.atStartOfDay().isBefore(fin); jour = jour.plusDays(1)) {
             Map<String, Object> entry = new HashMap<>();
-            entry.put("date", current.toLocalDate().toString());
-            entry.put("ca", ca);
+            entry.put("date", jour.toString());
+            entry.put("ca", caParJour.getOrDefault(jour, BigDecimal.ZERO));
             result.add(entry);
-            current = nextDay;
         }
         return result;
     }
 
     private List<Map<String, Object>> buildReservationsParJour(LocalDateTime debut, LocalDateTime fin) {
+        Map<LocalDate, Long> parJour = new HashMap<>();
+        for (LocalDateTime creation : reservationRepository.findDatesCreationPeriode(debut, fin)) {
+            if (creation != null) parJour.merge(creation.toLocalDate(), 1L, Long::sum);
+        }
         List<Map<String, Object>> result = new ArrayList<>();
-        LocalDateTime current = debut.toLocalDate().atStartOfDay();
-        LocalDateTime end = fin.toLocalDate().atStartOfDay();
-        while (!current.isAfter(end)) {
-            LocalDateTime nextDay = current.plusDays(1);
-            long count = reservationRepository.countReservationsPeriode(current, nextDay);
+        for (LocalDate jour = debut.toLocalDate(); jour.atStartOfDay().isBefore(fin); jour = jour.plusDays(1)) {
             Map<String, Object> entry = new HashMap<>();
-            entry.put("date", current.toLocalDate().toString());
-            entry.put("count", count);
+            entry.put("date", jour.toString());
+            entry.put("count", parJour.getOrDefault(jour, 0L));
             result.add(entry);
-            current = nextDay;
         }
         return result;
     }

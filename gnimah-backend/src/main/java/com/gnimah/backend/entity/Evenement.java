@@ -27,6 +27,7 @@ public class Evenement {
     @JoinColumn(name = "client_id")
     private Client client;
 
+    @Builder.Default
     @Column(name = "type_evenement", length = 50)
     private String typeEvenement = "REUNION";
 
@@ -39,12 +40,15 @@ public class Evenement {
     @Column(name = "date_fin")
     private LocalDateTime dateFin;
 
+    @Builder.Default
     @Column(name = "nb_personnes")
     private int nbPersonnes = 1;
 
+    @Builder.Default
     @Column(precision = 10, scale = 2)
     private BigDecimal montant = BigDecimal.ZERO;
 
+    @Builder.Default
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 20)
     private StatutEvenement statut = StatutEvenement.PLANIFIE;

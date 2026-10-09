@@ -3,11 +3,12 @@ package com.gnimah.backend.dto.sejour;
 import lombok.Data;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 
 /**
- * Révision du prix d'un séjour déjà enregistré : nouveau tarif négocié et/ou
- * remise commerciale. Sert à corriger une note en cours, geste courant quand un
- * client prolonge ou qu'un arrangement est trouvé après l'arrivée.
+ * Révision d'un séjour déjà enregistré : nouvelle date de départ, nouveau tarif
+ * négocié et/ou remise commerciale. Sert à corriger une note en cours, geste
+ * courant quand un client prolonge ou qu'un arrangement est trouvé après l'arrivée.
  */
 @Data
 public class RemiseSejourRequest {
@@ -19,4 +20,10 @@ public class RemiseSejourRequest {
     private String remiseType;
     private BigDecimal remiseValeur;
     private String remiseMotif;
+
+    /**
+     * Nouvelle date de départ prévue — prolongation ou départ avancé. Vide, la
+     * durée facturée ne change pas. Ignorée pour un passage, forfaitaire.
+     */
+    private LocalDate dateSortie;
 }

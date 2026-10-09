@@ -18,9 +18,9 @@ public interface PaiementRepository extends JpaRepository<Paiement, Long> {
     @Query("SELECT COALESCE(SUM(p.montant), 0) FROM Paiement p WHERE p.sejour.id = :sejourId")
     BigDecimal sumMontantBySejour(@Param("sejourId") Long sejourId);
 
-    @Query("SELECT COALESCE(SUM(p.montant), 0) FROM Paiement p WHERE p.datePaiement BETWEEN :debut AND :fin")
+    @Query("SELECT COALESCE(SUM(p.montant), 0) FROM Paiement p WHERE p.datePaiement >= :debut AND p.datePaiement < :fin")
     BigDecimal sumEncaissementsPeriode(@Param("debut") LocalDateTime debut, @Param("fin") LocalDateTime fin);
 
-    @Query("SELECT p.mode, COUNT(p), COALESCE(SUM(p.montant), 0) FROM Paiement p WHERE p.datePaiement BETWEEN :debut AND :fin GROUP BY p.mode")
+    @Query("SELECT p.mode, COUNT(p), COALESCE(SUM(p.montant), 0) FROM Paiement p WHERE p.datePaiement >= :debut AND p.datePaiement < :fin GROUP BY p.mode")
     List<Object[]> findRepartitionModePaiement(@Param("debut") LocalDateTime debut, @Param("fin") LocalDateTime fin);
 }

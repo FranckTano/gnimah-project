@@ -7,6 +7,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
@@ -21,8 +22,14 @@ import java.util.Map;
  * paiements, tâches d'entretien, événements) au premier démarrage, pour que le
  * dashboard et les listes ne soient plus vides. S'exécute après {@link DataInitializer}
  * (les séjours/réservations ont besoin des comptes agent/directeur déjà créés).
+ *
+ * Désactivé par défaut : en exploitation réelle, de faux séjours occuperaient
+ * des chambres et de faux paiements fausseraient la caisse et le chiffre
+ * d'affaires. À activer explicitement (DEMO_DATA_ENABLED=true) pour une
+ * démonstration ou en développement.
  */
 @Component
+@ConditionalOnProperty(name = "app.demo-data.enabled", havingValue = "true")
 @Order(2)
 @RequiredArgsConstructor
 @Slf4j

@@ -52,7 +52,7 @@ public class EvenementService {
     public List<EvenementResponse> findByMois(int annee, int mois) {
         YearMonth yearMonth = YearMonth.of(annee, mois);
         LocalDateTime debut = yearMonth.atDay(1).atStartOfDay();
-        LocalDateTime fin = yearMonth.atEndOfMonth().atTime(23, 59, 59);
+        LocalDateTime fin = yearMonth.plusMonths(1).atDay(1).atStartOfDay();
         return evenementRepository.findByPeriode(debut, fin).stream().map(this::toResponse).collect(Collectors.toList());
     }
 

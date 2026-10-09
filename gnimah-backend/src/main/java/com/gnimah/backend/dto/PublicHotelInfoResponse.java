@@ -7,4 +7,8 @@ import lombok.Data;
 @Builder
 public class PublicHotelInfoResponse {
     private long totalChambres;
+    /** Version de l'application (build.gradle). */
+    private String version;
+    /** Horodatage du build : identifie le déploiement en service. */
+    private String dateBuild;
 }
