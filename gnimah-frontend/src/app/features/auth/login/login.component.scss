@@ -73,7 +73,9 @@
 
 .gn-flabel { font-size: 13px; font-weight: 600; color: #4d3f43; }
 .gn-field-icon { position: relative; margin: 7px 0 18px; }
-.gn-field-icon i { position: absolute; left: 14px; top: 50%; transform: translateY(-50%); color: #b3a2a6; font-size: 18px; }
+.gn-field-icon i { position: absolute; left: 14px; top: 50%; transform: translateY(-50%); color: #b3a2a6; font-size: 18px;
+  // Au-dessus du champ : le composant mot de passe, positionné, recouvrait le cadenas.
+  z-index: 1; pointer-events: none; }
 .gn-field-icon .gn-input { padding-left: 42px; }
 
 // ---- Signalement des erreurs -------------------------------------------------
